@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 
-int main()
+int main(int argv, char** args)
 {
     using std::cerr;
     using std::endl;
@@ -32,7 +32,7 @@ int main()
         return EXIT_FAILURE;
     }
 
-    SDL_Surface *bmp = SDL_LoadBMP("./img/sdl.bmp");
+    SDL_Surface *bmp = SDL_LoadBMP("./res/img/sdl.bmp");
     if (bmp == nullptr)
     {
         cerr << "SDL_LoadBMP Error: " << SDL_GetError() << endl;
