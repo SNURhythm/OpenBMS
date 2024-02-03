@@ -10,6 +10,7 @@ ifeq ($(OS),Windows_NT)
 	RRM = rmdir /s /q	
 	MKDIRP = mkdir
 	IGNORE_ERRORS = 2>NUL || (exit 0)
+	VLC_PLUGINS_TAR=libvlcplugins\\win32.tar.gz
 	# Attempt to detect a Unix-like shell environment (e.g., Git Bash, Cygwin) by checking for /bin/sh
     ifneq ($(shell if [ -x /bin/sh ]; then echo true; fi),)
         CP = cp
@@ -46,8 +47,9 @@ else
         CXXFLAGS += -D LINUX
     endif
     ifeq ($(UNAME_S),Darwin)
+				VLC_PLUGINS_TAR=libvlcplugins/darwin.tar.gz
 				LDFLAGS += -rpath @executable_path/lib -mmacosx-version-min=10.9
-				CXXFLAGS += -D OSX
+				CXXFLAGS += -D OSX 
     endif
     UNAME_P := $(shell uname -p)
     ifeq ($(UNAME_P),x86_64)
@@ -68,12 +70,14 @@ all: msg main
 
 $(BUILD_DIR):
 	@$(MKDIRP) $(BUILD_DIR)
-
-
+$(BUILD_DIR)/plugins: #unzip darwin.tar.gz to build
+	@mkdir -p $(BUILD_DIR)/plugins
+	@tar -xzf $(VLC_PLUGINS_TAR) -C $(BUILD_DIR)
+	@echo '--- Unzipped $(VLC_PLUGINS_TAR) to $(BUILD_DIR) ---'
 msg:
 	@echo '--- C++11 ---'
 
-COMPILE = ${CXX} ${CXXFLAGS} $< ${SDL2FLAGS} ${VLCFLAGS} ${LDFLAGS}
+COMPILE = ${CXX} ${CXXFLAGS} $< ${SDL2FLAGS} ${VLCFLAGS} ${LDFLAGS} -g
 
 main: $(SRC_DIR)/main.cpp | $(BUILD_DIR)
 	$(COMPILE) -o $(BUILD_DIR)/$@
@@ -89,10 +93,11 @@ main_universal: $(SRC_DIR)/main.cpp | $(BUILD_DIR)
 windows: main
 	$(CP) $(LIB_DIR)/win32/*.dll $(BUILD_DIR)
 
-darwin: main_universal #Bundle .app
+darwin: main_universal | $(BUILD_DIR)/plugins #Bundle .app
 	mkdir -p $(BUILD_DIR)/lib
 	cp -r $(LIB_DIR)/darwin/*.dylib $(BUILD_DIR)/lib
-	mkdir -p $(BUILD_DIR)/main.app/Contents/MacOS/lib
+	mkdir -p $(BUILD_DIR)/main.app/Contents/MacOS/{lib,plugins}
+	cp -r $(BUILD_DIR)/plugins $(BUILD_DIR)/main.app/Contents/MacOS/plugins
 	mkdir -p $(BUILD_DIR)/main.app/Contents/Resources
 	cp $(BUILD_DIR)/main $(BUILD_DIR)/main.app/Contents/MacOS
 	cp -r res $(BUILD_DIR)/main.app/Contents/Resources
