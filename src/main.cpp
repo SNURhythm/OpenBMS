@@ -1,15 +1,25 @@
 #include <SDL2/SDL.h>
 #include <cstdlib>
 #include <iostream>
+#include <string>
+#include <thread>
 #include "vlcpp/vlc.hpp"
 int main(int argv, char** args)
 {
-
+#ifdef OSX
+    const char *runpath = args[0];
+    std::string plugin_path = runpath;
+    plugin_path = plugin_path.substr(0, plugin_path.find_last_of("/"));
+    plugin_path += "/plugins";
+    setenv("VLC_PLUGIN_PATH", plugin_path.c_str(), 1);
+    std::cout << "VLC_PLUGIN_PATH: " << getenv("VLC_PLUGIN_PATH") << std::endl;
+#endif
     using std::cerr;
     using std::endl;
     // vlc instance
-    // VLC::Instance instance(0, nullptr);
+    auto instance = VLC::Instance(0, nullptr);
 
+    std::cout<<"VLC init"<<std::endl;
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         cerr << "SDL_Init Error: " << SDL_GetError() << endl;
