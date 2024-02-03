@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS?=-std=c++17 -Wall -pedantic -Werror -Wshadow -Wstrict-aliasing -Wstrict-overflow -Iinclude 
+CXXFLAGS?=-std=c++11 -Wall -pedantic -Werror -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -Iinclude 
 BUILD_DIR=build
 LIB_DIR=lib
 SRC_DIR=src
@@ -11,6 +11,7 @@ ifeq ($(OS),Windows_NT)
 	MKDIRP = mkdir
 	IGNORE_ERRORS = 2>NUL || (exit 0)
 	VLC_PLUGINS_TAR=libvlcplugins\\win32.tar.gz
+	SLASH=\\
 	# Attempt to detect a Unix-like shell environment (e.g., Git Bash, Cygwin) by checking for /bin/sh
     ifneq ($(shell if [ -x /bin/sh ]; then echo true; fi),)
         CP = cp
@@ -18,10 +19,11 @@ ifeq ($(OS),Windows_NT)
         RRM = rm -rf
         MKDIRP = mkdir -p
 		IGNORE_ERRORS = 2>/dev/null || true
+		SLASH=/
     endif
 
     CXXFLAGS += -D WIN32
-		SDL2FLAGS=-lmingw32 -lSDL2main -lSDL2 -mwindows
+		SDL2FLAGS=-lmingw32 -lSDL2main -lSDL2# -mwindows
 		VLCFLAGS=-L./$(LIB_DIR)/win32 -lvlc -lvlccore
     ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
         CXXFLAGS += -D AMD64
@@ -42,6 +44,7 @@ else
 	IGNORE_ERRORS = 2>/dev/null || true
   	SDL2FLAGS=-L$(LIB_DIR)/darwin -lSDL2main -lSDL2# load vlc from lib/darwin
 		VLCFLAGS=-L$(LIB_DIR)/darwin -lvlc -lvlccore 
+	SLASH=/
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
         CXXFLAGS += -D LINUX
@@ -70,10 +73,11 @@ all: msg main
 
 $(BUILD_DIR):
 	@$(MKDIRP) $(BUILD_DIR)
-$(BUILD_DIR)/plugins: #unzip darwin.tar.gz to build
-	@mkdir -p $(BUILD_DIR)/plugins
-	@tar -xzf $(VLC_PLUGINS_TAR) -C $(BUILD_DIR)
+
+plugins:
+	tar -xzf $(VLC_PLUGINS_TAR) -C $(BUILD_DIR)
 	@echo '--- Unzipped $(VLC_PLUGINS_TAR) to $(BUILD_DIR) ---'
+
 msg:
 	@echo '--- C++11 ---'
 
@@ -90,10 +94,10 @@ main_universal: $(SRC_DIR)/main.cpp | $(BUILD_DIR)
 	rm $(BUILD_DIR)/$@.x86_64 $(BUILD_DIR)/$@.arm64
 	$(CP_RES)
 
-windows: main
-	$(CP) $(LIB_DIR)/win32/*.dll $(BUILD_DIR)
+windows: main | plugins
+	$(CP) $(LIB_DIR)$(SLASH)win32$(SLASH)*.dll $(BUILD_DIR)
 
-darwin: main_universal | $(BUILD_DIR)/plugins #Bundle .app
+darwin: main_universal | plugins #Bundle .app
 	mkdir -p $(BUILD_DIR)/lib
 	cp -r $(LIB_DIR)/darwin/*.dylib $(BUILD_DIR)/lib
 	mkdir -p $(BUILD_DIR)/main.app/Contents/MacOS/{lib,plugins}
