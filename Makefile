@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS?=-std=c++17 -Wall -pedantic -Werror -Wshadow -Wstrict-aliasing -Wstrict-overflow
+CXXFLAGS?=-std=c++17 -Wall -pedantic -Werror -Wshadow -Wstrict-aliasing -Wstrict-overflow -Iinclude 
 BUILD_DIR=build
 LIB_DIR=lib
 SRC_DIR=src
@@ -19,16 +19,17 @@ ifeq ($(OS),Windows_NT)
 		IGNORE_ERRORS = 2>/dev/null || true
     endif
 
-    CCFLAGS += -D WIN32
-		SDL2FLAGS=-lmingw32 -lSDL2main -lSDL2 -Iinclude -mwindows
+    CXXFLAGS += -D WIN32
+		SDL2FLAGS=-lmingw32 -lSDL2main -lSDL2 -mwindows
+		VLCFLAGS=-L./$(LIB_DIR)/win32 -lvlc -lvlccore
     ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
-        CCFLAGS += -D AMD64
+        CXXFLAGS += -D AMD64
     else
         ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
-            CCFLAGS += -D AMD64
+            CXXFLAGS += -D AMD64
         endif
         ifeq ($(PROCESSOR_ARCHITECTURE),x86)
-            CCFLAGS += -D IA32
+            CXXFLAGS += -D IA32
         endif
     endif
 else
@@ -38,23 +39,25 @@ else
 	RRM = rm -rf
 	MKDIRP = mkdir -p
 	IGNORE_ERRORS = 2>/dev/null || true
-  	SDL2FLAGS=$(shell pkg-config sdl2 --cflags --libs)
+  	SDL2FLAGS=-L$(LIB_DIR)/darwin -lSDL2main -lSDL2# load vlc from lib/darwin
+		VLCFLAGS=-L$(LIB_DIR)/darwin -lvlc -lvlccore 
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
-        CCFLAGS += -D LINUX
+        CXXFLAGS += -D LINUX
     endif
     ifeq ($(UNAME_S),Darwin)
-        CCFLAGS += -D OSX
+				LDFLAGS += -rpath @executable_path/lib -mmacosx-version-min=10.9
+				CXXFLAGS += -D OSX
     endif
     UNAME_P := $(shell uname -p)
     ifeq ($(UNAME_P),x86_64)
-        CCFLAGS += -D AMD64
+        CXXFLAGS += -D AMD64
     endif
     ifneq ($(filter %86,$(UNAME_P)),)
-        CCFLAGS += -D IA32
+        CXXFLAGS += -D IA32
     endif
     ifneq ($(filter arm%,$(UNAME_P)),)
-        CCFLAGS += -D ARM
+        CXXFLAGS += -D ARM
     endif
 endif
 
@@ -70,15 +73,32 @@ $(BUILD_DIR):
 msg:
 	@echo '--- C++11 ---'
 
+COMPILE = ${CXX} ${CXXFLAGS} $< ${SDL2FLAGS} ${VLCFLAGS} ${LDFLAGS}
+
 main: $(SRC_DIR)/main.cpp | $(BUILD_DIR)
-	${CXX} ${CXXFLAGS} -O2 -o $(BUILD_DIR)/$@ $< ${SDL2FLAGS}
+	$(COMPILE) -o $(BUILD_DIR)/$@
+	$(CP_RES)
+
+main_universal: $(SRC_DIR)/main.cpp | $(BUILD_DIR)
+	$(COMPILE) -arch x86_64 -o $(BUILD_DIR)/$@.x86_64
+	$(COMPILE) -arch arm64 -o $(BUILD_DIR)/$@.arm64
+	lipo -create $(BUILD_DIR)/$@.x86_64 $(BUILD_DIR)/$@.arm64 -output $(BUILD_DIR)/main
+	rm $(BUILD_DIR)/$@.x86_64 $(BUILD_DIR)/$@.arm64
 	$(CP_RES)
 
 windows: main
 	$(CP) $(LIB_DIR)/win32/*.dll $(BUILD_DIR)
 
-darwin: main
-	$(CP) $(LIB_DIR)/darwin/*.dylib $(BUILD_DIR)
+darwin: main_universal #Bundle .app
+	mkdir -p $(BUILD_DIR)/lib
+	cp -r $(LIB_DIR)/darwin/*.dylib $(BUILD_DIR)/lib
+	mkdir -p $(BUILD_DIR)/main.app/Contents/MacOS/lib
+	mkdir -p $(BUILD_DIR)/main.app/Contents/Resources
+	cp $(BUILD_DIR)/main $(BUILD_DIR)/main.app/Contents/MacOS
+	cp -r res $(BUILD_DIR)/main.app/Contents/Resources
+	cp Info.plist $(BUILD_DIR)/main.app/Contents
+	cp -r $(LIB_DIR)/darwin/*.dylib $(BUILD_DIR)/main.app/Contents/MacOS/lib	
+
 
 linux: main
 	$(CP) $(LIB_DIR)/linux/*.so $(BUILD_DIR)

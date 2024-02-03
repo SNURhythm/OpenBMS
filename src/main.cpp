@@ -1,11 +1,14 @@
 #include <SDL2/SDL.h>
 #include <cstdlib>
 #include <iostream>
-
+#include "vlcpp/vlc.hpp"
 int main(int argv, char** args)
 {
+
     using std::cerr;
     using std::endl;
+    // vlc instance
+    // VLC::Instance instance(0, nullptr);
 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
@@ -50,6 +53,7 @@ int main(int argv, char** args)
     }
 
     SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, bmp);
+
     if (tex == nullptr)
     {
         cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << endl;
