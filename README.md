@@ -7,3 +7,5 @@ OpenBMS is a crossplatform BMS player which depends on open source libraries onl
 - SDL2 + bgfx (or Godot? Cocos2d-x? not determined yet)
 - LibVLC (for BGA rendering)
 - SQLite3
+- PortAudio (for desktop) + miniaudio (for mobile)
+
