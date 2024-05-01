@@ -501,7 +501,7 @@ namespace bms_parser
 			{
 				const int measure = static_cast<int>(std::wcstol(line.substr(1, 3).c_str(), nullptr, 10));
 				lastMeasure = std::max(lastMeasure, measure);
-				const std::wstring_view ch = line.substr(4, 2);
+				const std::wstring ch = line.substr(4, 2);
 				const int channel = ParseInt(ch);
 				const std::wstring value = line.substr(7);
 				if (measures.find(measure) == measures.end())
@@ -734,8 +734,8 @@ namespace bms_parser
 					{
 						break;
 					}
-					std::wstring_view val_view = data.substr(j * 2, 2);
-					if (val_view == L"00")
+					std::wstring val = data.substr(j * 2, 2);
+					if (val == L"00")
 					{
 						if (timelines.size() == 0 && j == 0)
 						{
@@ -770,21 +770,21 @@ namespace bms_parser
 						{
 							break;
 						}
-						if (val_view == L"**")
+						if (val == L"**")
 						{
 							timeline->AddBackgroundNote(new Note{MetronomeWav});
 							break;
 						}
-						if (ParseInt(val_view) != 0)
+						if (ParseInt(val) != 0)
 						{
-							auto bgNote = new Note{ToWaveId(new_chart, val_view, metaOnly)};
+							auto bgNote = new Note{ToWaveId(new_chart, val, metaOnly)};
 							timeline->AddBackgroundNote(bgNote);
 						}
 
 						break;
 					case BpmChange:
 					{
-						int bpm = ParseHex(val_view);
+						int bpm = ParseHex(val);
 						timeline->Bpm = static_cast<double>(bpm);
 						// std::cout << "BPM_CHANGE: " << timeline->Bpm << ", on measure " << i << std::endl;
 						// Debug.Log($"BPM_CHANGE: {timeline.Bpm}, on measure {i}");
@@ -792,17 +792,17 @@ namespace bms_parser
 						break;
 					}
 					case BgaPlay:
-						timeline->BgaBase = ParseInt(val_view);
+						timeline->BgaBase = ParseInt(val);
 						break;
 					case PoorPlay:
-						timeline->BgaPoor = ParseInt(val_view);
+						timeline->BgaPoor = ParseInt(val);
 						break;
 					case LayerPlay:
-						timeline->BgaLayer = ParseInt(val_view);
+						timeline->BgaLayer = ParseInt(val);
 						break;
 					case BpmChangeExtend:
 					{
-						const auto id = ParseInt(val_view);
+						const auto id = ParseInt(val);
 						// std::cout << "BPM_CHANGE_EXTEND: " << id << ", on measure " << i << std::endl;
 						if (!CheckResourceIdRange(id))
 						{
@@ -824,7 +824,7 @@ namespace bms_parser
 					}
 					case Scroll:
 					{
-						const auto id = ParseInt(val_view);
+						const auto id = ParseInt(val);
 						if (!CheckResourceIdRange(id))
 						{
 							// UE_LOG(LogTemp, Warning, TEXT("Invalid Scroll id: %s"), *val);
@@ -843,7 +843,7 @@ namespace bms_parser
 					}
 					case Stop:
 					{
-						const auto id = ParseInt(val_view);
+						const auto id = ParseInt(val);
 						if (!CheckResourceIdRange(id))
 						{
 							// UE_LOG(LogTemp, Warning, TEXT("Invalid StopLength id: %s"), *val);
@@ -862,7 +862,7 @@ namespace bms_parser
 					}
 					case P1KeyBase:
 					{
-						const auto ch = ParseInt(val_view);
+						const auto ch = ParseInt(val);
 						if (ch == Lnobj && lastNote[laneNumber] != nullptr)
 						{
 							if (isScratch)
@@ -893,7 +893,7 @@ namespace bms_parser
 						}
 						else
 						{
-							auto note = new Note{ToWaveId(new_chart, val_view, metaOnly)};
+							auto note = new Note{ToWaveId(new_chart, val, metaOnly)};
 							lastNote[laneNumber] = note;
 							++totalNotes;
 							if (isScratch)
@@ -916,7 +916,7 @@ namespace bms_parser
 						{
 							break;
 						}
-						auto invNote = new Note{ToWaveId(new_chart, val_view, metaOnly)};
+						auto invNote = new Note{ToWaveId(new_chart, val, metaOnly)};
 						timeline->SetInvisibleNote(
 							laneNumber, invNote);
 						break;
@@ -937,7 +937,7 @@ namespace bms_parser
 									++totalLongNotes;
 								}
 
-								auto ln = new LongNote{ToWaveId(new_chart, val_view, metaOnly)};
+								auto ln = new LongNote{ToWaveId(new_chart, val, metaOnly)};
 								lnStart[laneNumber] = ln;
 
 								if (metaOnly)
@@ -971,7 +971,7 @@ namespace bms_parser
 						{
 							break;
 						}
-						const auto damage = ParseInt(val_view, true) / 2.0f;
+						const auto damage = ParseInt(val, true) / 2.0f;
 						timeline->SetNote(
 							laneNumber, new LandmineNote{damage});
 						break;
@@ -983,6 +983,7 @@ namespace bms_parser
 			new_chart->Meta.TotalLongNotes = totalLongNotes;
 			new_chart->Meta.TotalScratchNotes = totalScratchNotes;
 			new_chart->Meta.TotalBackSpinNotes = totalBackSpinNotes;
+			new_chart->Meta.TotalLandmineNotes = totalLandmineNotes;
 
 			auto lastPosition = 0.0;
 
@@ -1563,7 +1564,7 @@ namespace bms_parser
 		buf[2 * SHA256::DIGEST_SIZE] = 0;
 		for (unsigned int i = 0; i < SHA256::DIGEST_SIZE; i++)
 		{
-			sprintf(buf + i * 2, "%02x", digest[i]);
+			snprintf(buf + i * 2, 3, "%02x", digest[i]);
 		}
 		return buf;
 	}
@@ -2092,7 +2093,7 @@ namespace bms_parser
 
     char buf[33];
     for (int i = 0; i < 16; i++)
-      sprintf(buf + i * 2, "%02x", digest[i]);
+      snprintf(buf + i * 2,3, "%02x", digest[i]);
     buf[32] = 0;
 
     return buf;

@@ -6,9 +6,9 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
 # Compiler options
-add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedantic -Werror -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow)
+add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedantic -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow)
 
 # Include directories
 include_directories(include)

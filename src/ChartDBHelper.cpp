@@ -341,7 +341,7 @@ bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt)
     int idx = 0;
     bms_parser::ChartMeta chartMeta;
     std::filesystem::path path = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-    chartMeta.BmsPath = ToAbsolutePath(path);
+    chartMeta.BmsPath = ToAbsolutePath(path).wstring();
     chartMeta.MD5 = std::string(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
     chartMeta.SHA256 = std::string(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
     chartMeta.Title = std::wstring(reinterpret_cast<const wchar_t *>(sqlite3_column_text(stmt, idx++)));
@@ -350,11 +350,11 @@ bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt)
     chartMeta.Artist = std::wstring(reinterpret_cast<const wchar_t *>(sqlite3_column_text(stmt, idx++)));
     chartMeta.SubArtist = std::wstring(reinterpret_cast<const wchar_t *>(sqlite3_column_text(stmt, idx++)));
     std::filesystem::path folder = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-    chartMeta.Folder = ToAbsolutePath(folder);
-    chartMeta.StageFile = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-    chartMeta.Banner = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-    chartMeta.BackBmp = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-    chartMeta.Preview = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
+    chartMeta.Folder = ToAbsolutePath(folder).wstring();
+    chartMeta.StageFile = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++))).wstring();
+    chartMeta.Banner = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++))).wstring();
+    chartMeta.BackBmp = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++))).wstring();
+    chartMeta.Preview = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++))).wstring();
     chartMeta.PlayLevel = sqlite3_column_double(stmt, idx++);
     chartMeta.Difficulty = sqlite3_column_int(stmt, idx++);
     chartMeta.Total = sqlite3_column_double(stmt, idx++);
@@ -434,7 +434,7 @@ std::vector<std::wstring> ChartDBHelper::SelectAllEntries(sqlite3 *db)
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
         std::filesystem::path entry = std::filesystem::path(reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0)));
-        entries.push_back(entry);
+        entries.push_back(entry.wstring());
     }
     sqlite3_finalize(stmt);
     return entries;

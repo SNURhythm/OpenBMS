@@ -225,6 +225,7 @@ namespace bms_parser
 		int TotalLongNotes = 0;
 		int TotalScratchNotes = 0;
 		int TotalBackSpinNotes = 0;
+		int TotalLandmineNotes = 0;
 		int LnMode = 0; // 0: user decides, 1: LN, 2: CN, 3: HCN
 
 		int GetKeyLaneCount() const { return KeyMode; }
