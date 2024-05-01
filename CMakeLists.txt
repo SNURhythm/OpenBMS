@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(MyProject VERSION 1.0 LANGUAGES CXX)
+project(MyProject VERSION 1.0 LANGUAGES C CXX)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 # Set C++ standard
@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Compiler options
-add_compile_options(-Wall -pedantic -Werror -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow)
+add_compile_options(-Wall -Wno-unused-but-set-variable -pedantic -Werror -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow)
 
 # Include directories
 include_directories(include)
@@ -61,9 +61,11 @@ elseif(APPLE)
     set(VLC_PLUGINS_TAR libvlcplugins/darwin.tar.gz)
 endif()
 
+add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
+add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 # Main executable
-add_executable(main ${SRC_DIR}/main.cpp)
-target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${VLC_LIB} ${VLCCORE_LIB})
+add_executable(main ${SRC_DIR}/main.cpp ${SRC_DIR}/ChartDBHelper.cpp ${SRC_DIR}/bms_parser.cpp ${SRC_DIR}/Utils.cpp)
+target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3)
 
 # Custom target for copying resources
 add_custom_command(
