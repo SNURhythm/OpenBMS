@@ -1,1 +1,4 @@
 *.lib eol=lf
+*.hpp eol=lf
+*.h eol=lf
+*.cpp eol=lf

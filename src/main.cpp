@@ -1,13 +1,32 @@
-// #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <thread>
 #include "vlcpp/vlc.hpp"
+#include "bms_parser.hpp"
+#ifdef _WIN32
+   //define something for Windows (32-bit and 64-bit, this part is common)
+#elif __APPLE__
+    #include "TargetConditionals.h"
+    #if TARGET_OS_IPHONE && TARGET_IPHONE_SIMULATOR
+        // define something for simulator   
+    #elif TARGET_OS_IPHONE
+        // define something for iphone  
+    #else
+        #define TARGET_OS_OSX 1
+        // define something for OSX
+    #endif
+#elif __linux
+    // linux
+#elif __unix // all unices not caught above
+    // Unix
+#elif __posix
+    // POSIX
+#endif
 int main(int argv, char** args)
 {
-#ifdef OSX
+#ifdef TARGET_OS_OSX
     const char *runpath = args[0];
     std::string plugin_path = runpath;
     plugin_path = plugin_path.substr(0, plugin_path.find_last_of("/"));
