@@ -5,6 +5,7 @@
 #include "Utils.h"
 #include <iostream>
 #include <codecvt>
+#include <filesystem>
 
 
 sqlite3 *ChartDBHelper::Connect()
