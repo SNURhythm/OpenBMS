@@ -9,7 +9,7 @@
 #include "vlcpp/vlc.hpp"
 #include "bms_parser.hpp"
 #include "tinyfiledialogs.h"
-int main();
+int main(int argv, char **args);
 void LoadCharts(ChartDBHelper& dbHelper, sqlite3* db, std::atomic_bool& isCancelled);
 enum DiffType
 {
