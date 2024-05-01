@@ -1,3 +1,4 @@
+// #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <cstdlib>
 #include <iostream>
@@ -17,9 +18,10 @@ int main(int argv, char** args)
     using std::cerr;
     using std::endl;
     // vlc instance
+    std::cout<<"VLC init..."<<std::endl;
     auto instance = VLC::Instance(0, nullptr);
 
-    std::cout<<"VLC init"<<std::endl;
+    std::cout<<"VLC init done"<<std::endl;
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         cerr << "SDL_Init Error: " << SDL_GetError() << endl;
