@@ -1,5 +1,5 @@
-CXX?=g++
-CXXFLAGS?=-std=c++11 -Wall -pedantic -Werror -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -Iinclude 
+CXX=g++
+CXXFLAGS?=-std=c++17 -Wall -pedantic -Werror -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -Iinclude 
 BUILD_DIR=build
 LIB_DIR=lib
 SRC_DIR=src
