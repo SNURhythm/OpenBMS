@@ -21,10 +21,13 @@
 #else
 #define TARGET_OS_OSX 1
 // define something for OSX
-
+#include <dirent.h>
+#include <sys/stat.h>
 #endif
 #elif __linux
 // linux
+#include <dirent.h>
+#include <sys/stat.h>
 #elif __unix // all unices not caught above
 // Unix
 #elif __posix
@@ -230,7 +233,7 @@ void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db, std::atomic_bool &isCancel
             {
                 bms_parser::Parser parser;
                 bms_parser::Chart *chart;
-                std::atomic_bool cancel = false;
+                std::atomic_bool cancel(false);
                 bms_parser::ChartMeta chartMeta;
                 try{
                     parser.Parse(diffs[i].path.wstring(), &chart, false, true, cancel);
