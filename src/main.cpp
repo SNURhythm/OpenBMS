@@ -53,6 +53,13 @@ public:
 };
 int main(int argv, char **args)
 {
+    // print libsdl version
+    SDL_version compiled;
+    SDL_version linked;
+    SDL_VERSION(&compiled);
+    SDL_GetVersion(&linked);
+    std::cout << "SDL compile version: " << static_cast<int>(compiled.major) << "." << static_cast<int>(compiled.minor) << "." << static_cast<int>(compiled.patch) << std::endl;
+    std::cout << "SDL link version: " << static_cast<int>(linked.major) << "." << static_cast<int>(linked.minor) << "." << static_cast<int>(linked.patch) << std::endl;
     std::atomic<bool> quitFlag(false);
     
 #ifdef TARGET_OS_OSX
@@ -86,7 +93,7 @@ int main(int argv, char **args)
     MainFunctionRAII mainFunctionRAII(quitFlag);
     // vlc instance
     std::cout << "VLC init..." << std::endl;
-    auto instance = VLC::Instance(0, nullptr);
+    // auto instance = VLC::Instance(0, nullptr);
 
     std::cout << "VLC init done" << std::endl;
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)

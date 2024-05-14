@@ -42,8 +42,7 @@ else
 	RRM = rm -rf
 	MKDIRP = mkdir -p
 	IGNORE_ERRORS = 2>/dev/null || true
-  	SDL2FLAGS=-L$(LIB_DIR)/darwin -lSDL2main -lSDL2# load vlc from lib/darwin
-		VLCFLAGS=-L$(LIB_DIR)/darwin -lvlc -lvlccore 
+
 	SLASH=/
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
@@ -53,6 +52,8 @@ else
 				VLC_PLUGINS_TAR=libvlcplugins/darwin.tar.gz
 				LDFLAGS += -rpath @executable_path/lib -mmacosx-version-min=10.9
 				CXXFLAGS += -D OSX 
+				SDL2FLAGS=-L$(LIB_DIR)/darwin -lSDL2main -lSDL2# load vlc from lib/darwin
+				VLCFLAGS=-L$(LIB_DIR)/darwin -lvlc -lvlccore 
     endif
     UNAME_P := $(shell uname -p)
     ifeq ($(UNAME_P),x86_64)

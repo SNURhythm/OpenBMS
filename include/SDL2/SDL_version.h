@@ -28,9 +28,9 @@
 #ifndef SDL_version_h_
 #define SDL_version_h_
 
-#include "SDL_stdinc.h"
+#include <SDL2/SDL_stdinc.h>
 
-#include "begin_code.h"
+#include <SDL2/begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -58,8 +58,8 @@ typedef struct SDL_version
 /* Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL
 */
 #define SDL_MAJOR_VERSION   2
-#define SDL_MINOR_VERSION   31
-#define SDL_PATCHLEVEL      0
+#define SDL_MINOR_VERSION   30
+#define SDL_PATCHLEVEL      3
 
 /**
  * Macro to determine SDL version program was compiled against.
@@ -197,7 +197,7 @@ extern SDL_DEPRECATED DECLSPEC int SDLCALL SDL_GetRevisionNumber(void);
 #ifdef __cplusplus
 }
 #endif
-#include "close_code.h"
+#include <SDL2/close_code.h>
 
 #endif /* SDL_version_h_ */
 
