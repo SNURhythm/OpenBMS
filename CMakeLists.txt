@@ -25,7 +25,7 @@ set(LIB_DIR lib)
 
 # Platform-specific settings
 if(WIN32)
-    set(CP_RES "xcopy /s /i res ${BUILD_DIR}\\res /Y")
+    set(CP_ASSETS "xcopy /s /i assets ${BUILD_DIR}\\assets /Y")
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
         add_definitions(-DAMD64)
     else()
@@ -35,6 +35,7 @@ if(WIN32)
 
     set(SDL2_LIB SDL2)
     set(SDL2MAIN_LIB SDL2main)
+    set(SDL2_TFF_LIB SDL2_ttf)
     set(MINGW32_LIB mingw32)
     
     find_library(VLC_LIB vlc PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
@@ -43,17 +44,19 @@ if(WIN32)
     file(GLOB DLLS ${LIB_DIR}/win32/*.dll)
     set(VLC_PLUGINS_TAR libvlcplugins/win32.tar.gz)
 elseif(UNIX AND NOT APPLE)
-    set(CP_RES "cp -r res ${BUILD_DIR}")
+    set(CP_ASSETS "cp -r assets ${BUILD_DIR}")
     set(SDL2_LIB SDL2)
     set(SDL2MAIN_LIB SDL2main)
+    set(SDL2_TFF_LIB SDL2_ttf)
     set(VLC_LIB vlc)
     set(VLCCORE_LIB vlccore)
     file(GLOB DLLS ${LIB_DIR}/linux/*.so)
     set(VLC_PLUGINS_TAR "")
 elseif(APPLE)
-    set(CP_RES "cp -r res ${BUILD_DIR}")
+    set(CP_ASSETS "cp -r assets ${BUILD_DIR}")
     find_library(SDL2_LIB SDL2 PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(SDL2MAIN_LIB SDL2main PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
+    find_library(SDL2_TFF_LIB SDL2_ttf PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(VLC_LIB vlc PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(VLCCORE_LIB vlccore PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     set(CMAKE_MACOSX_RPATH 1)
@@ -68,18 +71,18 @@ add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.cpp)
 # Main executable
 add_executable(main ${SRC_FILES})
-target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3)
+target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3)
 
-# Custom target for copying resources
+# Custom target for copying assets
 add_custom_command(
     TARGET main POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/res ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/res
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
 )
 
 # Copy *.dll / *.so / *.dylib files
 if(NOT "${DLLS}" STREQUAL "")
     add_custom_command(
-        TARGET main POST_BUILD
+        TARGET main PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     )
 endif()
@@ -95,6 +98,6 @@ endif()
 
 # Installation rules
 install(TARGETS main DESTINATION bin)
-install(DIRECTORY res DESTINATION ${BUILD_DIR})
+install(DIRECTORY assets DESTINATION ${BUILD_DIR})
 
 # Additional targets for different build types like Debug, Release, etc.
