@@ -1,0 +1,16 @@
+# ninja log v5
+1	21	0	C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/cmake.verify_globs	f9c680c05ca4b02e
+31	1514	7373910007796034	CMakeFiles/main.dir/src/scene/MainMenuScene.cpp.obj	747f8122ed52dd15
+49	5410	7373910046715532	CMakeFiles/main.dir/src/main.cpp.obj	cea4f236da5248c7
+40	1614	7373910008793435	CMakeFiles/main.dir/src/scene/SceneManager.cpp.obj	8b68e7c7b22025ad
+0	2593	7373910018582669	CMakeFiles/TinyFileDialogs.dir/src/tinyfiledialogs.c.obj	2e7e77d288ac1f4b
+2593	2698	7373910019635807	libTinyFileDialogs.a	b5115f76cb2a9f45
+24	4466	7373910037307921	CMakeFiles/main.dir/src/Utils.cpp.obj	d852d2479b8d27c4
+10	4419	7373910036823982	CMakeFiles/main.dir/src/ChartDBHelper.cpp.obj	e4835cab69ec4ee6
+17	5765	7373910050171612	CMakeFiles/main.dir/src/bms_parser.cpp.obj	d5c6078f4fc3337f
+5	5873	7373910051293672	CMakeFiles/SQLite3.dir/src/sqlite3.c.obj	524745963a8c3632
+5873	5952	7373910052179042	libSQLite3.a	711abe98421ab5c9
+23	210	7373918476461596	build.ninja	3e91194a262c9939
+1	31	0	C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/cmake.verify_globs	f9c680c05ca4b02e
+0	20	0	C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/cmake.verify_globs	f9c680c05ca4b02e
+2	647	7373918691076710	CMakeFiles/main.dir/src/view/RecyclerView.cpp.obj	7e2067ff9db459e

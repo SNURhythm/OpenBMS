@@ -114,7 +114,7 @@ int main(int argv, char **args) {
   MainFunctionRAII mainFunctionRAII(quitFlag);
   // vlc instance
   std::cout << "VLC init..." << std::endl;
-  auto instance = VLC::Instance(0, nullptr);
+  // auto instance = VLC::Instance(0, nullptr);
 
   std::cout << "VLC init done" << std::endl;
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -123,10 +123,9 @@ int main(int argv, char **args) {
   }
 
   SceneManager sceneManager;
-  sceneManager.changeScene(new MainMenuScene());
 
-  SDL_Window *win =
-      SDL_CreateWindow("Hello World!", 100, 100, 620, 387, SDL_WINDOW_SHOWN);
+  SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, 620, 387,
+                                     SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
   if (win == nullptr) {
     cerr << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
     return EXIT_FAILURE;
@@ -142,8 +141,9 @@ int main(int argv, char **args) {
     SDL_Quit();
     return EXIT_FAILURE;
   }
+  sceneManager.changeScene(new MainMenuScene(ren));
 
-  SDL_Surface *bmp = SDL_LoadBMP("./res/img/sdl.bmp");
+  SDL_Surface *bmp = SDL_LoadBMP("./assets/img/sdl.bmp");
   if (bmp == nullptr) {
     cerr << "SDL_LoadBMP Error: " << SDL_GetError() << endl;
     if (ren != nullptr) {
@@ -184,6 +184,7 @@ int main(int argv, char **args) {
   auto lastFrameTime = std::chrono::high_resolution_clock::now();
 
   while (!quit) {
+    SDL_RenderCopy(ren, tex, nullptr, nullptr);
     auto currentFrameTime = std::chrono::high_resolution_clock::now();
     float deltaTime =
         std::chrono::duration<float, std::chrono::seconds::period>(
@@ -202,6 +203,9 @@ int main(int argv, char **args) {
     }
     sceneManager.update(deltaTime);
     sceneManager.render(ren);
+
+    SDL_RenderPresent(ren);
+    SDL_RenderClear(ren);
   }
 
   SDL_DestroyTexture(tex);
@@ -232,8 +236,8 @@ void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
       break;
     }
     oldFilesWs.insert(fspath_to_path_t(chartMeta.BmsPath));
-    std::cout << "Old file: " << chartMeta.BmsPath << std::endl;
-    std::cout << "Folder: " << chartMeta.Folder << std::endl;
+    // std::cout << "Old file: " << chartMeta.BmsPath << std::endl;
+    // std::cout << "Folder: " << chartMeta.Folder << std::endl;
   }
   for (auto &entry : entries) {
     if (isCancelled) {

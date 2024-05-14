@@ -1,0 +1,80 @@
+#include "TextView.h"
+
+TextView::TextView(SDL_Renderer *renderer, const std::string &fontPath,
+                   int fontSize)
+    : View(renderer, 0, 0, 0, 0), texture(nullptr) {
+  TTF_Init();
+  font = TTF_OpenFont(fontPath.c_str(), fontSize);
+  if (!font) {
+    SDL_Log("Failed to load font: %s", TTF_GetError());
+  }
+  // fall back to default font
+  if (!font) {
+    font = TTF_OpenFont("assets/fonts/arial.ttf", fontSize);
+  }
+  color = {255, 255, 255, 255}; // default color: white
+  rect = {0, 0, 0, 0};
+}
+
+TextView::~TextView() {
+  if (texture) {
+    SDL_DestroyTexture(texture);
+  }
+  TTF_CloseFont(font);
+  TTF_Quit();
+}
+
+void TextView::setText(const std::string &text) {
+  this->text = text;
+  SDL_Surface *surface = TTF_RenderText_Blended(font, text.c_str(), color);
+  if (texture) {
+    SDL_DestroyTexture(texture);
+  }
+  texture = SDL_CreateTextureFromSurface(renderer, surface);
+  SDL_FreeSurface(surface);
+
+  SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+}
+
+void TextView::setColor(SDL_Color color) {
+  this->color = color;
+  // Update the texture since color has changed
+  createTexture();
+}
+
+void TextView::render() {
+  rect.x = this->getX();
+  rect.y = this->getY();
+  auto width = this->getWidth();
+  auto height = this->getHeight();
+  switch (align) {
+  case TextAlign::LEFT:
+    break;
+  case TextAlign::CENTER:
+    rect.x += (width - rect.w) / 2; // center horizontally
+    break;
+  case TextAlign::RIGHT:
+    rect.x += width - rect.w; // align right
+    break;
+  }
+  switch (valign) {
+  case TextVAlign::TOP:
+    break;
+  case TextVAlign::MIDDLE:
+    rect.y += (height - rect.h) / 2; // center vertically
+    break;
+  case TextVAlign::BOTTOM:
+    rect.y += height - rect.h; // align bottom
+    break;
+  }
+
+  if (texture) {
+    SDL_RenderCopy(renderer, texture, NULL, &rect);
+  }
+}
+
+void TextView::createTexture() { setText(text); }
+
+void TextView::setAlign(TextAlign align) { this->align = align; }
+
+void TextView::setVAlign(TextVAlign valign) { this->valign = valign; }
