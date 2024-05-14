@@ -188,7 +188,7 @@ namespace bms_parser
 #include <string>
 #include <vector>
 #include <unordered_map>
-
+#include <filesystem>
 namespace bms_parser
 {
 	class ChartMeta
@@ -196,8 +196,8 @@ namespace bms_parser
 	public:
 		std::string SHA256;
 		std::string MD5;
-		std::wstring BmsPath;
-		std::wstring Folder;
+		std::filesystem::path BmsPath;
+		std::filesystem::path Folder;
 		std::wstring Artist = L"";
 		std::wstring SubArtist = L"";
 		double Bpm = 0;
@@ -209,10 +209,10 @@ namespace bms_parser
 		long long PlayLength = 0; // Timing of the last playable note, in microseconds
 		long long TotalLength = 0;
 		// Timing of the last timeline(including background note, bga change note, invisible note, ...), in microseconds
-		std::wstring Banner;
-		std::wstring StageFile;
-		std::wstring BackBmp;
-		std::wstring Preview;
+		std::filesystem::path Banner;
+		std::filesystem::path StageFile;
+		std::filesystem::path BackBmp;
+		std::filesystem::path Preview;
 		bool BgaPoorDefault = false;
 		int Difficulty = 0;
 		double PlayLevel = 3;
@@ -343,6 +343,7 @@ namespace bms_parser
 #include <string>
 #include <map>
 #include <atomic>
+#include <filesystem>
 /**
  *
  */
@@ -353,7 +354,7 @@ namespace bms_parser
 	public:
 		Parser();
 		void SetRandomSeed(int RandomSeed);
-		void Parse(std::wstring_view path, Chart **Chart, bool addReadyMeasure, bool metaOnly, std::atomic_bool &bCancelled);
+		void Parse(std::filesystem::path path, Chart **Chart, bool addReadyMeasure, bool metaOnly, std::atomic_bool &bCancelled);
 		~Parser();
 		void Parse(const std::vector<unsigned char>& bytes, Chart **chart, bool addReadyMeasure, bool metaOnly, std::atomic_bool &bCancelled);
 		static int NoWav;

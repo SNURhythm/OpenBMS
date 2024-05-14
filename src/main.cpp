@@ -215,7 +215,7 @@ void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
     if (isCancelled) {
       break;
     }
-    oldFilesWs.insert(wstring_to_path_t(chartMeta.BmsPath));
+    oldFilesWs.insert(fspath_to_path_t(chartMeta.BmsPath));
   }
   for (auto &entry : entries) {
     if (isCancelled) {
@@ -240,7 +240,7 @@ void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
         std::atomic_bool cancel(false);
         bms_parser::ChartMeta chartMeta;
         try {
-          parser.Parse(diffs[i].path.wstring(), &chart, false, true, cancel);
+          parser.Parse(diffs[i].path, &chart, false, true, cancel);
         } catch (std::exception &e) {
           delete chart;
           std::cerr << "Error parsing " << diffs[i].path << ": " << e.what()

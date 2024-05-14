@@ -304,17 +304,16 @@ namespace bms_parser
 		}
 		return true;
 	}
-	void Parser::Parse(std::wstring_view path, Chart **chart, bool addReadyMeasure, bool metaOnly, std::atomic_bool &bCancelled)
+	void Parser::Parse(std::filesystem::path fpath, Chart **chart, bool addReadyMeasure, bool metaOnly, std::atomic_bool &bCancelled)
 	{
 #if BMS_PARSER_VERBOSE == 1
 		auto startTime = std::chrono::high_resolution_clock::now();
 #endif
 		std::vector<unsigned char> bytes;
-		std::filesystem::path fpath = path;
 		std::ifstream file(fpath, std::ios::binary);
 		if (!file.is_open())
 		{
-			std::wcout << "Failed to open file: " << path << std::endl;
+			std::cout << "Failed to open file: " << fpath << std::endl;
 			return;
 		}
 #if BMS_PARSER_VERBOSE == 1
@@ -334,9 +333,9 @@ namespace bms_parser
 		auto new_chart = *chart;
 		if (new_chart != nullptr)
 		{
-			new_chart->Meta.BmsPath = path;
+			new_chart->Meta.BmsPath = fpath;
 
-			new_chart->Meta.Folder = fpath.parent_path().wstring();
+			new_chart->Meta.Folder = fpath.parent_path();
 		}
 #if BMS_PARSER_VERBOSE == 1
 		auto endTime = std::chrono::high_resolution_clock::now();
