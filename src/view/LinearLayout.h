@@ -16,8 +16,8 @@ public:
   }
   void layout() override;
 
-  inline void setOrientation(Orientation orientation) {
-    this->orientation = orientation;
+  inline void setOrientation(Orientation newOrientation) {
+    this->orientation = newOrientation;
     layout();
   }
 

@@ -16,7 +16,7 @@
 #include <thread>
 #include <vector>
 
-void parallel_for(int n, std::function<void(int start, int end)> f);
+void parallel_for(size_t n, std::function<void(int start, int end)> f);
 
 std::string ws2s(const std::wstring &wstr);
 
@@ -27,7 +27,7 @@ class Utils
 public:
     inline static std::string GameName = "OpenBMS";
     inline static std::string TeamName = "SNURhythm";
-    static std::filesystem::path GetDocumentsPath(std::filesystem::path SubPath = "");
+    static std::filesystem::path GetDocumentsPath(const std::filesystem::path& SubPath = "");
 };
 
 class threadRAII
@@ -35,7 +35,7 @@ class threadRAII
     std::thread th;
 
 public:
-    threadRAII(std::thread &&_th);
+    explicit threadRAII(std::thread &&_th);
 
     ~threadRAII();
 };
