@@ -1,15 +1,15 @@
 #include "main.h" // doesn't work
+
 #include <algorithm>
 #include <cerrno>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <thread>
 #include <unordered_set>
 #include <vector>
-
-#include <filesystem>
 #ifdef _WIN32
 #include <windows.h>
 
@@ -209,13 +209,13 @@ void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
   std::vector<Diff> diffs;
   std::cout << "Finding new bms files" << std::endl;
   auto entries = dbHelper.SelectAllEntries(db);
-  std::unordered_set<std::wstring> oldFilesWs;
+  std::unordered_set<path_t> oldFilesWs;
 
   for (auto &chartMeta : chartMetas) {
     if (isCancelled) {
       break;
     }
-    oldFilesWs.insert(chartMeta.BmsPath);
+    oldFilesWs.insert(wstring_to_path_t(chartMeta.BmsPath));
   }
   for (auto &entry : entries) {
     if (isCancelled) {
@@ -268,8 +268,8 @@ void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
 
 #ifdef _WIN32
 void FindFilesWin(const std::filesystem::path &path, std::vector<Diff> &diffs,
-                  const std::unordered_set<std::wstring> &oldFilesWs,
-                  std::vector<std::wstring> &directoriesToVisit,
+                  const std::unordered_set<path_t> &oldFilesWs,
+                  std::vector<path_t> &directoriesToVisit,
                   std::atomic_bool &isCancelled) {
   WIN32_FIND_DATAW findFileData;
   HANDLE hFind =
@@ -282,22 +282,22 @@ void FindFilesWin(const std::filesystem::path &path, std::vector<Diff> &diffs,
         break;
       }
       if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-        std::wstring filename(findFileData.cFileName);
+        path_t filename(findFileData.cFileName);
 
         if (filename.size() > 4) {
-          std::wstring ext = filename.substr(filename.size() - 4);
+          path_t ext = filename.substr(filename.size() - 4);
           std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
           if (ext == L".bms" || ext == L".bme" || ext == L".bml") {
-            std::wstring dirPath;
+            path_t dirPath;
 
-            std::wstring fullPath = path.wstring() + L"\\" + filename;
+            path_t fullPath = path.wstring() + L"\\" + filename;
             if (oldFilesWs.find(fullPath) == oldFilesWs.end()) {
               diffs.push_back({fullPath, Added});
             }
           }
         }
       } else if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-        std::wstring filename(findFileData.cFileName);
+        path_t filename(findFileData.cFileName);
 
         if (filename != L"." && filename != L"..") {
           directoriesToVisit.push_back(path.wstring() + L"\\" + filename);
@@ -325,7 +325,7 @@ void resolveDType(const std::filesystem::path &directoryPath,
 // TODO: Use platform-specific method for faster traversal
 void FindFilesUnix(const std::filesystem::path &directoryPath,
                    std::vector<Diff> &diffs,
-                   const std::unordered_set<std::wstring> &oldFiles,
+                   const std::unordered_set<path_t> &oldFiles,
                    std::vector<std::filesystem::path> &directoriesToVisit,
                    std::atomic_bool &isCancelled) {
   DIR *dir = opendir(directoryPath.c_str());
@@ -344,7 +344,7 @@ void FindFilesUnix(const std::filesystem::path &directoryPath,
           std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
           if (ext == ".bms" || ext == ".bme" || ext == ".bml") {
             std::filesystem::path fullPath = directoryPath / filename;
-            if (oldFiles.find(fullPath.wstring()) == oldFiles.end()) {
+            if (oldFiles.find(fspath_to_path_t(fullPath)) == oldFiles.end()) {
               diffs.push_back({fullPath, Added});
             }
           }
@@ -362,11 +362,11 @@ void FindFilesUnix(const std::filesystem::path &directoryPath,
 #endif
 
 void FindNewBmsFiles(std::vector<Diff> &diffs,
-                     const std::unordered_set<std::wstring> &oldFilesWs,
+                     const std::unordered_set<path_t> &oldFilesWs,
                      const std::filesystem::path &path,
                      std::atomic_bool &isCancelled) {
 #ifdef _WIN32
-  std::vector<std::wstring> directoriesToVisit;
+  std::vector<path_t> directoriesToVisit;
   directoriesToVisit.push_back(path.wstring());
 #else
   std::vector<std::filesystem::path> directoriesToVisit;
