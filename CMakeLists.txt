@@ -65,7 +65,7 @@ endif()
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
 add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 # Main executable
-add_executable(main ${SRC_DIR}/main.cpp ${SRC_DIR}/ChartDBHelper.cpp ${SRC_DIR}/bms_parser.cpp ${SRC_DIR}/Utils.cpp)
+add_executable(main ${SRC_DIR}/main.cpp ${SRC_DIR}/ChartDBHelper.cpp ${SRC_DIR}/bms_parser.cpp ${SRC_DIR}/Utils.cpp ${SRC_DIR}/path.cpp)
 target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3)
 
 # Custom target for copying resources
