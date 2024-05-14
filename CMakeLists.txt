@@ -44,12 +44,12 @@ if(WIN32)
     set(VLC_PLUGINS_TAR libvlcplugins/win32.tar.gz)
 elseif(UNIX AND NOT APPLE)
     set(CP_RES "cp -r res ${BUILD_DIR}")
-    find_library(SDL2_LIB SDL2 PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
-    find_library(SDL2MAIN_LIB SDL2main PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
-    find_library(VLC_LIB vlc PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
-    find_library(VLCCORE_LIB vlccore PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    set(SDL2_LIB SDL2)
+    set(SDL2MAIN_LIB SDL2main)
+    set(VLC_LIB vlc)
+    set(VLCCORE_LIB vlccore)
     file(GLOB DLLS ${LIB_DIR}/linux/*.so)
-    set(VLC_PLUGINS_TAR libvlcplugins/linux.tar.gz)
+    set(VLC_PLUGINS_TAR "")
 elseif(APPLE)
     set(CP_RES "cp -r res ${BUILD_DIR}")
     find_library(SDL2_LIB SDL2 PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
@@ -75,17 +75,21 @@ add_custom_command(
 )
 
 # Copy *.dll / *.so / *.dylib files
-add_custom_command(
-    TARGET main POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-)
+if(NOT "${DLLS}" STREQUAL "")
+    add_custom_command(
+        TARGET main POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    )
+endif()
 
 # Copy VLC plugins
-add_custom_command(
-    TARGET main POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/${VLC_PLUGINS_TAR}
-    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-)
+if(NOT "${VLC_PLUGINS_TAR}" STREQUAL "")
+    add_custom_command(
+        TARGET main POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/${VLC_PLUGINS_TAR}
+        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    )
+endif()
 
 # Installation rules
 install(TARGETS main DESTINATION bin)
