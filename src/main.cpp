@@ -86,10 +86,13 @@ int main(int argv, char **args) {
       std::cerr << "tinyfd_selectFolderDialog error: " << strerror(errno)
                 << std::endl;
       // get input from stdin
-      std::cout << "Failed to open folder select dialog.";
+      std::cout << "Failed to open folder select dialog.\n";
       while (folder.empty()) {
-        std::cout << " Enter bms path:";
+        std::cout << "Enter bms folder path: ";
         std::cin >> folder;
+        if (folder.empty()) {
+          continue;
+        }
         // replace ~ with home directory
         if (folder[0] == '~') {
           folder.replace(0, 1, getenv("HOME"));
