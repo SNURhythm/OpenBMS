@@ -7,6 +7,10 @@ typedef std::wstring path_t;
 typedef std::string path_t;
 #endif
 
-path_t wstring_to_path_t(const std::wstring &wstr);
-
-path_t fspath_to_path_t(const std::filesystem::path &fspath);
+#ifdef _WIN32
+#define wstring_to_path_t(wstr) (wstr)
+#define fspath_to_path_t(fspath) (fspath.wstring())
+#else
+#define wstring_to_path_t(wstr) (std::string().assign(wstr.begin(), wstr.end()))
+#define fspath_to_path_t(fspath) (fspath.string())
+#endif
