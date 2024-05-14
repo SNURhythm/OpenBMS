@@ -1,5 +1,6 @@
-#include "main.h" // doesn't work
-
+#include "main.h"
+#include "scene/MainMenuScene.h"
+#include "scene/SceneManager.h"
 #include <algorithm>
 #include <cerrno>
 #include <cstdlib>
@@ -121,6 +122,9 @@ int main(int argv, char **args) {
     return EXIT_FAILURE;
   }
 
+  SceneManager sceneManager;
+  sceneManager.changeScene(new MainMenuScene());
+
   SDL_Window *win =
       SDL_CreateWindow("Hello World!", 100, 100, 620, 387, SDL_WINDOW_SHOWN);
   if (win == nullptr) {
@@ -177,18 +181,27 @@ int main(int argv, char **args) {
 
   SDL_Event e;
   bool quit = false;
+  auto lastFrameTime = std::chrono::high_resolution_clock::now();
+
   while (!quit) {
+    auto currentFrameTime = std::chrono::high_resolution_clock::now();
+    float deltaTime =
+        std::chrono::duration<float, std::chrono::seconds::period>(
+            currentFrameTime - lastFrameTime)
+            .count();
+    lastFrameTime = currentFrameTime;
+
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) {
         quit = true;
       }
-      if (e.type == SDL_KEYDOWN) {
-        quit = true;
-      }
-      if (e.type == SDL_MOUSEBUTTONDOWN) {
+      auto result = sceneManager.handleEvents(e);
+      if (result.quit) {
         quit = true;
       }
     }
+    sceneManager.update(deltaTime);
+    sceneManager.render(ren);
   }
 
   SDL_DestroyTexture(tex);
