@@ -1,31 +1,72 @@
 #include "MainMenuScene.h"
+
+#include "../view/ChartListItemView.h"
+#include "../view/TextView.h"
 #include <iostream>
 void MainMenuScene::init() {
   // Initialize the scene
+  // get screen width
+  int screenWidth, screenHeight;
+  SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+  recyclerView =
+      new RecyclerView<std::string>(renderer, 0, 0, screenWidth, screenHeight);
+  recyclerView->onCreateView = [this, screenWidth](std::string item) {
+    return new ChartListItemView(renderer, 0, 0, screenWidth, 100, item,
+                                 "Artist", "Level");
+  };
+  recyclerView->itemHeight = 100;
+  recyclerView->onBind = [this](View *view, std::string item, int idx,
+                                bool isSelected) {
+    ChartListItemView *chartListItemView =
+        dynamic_cast<ChartListItemView *>(view);
+    chartListItemView->setTitle(item);
+    if (isSelected) {
+      chartListItemView->onSelected();
+    } else {
+      chartListItemView->onUnselected();
+    }
+  };
+  recyclerView->onSelected = [this](std::string item, int idx) {
+    std::cout << "Selected item: " << item << " at index: " << idx << std::endl;
+    auto selectedView = recyclerView->getViewByIndex(idx);
+    if (selectedView) {
+      selectedView->onSelected();
+    }
+  };
+  recyclerView->onUnselected = [this](std::string item, int idx) {
+    std::cout << "Unselected item: " << item << " at index: " << idx
+              << std::endl;
+    auto unselectedView = recyclerView->getViewByIndex(idx);
+    if (unselectedView) {
+      unselectedView->onUnselected();
+    }
+  };
+  recyclerView->setItems({"Item 1", "Item 2", "Item 3", "Item 4", "Item 5",
+                          "Item 6", "Item 7", "Item 8", "Item 9", "Item 10"});
+
+  addView(recyclerView);
 }
 
 EventHandleResult MainMenuScene::handleEvents(SDL_Event &event) {
   // Handle input
   EventHandleResult result;
+  recyclerView->handleEvents(event);
 
-  if (event.type == SDL_KEYDOWN) {
-    result.quit = true;
-  }
-  if (event.type == SDL_MOUSEBUTTONDOWN) {
-    result.quit = true;
-  }
   return result;
 }
 
 void MainMenuScene::update(float dt) {
   // Update the scene logic
-  std::cout << "Updating Main Menu Scene, dt: " << dt << std::endl;
+  // std::cout << "Updating Main Menu Scene, dt: " << dt << std::endl;
 }
 
-void MainMenuScene::render(SDL_Renderer *renderer) {
+void MainMenuScene::renderScene() {
   // Render the scene
+  int screenWidth, screenHeight;
+  SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
+  recyclerView->setSize(screenWidth, screenHeight);
 }
 
-void MainMenuScene::cleanup() {
+void MainMenuScene::cleanupScene() {
   // Cleanup resources when exiting the scene
 }

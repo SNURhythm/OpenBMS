@@ -1,0 +1,9 @@
+C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/TinyFileDialogs.dir
+C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/SQLite3.dir
+C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/main.dir
+C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/list_install_components.dir
+C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/install.dir
+C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/install/local.dir
+C:/Users/XF/workspace/SNURhythm/OpenBMS/cmake-build-debug/CMakeFiles/install/strip.dir
