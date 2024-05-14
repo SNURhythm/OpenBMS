@@ -1,4 +1,6 @@
 {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "xaver.clang-format",
     "files.associations": {
         ".fantomasignore": "ignore",
         "iostream": "cpp",
