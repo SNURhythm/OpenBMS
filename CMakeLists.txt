@@ -33,9 +33,9 @@ if(WIN32)
     endif()
     link_directories(${LIB_DIR}/win32)
 
-    set(SDL2_LIB SDL2)
+    find_library(SDL2_LIB SDL2 PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
     find_library(SDL2MAIN_LIB SDL2main PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
-    set(SDL2_TFF_LIB SDL2_ttf)
+    find_library(SDL2_TFF_LIB SDL2_ttf PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
     set(MINGW32_LIB mingw32)
     
     find_library(VLC_LIB vlc PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
