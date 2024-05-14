@@ -41,7 +41,7 @@ private:
   std::atomic<bool> &quitFlag;
 
 public:
-  MainFunctionRAII(std::atomic<bool> &flag) : quitFlag(flag) {
+  explicit MainFunctionRAII(std::atomic<bool> &flag) : quitFlag(flag) {
     quitFlag = false;
   }
 
@@ -80,7 +80,7 @@ int main(int argv, char **args) {
   dbHelper.CreateEntriesTable(db);
   auto entries = dbHelper.SelectAllEntries(db);
   // open folder select if no entries
-  if (entries.size() == 0) {
+  if (entries.empty()) {
     char *folder_c = tinyfd_selectFolderDialog("Select Folder", nullptr);
     std::string folder;
     if (folder_c == nullptr) {
@@ -135,9 +135,7 @@ int main(int argv, char **args) {
       win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   if (ren == nullptr) {
     cerr << "SDL_CreateRenderer Error" << SDL_GetError() << endl;
-    if (win != nullptr) {
-      SDL_DestroyWindow(win);
-    }
+    SDL_DestroyWindow(win);
     SDL_Quit();
     return EXIT_FAILURE;
   }
@@ -146,13 +144,9 @@ int main(int argv, char **args) {
   SDL_Surface *bmp = SDL_LoadBMP("./assets/img/sdl.bmp");
   if (bmp == nullptr) {
     cerr << "SDL_LoadBMP Error: " << SDL_GetError() << endl;
-    if (ren != nullptr) {
-      SDL_DestroyRenderer(ren);
-    }
+    SDL_DestroyRenderer(ren);
 
-    if (win != nullptr) {
-      SDL_DestroyWindow(win);
-    }
+    SDL_DestroyWindow(win);
     SDL_Quit();
     return EXIT_FAILURE;
   }
@@ -161,15 +155,9 @@ int main(int argv, char **args) {
 
   if (tex == nullptr) {
     cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << endl;
-    if (bmp != nullptr) {
-      SDL_FreeSurface(bmp);
-    }
-    if (ren != nullptr) {
-      SDL_DestroyRenderer(ren);
-    }
-    if (win != nullptr) {
-      SDL_DestroyWindow(win);
-    }
+    SDL_FreeSurface(bmp);
+    SDL_DestroyRenderer(ren);
+    SDL_DestroyWindow(win);
     SDL_Quit();
     return EXIT_FAILURE;
   }

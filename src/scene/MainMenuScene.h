@@ -3,7 +3,7 @@
 #include "Scene.h"
 class MainMenuScene : public Scene {
 public:
-  inline MainMenuScene(SDL_Renderer *renderer) : Scene(renderer) {}
+  inline explicit MainMenuScene(SDL_Renderer *renderer) : Scene(renderer) {}
   void init() override;
   EventHandleResult handleEvents(SDL_Event &event) override;
   void update(float dt) override;
@@ -11,5 +11,5 @@ public:
   void cleanupScene() override;
 
 private:
-  RecyclerView<std::string> *recyclerView;
+  RecyclerView<std::string> *recyclerView = nullptr;
 };

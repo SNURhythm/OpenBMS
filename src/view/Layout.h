@@ -29,14 +29,14 @@ public:
       view->render();
     }
   }
-  inline void handleEvents(SDL_Event &event) {
+  inline void handleEvents(SDL_Event &event) override {
     for (auto &view : views) {
       view->handleEvents(event);
     }
   }
 
   virtual void layout() = 0;
-  inline void setPadding(Padding padding) { this->padding = padding; }
+  inline void setPadding(Padding newPadding) { this->padding = newPadding; }
 
 protected:
   std::vector<View *> views;

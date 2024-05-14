@@ -14,12 +14,12 @@ ChartListItemView::ChartListItemView(SDL_Renderer *renderer, int x, int y,
   titleView->setVAlign(TextView::TextVAlign::BOTTOM);
   artistView = new TextView(renderer, "assets/fonts/arial.ttf", 16);
   artistView->setVAlign(TextView::TextVAlign::TOP);
-  LinearLayoutConfig titleConfig;
+  LinearLayoutConfig titleConfig{};
 
   titleConfig.width = 0;
   titleConfig.height = 0;
   titleConfig.weight = 2;
-  LinearLayoutConfig artistConfig;
+  LinearLayoutConfig artistConfig{};
 
   artistConfig.width = 0;
   artistConfig.height = 0;

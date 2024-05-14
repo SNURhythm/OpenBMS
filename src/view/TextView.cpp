@@ -24,21 +24,21 @@ TextView::~TextView() {
   TTF_Quit();
 }
 
-void TextView::setText(const std::string &text) {
-  this->text = text;
-  SDL_Surface *surface = TTF_RenderText_Blended(font, text.c_str(), color);
+void TextView::setText(const std::string &newText) {
+  this->text = newText;
+  SDL_Surface *surface = TTF_RenderText_Blended(font, newText.c_str(), color);
   if (texture) {
     SDL_DestroyTexture(texture);
   }
   texture = SDL_CreateTextureFromSurface(renderer, surface);
   SDL_FreeSurface(surface);
 
-  SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+  SDL_QueryTexture(texture, nullptr, nullptr, &rect.w, &rect.h);
 }
 
-void TextView::setColor(SDL_Color color) {
-  this->color = color;
-  // Update the texture since color has changed
+void TextView::setColor(SDL_Color newColor) {
+  this->color = newColor;
+  // Update the texture since newColor has changed
   createTexture();
 }
 
@@ -69,12 +69,12 @@ void TextView::render() {
   }
 
   if (texture) {
-    SDL_RenderCopy(renderer, texture, NULL, &rect);
+    SDL_RenderCopy(renderer, texture, nullptr, &rect);
   }
 }
 
 void TextView::createTexture() { setText(text); }
 
-void TextView::setAlign(TextAlign align) { this->align = align; }
+void TextView::setAlign(TextAlign newAlign) { this->align = newAlign; }
 
-void TextView::setVAlign(TextVAlign valign) { this->valign = valign; }
+void TextView::setVAlign(TextVAlign newVAlign) { this->valign = newVAlign; }

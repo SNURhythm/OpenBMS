@@ -23,7 +23,7 @@ void LinearLayout::layout() {
   for (auto &view : views) {
     auto config = layoutConfigs[view];
     if (config.weight > 0) {
-      int size = remainingSpace * config.weight / totalWeight;
+      int size = (int)((float)remainingSpace * config.weight / totalWeight);
       if (orientation == Orientation::HORIZONTAL) {
         view->setPosition(currentX, currentY);
         view->setSize(size, getHeight());
