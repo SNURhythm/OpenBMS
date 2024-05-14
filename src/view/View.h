@@ -16,7 +16,7 @@ public:
 
   virtual void render() = 0;
 
-  inline void handleEvents(SDL_Event &event) {}
+    virtual inline void handleEvents(SDL_Event &event) {}
 
   inline void setSize(int newWidth, int newHeight) {
     bool isResized = width != newWidth || height != newHeight;
@@ -28,16 +28,16 @@ public:
   }
 
   inline void setVisible(bool visible) { isVisible = visible; }
-  inline bool getVisible() { return isVisible; }
-  inline void setPosition(int x, int y) {
-    this->x = x;
-    this->y = y;
-    onMove(x, y);
+  [[nodiscard]] inline bool getVisible() const { return isVisible; }
+  inline void setPosition(int newX, int newY) {
+    this->x = newX;
+    this->y = newY;
+    onMove(newX, newY);
   }
-  inline int getX() { return x; }
-  inline int getY() { return y; }
-  inline int getWidth() { return width; }
-  inline int getHeight() { return height; }
+  [[nodiscard]] inline int getX() const { return x; }
+  [[nodiscard]] inline int getY() const { return y; }
+  [[nodiscard]] inline int getWidth() const { return width; }
+  [[nodiscard]] inline int getHeight() const { return height; }
 
   virtual void onSelected() {}
   virtual void onUnselected() {}

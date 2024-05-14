@@ -1,7 +1,7 @@
 #include "Utils.h"
 #include <codecvt>
 
-void parallel_for(int n, std::function<void(int start, int end)> f)
+void parallel_for(size_t n, std::function<void(int start, int end)> f)
 {
     unsigned int nThreads = std::thread::hardware_concurrency();
     nThreads = nThreads == 0 ? 1 : nThreads;
@@ -16,7 +16,7 @@ void parallel_for(int n, std::function<void(int start, int end)> f)
         {
             end += remainder;
         }
-        threads.push_back(std::thread(f, start, end));
+        threads.emplace_back(f, start, end);
     }
     for (auto &t : threads)
     {
@@ -37,7 +37,7 @@ std::string ws2s_utf8(const std::wstring &wstr)
     return converterX.to_bytes(wstr);
 }
 
-std::filesystem::path Utils::GetDocumentsPath(std::filesystem::path SubPath)
+std::filesystem::path Utils::GetDocumentsPath(const std::filesystem::path& SubPath)
 {
 #if PLATFORM_IOS
     return GetIOSDocumentsPath() / SubPath;
@@ -51,7 +51,7 @@ std::filesystem::path Utils::GetDocumentsPath(std::filesystem::path SubPath)
         wchar_t *UserPath;
 
         // get the My Documents directory
-        HRESULT Ret = SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &UserPath);
+        HRESULT Ret = SHGetKnownFolderPath(FOLDERID_Documents, 0, nullptr, &UserPath);
         if (SUCCEEDED(Ret))
         {
             // make the base user dir path

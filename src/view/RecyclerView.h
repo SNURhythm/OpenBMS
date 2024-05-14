@@ -104,7 +104,7 @@ public:
     SDL_RenderSetClipRect(renderer, nullptr);
   }
 
-  inline void handleEvents(SDL_Event &event) {
+  inline void handleEvents(SDL_Event &event) override {
     if (event.type == SDL_MOUSEWHEEL) {
       // check mouse position
       int x, y;
