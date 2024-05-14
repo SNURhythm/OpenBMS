@@ -34,7 +34,7 @@ if(WIN32)
     link_directories(${LIB_DIR}/win32)
 
     set(SDL2_LIB SDL2)
-    set(SDL2MAIN_LIB SDL2main)
+    find_library(SDL2MAIN_LIB SDL2main PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
     set(SDL2_TFF_LIB SDL2_ttf)
     set(MINGW32_LIB mingw32)
     
