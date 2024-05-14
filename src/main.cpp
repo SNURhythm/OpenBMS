@@ -216,6 +216,8 @@ void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
       break;
     }
     oldFilesWs.insert(fspath_to_path_t(chartMeta.BmsPath));
+    std::cout << "Old file: " << chartMeta.BmsPath << std::endl;
+    std::cout << "Folder: " << chartMeta.Folder << std::endl;
   }
   for (auto &entry : entries) {
     if (isCancelled) {
