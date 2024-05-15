@@ -15,6 +15,7 @@
 #include <windows.h>
 
 #elif __APPLE__
+
 #include "TargetConditionals.h"
 #if TARGET_OS_IPHONE && TARGET_IPHONE_SIMULATOR
 // define something for simulator
@@ -23,6 +24,7 @@
 #else
 #define TARGET_OS_OSX 1
 // define something for OSX
+#include "MacNatives.h"
 #include <dirent.h>
 #include <sys/stat.h>
 #endif
@@ -65,6 +67,7 @@ int main(int argv, char **args) {
   std::atomic<bool> quitFlag(false);
 
 #ifdef TARGET_OS_OSX
+  setSmoothScrolling(true);
   const char *runpath = args[0];
   std::string plugin_path = runpath;
   plugin_path = plugin_path.substr(0, plugin_path.find_last_of("/"));
