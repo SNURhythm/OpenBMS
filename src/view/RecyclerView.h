@@ -25,7 +25,7 @@ public:
   }
 
   // scroll offset in pixels
-  int scrollOffset;
+  float scrollOffset;
 
   // fixed height of all items in the list
   int itemHeight;
@@ -105,7 +105,8 @@ public:
   }
 
   inline void handleEvents(SDL_Event &event) override {
-    if (event.type == SDL_MOUSEWHEEL) {
+    switch (event.type) {
+    case SDL_MOUSEWHEEL: {
       // check mouse position
       int x, y;
       SDL_GetMouseState(&x, &y);
@@ -115,7 +116,7 @@ public:
       if (y < this->getY() || y > this->getY() + this->getHeight()) {
         return;
       }
-      scrollOffset -= event.wheel.y * 50;
+      scrollOffset -= event.wheel.y * 15.0f;
       if (scrollOffset < 0) {
         scrollOffset = 0;
       }
@@ -124,9 +125,9 @@ public:
         scrollOffset = itemsSize - this->getHeight();
       }
       updateVisibleItems();
+      break;
     }
-    // select item
-    if (event.type == SDL_MOUSEBUTTONDOWN) {
+    case SDL_MOUSEBUTTONDOWN: {
       int x, y;
       SDL_GetMouseState(&x, &y);
       if (x < this->getX() || x > this->getX() + this->getWidth()) {
@@ -145,6 +146,8 @@ public:
           onSelected(items[selectedIndex], selectedIndex);
         }
       }
+      break;
+    }
     }
   }
 
@@ -213,7 +216,7 @@ private:
   }
 
   inline int getStartIndex() {
-    return std::max(0, (scrollOffset / itemHeight) - topMargin);
+    return std::max(0.0f, (scrollOffset / itemHeight) - topMargin);
   }
 
   inline int getEndIndex() {
