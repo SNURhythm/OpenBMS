@@ -63,15 +63,22 @@ elseif(APPLE)
     set(CMAKE_INSTALL_RPATH "@executable_path/lib")
     file(GLOB DLLS ${LIB_DIR}/darwin/*.dylib)
     set(VLC_PLUGINS_TAR libvlcplugins/darwin.tar.gz)
+    find_library(FOUNDATION Foundation)
+    if(NOT FOUNDATION)
+        message(FATAL_ERROR "Foundation framework not found")
+    endif()
+    # Add the Foundation framework to the linking process
+    set(EXTRA_LIBS ${EXTRA_LIBS} ${FOUNDATION})
 endif()
 
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
 add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.cpp)
+file(GLOB_RECURSE MM_SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.mm)
 # Main executable
-add_executable(main ${SRC_FILES})
-target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3)
+add_executable(main ${SRC_FILES} ${MM_SRC_FILES})
+target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS})
 
 # Custom target for copying assets
 add_custom_command(
