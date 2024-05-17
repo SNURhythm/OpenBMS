@@ -42,7 +42,7 @@ void MainMenuScene::init() {
   };
   // create 100 items
   std::vector<std::string> items;
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 100000; i++) {
     items.push_back("Item " + std::to_string(i));
   }
   recyclerView->setItems(items);
