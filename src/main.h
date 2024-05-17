@@ -1,12 +1,7 @@
 #include "ChartDBHelper.h"
-#include "Utils.h"
-#include "bms_parser.hpp"
 #include "path.h"
 #include "sqlite3.h"
-#include "tinyfiledialogs.h"
-#include "vlcpp/vlc.hpp"
 #include <filesystem>
-#include <string>
 #include <unordered_set>
 #include <vector>
 int main(int argv, char **args);

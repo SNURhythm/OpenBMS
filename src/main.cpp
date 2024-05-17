@@ -1,3 +1,5 @@
+#include <SDL2/SDL.h>
+#include "targets.h"
 #include "main.h"
 #include "scene/MainMenuScene.h"
 #include "scene/SceneManager.h"
@@ -11,6 +13,9 @@
 #include <thread>
 #include <unordered_set>
 #include <vector>
+#include "tinyfiledialogs.h"
+#include "Utils.h"
+
 #ifdef _WIN32
 #include <windows.h>
 
@@ -21,8 +26,9 @@
 // define something for simulator
 #elif TARGET_OS_IPHONE
 // define something for iphone
+#include <dirent.h>
+#include <sys/stat.h>
 #else
-#define TARGET_OS_OSX 1
 // define something for OSX
 #include "MacNatives.h"
 #include <dirent.h>
@@ -37,7 +43,6 @@
 #elif __posix
 // POSIX
 #endif
-#include <SDL2/SDL.h>
 class MainFunctionRAII {
 private:
   std::atomic<bool> &quitFlag;
@@ -58,6 +63,12 @@ int main(int argv, char **args) {
   SDL_version linked;
   SDL_VERSION(&compiled);
   SDL_GetVersion(&linked);
+  std::cout << "TARGET_OS_OSX: " << TARGET_OS_OSX << std::endl;
+  std::cout << "TARGET_OS_IPHONE: " << TARGET_OS_IPHONE << std::endl;
+  std::cout << "TARGET_OS_IPHONE_SIMULATOR: " << TARGET_IPHONE_SIMULATOR
+            << std::endl;
+  std::cout << "TARGET_OS_IOS: " << TARGET_OS_IOS << std::endl;
+
   std::cout << "SDL compile version: " << static_cast<int>(compiled.major)
             << "." << static_cast<int>(compiled.minor) << "."
             << static_cast<int>(compiled.patch) << std::endl;
@@ -66,7 +77,7 @@ int main(int argv, char **args) {
             << static_cast<int>(linked.patch) << std::endl;
   std::atomic<bool> quitFlag(false);
 
-#ifdef TARGET_OS_OSX
+#if TARGET_OS_OSX
   setSmoothScrolling(true);
   const char *runpath = args[0];
   std::string plugin_path = runpath;
@@ -84,6 +95,12 @@ int main(int argv, char **args) {
   auto entries = dbHelper.SelectAllEntries(db);
   // open folder select if no entries
   if (entries.empty()) {
+#if TARGET_OS_IOS
+    auto path = Utils::GetDocumentsPath("BMS");
+    std::filesystem::create_directories(path);
+    entries.push_back(path);
+    dbHelper.InsertEntry(db, path);
+#else
     char *folder_c = tinyfd_selectFolderDialog("Select Folder", nullptr);
     std::string folder;
     if (folder_c == nullptr) {
@@ -110,6 +127,7 @@ int main(int argv, char **args) {
     }
     std::filesystem::path path(folder);
     dbHelper.InsertEntry(db, path);
+#endif
   }
   std::thread t1(LoadCharts, std::ref(dbHelper), std::ref(db),
                  std::ref(quitFlag));
@@ -372,6 +390,7 @@ void FindFilesUnix(const std::filesystem::path &directoryPath,
     closedir(dir);
   }
 }
+
 #endif
 
 void FindNewBmsFiles(std::vector<Diff> &diffs,
