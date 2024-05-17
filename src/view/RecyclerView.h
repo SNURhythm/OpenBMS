@@ -80,10 +80,11 @@ public:
 
   inline void render() override {
     if (!touchDragging && touchDragged) {
-      SDL_Log("touchInertia: %f", touchInertia);
-      if (touchInertia > 0.01f || touchInertia < -0.01f) {
-        scrollOffset += touchInertia;
-        touchInertia *= 0.95;
+      SDL_Log("touchScrollSpeed: %f", touchScrollSpeedReal);
+      touchScrollSpeed *= 0.98;
+      if (touchScrollSpeedReal > 0.01f || touchScrollSpeedReal < -0.01f) {
+        scrollOffset += touchScrollSpeedReal;
+        touchScrollSpeedReal *= 0.95;
         int itemsSize =
             std::max(1, static_cast<int>(items.size())) * itemHeight;
         if (scrollOffset < 0) {
@@ -200,7 +201,8 @@ public:
         return;
       }
       touchLastY = touchY;
-      touchInertia = 0;
+      touchScrollSpeedReal = 0;
+      touchScrollInertia = 0;
       touchId = event.tfinger.fingerId;
       break;
     }
@@ -228,7 +230,7 @@ public:
         return;
       }
       scrollOffset += (touchLastY - touchY);
-      touchInertia = 1.2f * (touchLastY - touchY);
+      touchScrollInertia = 1.2f * (touchLastY - touchY);
       touchLastY = touchY;
       touchDragging = true;
 
@@ -245,6 +247,20 @@ public:
     case SDL_FINGERUP: {
       touchDragging = false;
       touchDragged = true;
+      SDL_Log("touchScrollInertia: %f", touchScrollInertia);
+      if (touchScrollInertia < 2.0f && touchScrollInertia > -2.0f) {
+        touchScrollInertia = 0;
+        touchScrollSpeed = 0;
+      }
+      if (touchScrollSpeed < 0 && touchScrollInertia > 0 ||
+          touchScrollSpeed > 0 && touchScrollInertia < 0) {
+        touchScrollSpeed = touchScrollInertia;
+      } else {
+        touchScrollSpeed += touchScrollInertia;
+      }
+      touchScrollSpeedReal = touchScrollSpeed;
+
+      touchId = -1;
       break;
     }
     }
@@ -264,7 +280,9 @@ private:
   std::deque<View *> recycledViewEntries; // Pool of recycled views
   std::map<int, View *> idxToView;
   float touchLastY = 0;
-  float touchInertia = 0;
+  float touchScrollInertia = 0;
+  float touchScrollSpeed = 0;
+  float touchScrollSpeedReal = 0;
   SDL_FingerID touchId = -1;
   bool touchDragging = false;
   bool touchDragged = false;
