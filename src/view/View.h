@@ -16,7 +16,7 @@ public:
 
   virtual void render() = 0;
 
-    virtual inline void handleEvents(SDL_Event &event) {}
+  virtual inline void handleEvents(SDL_Event &event) {}
 
   inline void setSize(int newWidth, int newHeight) {
     bool isResized = width != newWidth || height != newHeight;
@@ -47,7 +47,7 @@ protected:
   // onResize
   virtual void onResize(int newWidth, int newHeight) {}
   // onMove
-  virtual void onMove(int newX, int newY) { SDL_Log("View::onMove"); }
+  virtual void onMove(int newX, int newY) {}
 
 private:
   int x, y;          // Position of the view

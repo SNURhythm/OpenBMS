@@ -1,7 +1,6 @@
 #include "LinearLayout.h"
 
 void LinearLayout::layout() {
-  SDL_Log("LinearLayout::layout");
   float totalWeight = 0;
   int totalFixed = 0;
   for (auto &view : views) {
