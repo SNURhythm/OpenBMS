@@ -10,15 +10,14 @@ void MainMenuScene::init() {
   SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
   recyclerView =
       new RecyclerView<std::string>(renderer, 0, 0, screenWidth, screenHeight);
-  recyclerView->onCreateView = [this, screenWidth](const std::string& item) {
+  recyclerView->onCreateView = [this, screenWidth](const std::string &item) {
     return new ChartListItemView(renderer, 0, 0, screenWidth, 100, item,
                                  "Artist", "Level");
   };
   recyclerView->itemHeight = 100;
-  recyclerView->onBind = [this](View *view, const std::string& item, int idx,
+  recyclerView->onBind = [this](View *view, const std::string &item, int idx,
                                 bool isSelected) {
-    auto *chartListItemView =
-        dynamic_cast<ChartListItemView *>(view);
+    auto *chartListItemView = dynamic_cast<ChartListItemView *>(view);
     chartListItemView->setTitle(item);
     if (isSelected) {
       chartListItemView->onSelected();
@@ -26,14 +25,14 @@ void MainMenuScene::init() {
       chartListItemView->onUnselected();
     }
   };
-  recyclerView->onSelected = [this](const std::string& item, int idx) {
+  recyclerView->onSelected = [this](const std::string &item, int idx) {
     std::cout << "Selected item: " << item << " at index: " << idx << std::endl;
     auto selectedView = recyclerView->getViewByIndex(idx);
     if (selectedView) {
       selectedView->onSelected();
     }
   };
-  recyclerView->onUnselected = [this](const std::string& item, int idx) {
+  recyclerView->onUnselected = [this](const std::string &item, int idx) {
     std::cout << "Unselected item: " << item << " at index: " << idx
               << std::endl;
     auto unselectedView = recyclerView->getViewByIndex(idx);
@@ -41,8 +40,12 @@ void MainMenuScene::init() {
       unselectedView->onUnselected();
     }
   };
-  recyclerView->setItems({"Item 1", "Item 2", "Item 3", "Item 4", "Item 5",
-                          "Item 6", "Item 7", "Item 8", "Item 9", "Item 10"});
+  // create 100 items
+  std::vector<std::string> items;
+  for (int i = 0; i < 100; i++) {
+    items.push_back("Item " + std::to_string(i));
+  }
+  recyclerView->setItems(items);
 
   addView(recyclerView);
 }
