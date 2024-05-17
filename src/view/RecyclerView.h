@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SDL2/SDL_events.h"
 #include "View.h"
 #include <SDL2/SDL.h>
 #include <deque>
@@ -78,6 +79,22 @@ public:
   int selectedIndex = -1;
 
   inline void render() override {
+    if (!touchDragging && touchDragged) {
+      SDL_Log("touchInertia: %f", touchInertia);
+      if (touchInertia > 0.01f || touchInertia < -0.01f) {
+        scrollOffset += touchInertia;
+        touchInertia *= 0.95;
+        int itemsSize =
+            std::max(1, static_cast<int>(items.size())) * itemHeight;
+        if (scrollOffset < 0) {
+          scrollOffset = 0;
+        }
+        if (scrollOffset > itemsSize - this->getHeight()) {
+          scrollOffset = itemsSize - this->getHeight();
+        }
+        updateVisibleItems();
+      }
+    }
     // clip the rendering area
     SDL_Rect clip = {this->getX(), this->getY(), this->getWidth(),
                      this->getHeight()};
@@ -127,7 +144,21 @@ public:
       updateVisibleItems();
       break;
     }
+    case SDL_MOUSEBUTTONUP:
     case SDL_MOUSEBUTTONDOWN: {
+      if (touchDragging) {
+        return;
+      }
+      if (event.type == SDL_MOUSEBUTTONDOWN &&
+          event.button.button != SDL_BUTTON_LEFT) {
+        return;
+      }
+      // ignore touch
+      if (event.button.which == SDL_TOUCH_MOUSEID &&
+          event.type == SDL_MOUSEBUTTONDOWN) {
+        return;
+      }
+
       int x, y;
       SDL_GetMouseState(&x, &y);
       if (x < this->getX() || x > this->getX() + this->getWidth()) {
@@ -148,6 +179,74 @@ public:
       }
       break;
     }
+    case SDL_FINGERDOWN: {
+      // Get the normalized touch coordinates
+      float normX = event.tfinger.x;
+      float normY = event.tfinger.y;
+
+      // Get the window size
+      int windowWidth, windowHeight;
+      SDL_GetWindowSize(SDL_GetWindowFromID(event.tfinger.windowID),
+                        &windowWidth, &windowHeight);
+
+      // Convert normalized coordinates to screen coordinates
+      float touchX = (normX * windowWidth);
+      float touchY = (normY * windowHeight);
+
+      if (touchX < this->getX() || touchX > this->getX() + this->getWidth()) {
+        return;
+      }
+      if (touchY < this->getY() || touchY > this->getY() + this->getHeight()) {
+        return;
+      }
+      touchLastY = touchY;
+      touchInertia = 0;
+      touchId = event.tfinger.fingerId;
+      break;
+    }
+    case SDL_FINGERMOTION: {
+      if (event.tfinger.fingerId != touchId) {
+        return;
+      }
+      // Get the normalized touch coordinates
+      float normX = event.tfinger.x;
+      float normY = event.tfinger.y;
+
+      // Get the window size
+      int windowWidth, windowHeight;
+      SDL_GetWindowSize(SDL_GetWindowFromID(event.tfinger.windowID),
+                        &windowWidth, &windowHeight);
+
+      // Convert normalized coordinates to screen coordinates
+      int touchX = static_cast<int>(normX * windowWidth);
+      int touchY = static_cast<int>(normY * windowHeight);
+
+      if (touchX < this->getX() || touchX > this->getX() + this->getWidth()) {
+        return;
+      }
+      if (touchY < this->getY() || touchY > this->getY() + this->getHeight()) {
+        return;
+      }
+      scrollOffset += (touchLastY - touchY);
+      touchInertia = 1.2f * (touchLastY - touchY);
+      touchLastY = touchY;
+      touchDragging = true;
+
+      int itemsSize = std::max(1, static_cast<int>(items.size())) * itemHeight;
+      if (scrollOffset < 0) {
+        scrollOffset = 0;
+      }
+      if (scrollOffset > itemsSize - this->getHeight()) {
+        scrollOffset = itemsSize - this->getHeight();
+      }
+      updateVisibleItems();
+      break;
+    }
+    case SDL_FINGERUP: {
+      touchDragging = false;
+      touchDragged = true;
+      break;
+    }
     }
   }
 
@@ -164,6 +263,11 @@ private:
 
   std::deque<View *> recycledViewEntries; // Pool of recycled views
   std::map<int, View *> idxToView;
+  float touchLastY = 0;
+  float touchInertia = 0;
+  SDL_FingerID touchId = -1;
+  bool touchDragging = false;
+  bool touchDragged = false;
   inline void updateVisibleItems() {
     // Determine the range of visible items
     int startIndex = getStartIndex();
