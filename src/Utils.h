@@ -3,12 +3,7 @@
 #include <Windows.h>
 #include <ShlObj.h>
 #endif
-#if PLATFORM_IOS
-#include "iOSNatives.h"
-#endif
-#if PLATFORM_ANDROID
-#include "AndroidNatives.h"
-#endif
+
 #include <string>
 #include <filesystem>
 #include <algorithm>
@@ -22,20 +17,19 @@ std::string ws2s(const std::wstring &wstr);
 
 std::string ws2s_utf8(const std::wstring &wstr);
 
-class Utils
-{
+class Utils {
 public:
-    inline static std::string GameName = "OpenBMS";
-    inline static std::string TeamName = "SNURhythm";
-    static std::filesystem::path GetDocumentsPath(const std::filesystem::path& SubPath = "");
+  inline static std::string GameName = "OpenBMS";
+  inline static std::string TeamName = "SNURhythm";
+  static std::filesystem::path
+  GetDocumentsPath(const std::filesystem::path &SubPath = "");
 };
 
-class threadRAII
-{
-    std::thread th;
+class threadRAII {
+  std::thread th;
 
 public:
-    explicit threadRAII(std::thread &&_th);
+  explicit threadRAII(std::thread &&_th);
 
-    ~threadRAII();
+  ~threadRAII();
 };

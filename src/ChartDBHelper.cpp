@@ -2,15 +2,15 @@
 
 #include "ChartDBHelper.h"
 #include "Utils.h"
-#include "iOSNatives.h"
+
 #include "path.h"
 #include <codecvt>
 #include <filesystem>
 #include <iostream>
 
-sqlite3 *ChartDBHelper::Connect()
-{
+sqlite3 *ChartDBHelper::Connect() {
   std::filesystem::path Directory = Utils::GetDocumentsPath("db");
+  std::cout << "DB Directory: " << Directory.string() << "\n";
   std::filesystem::create_directories(Directory);
   std::filesystem::path path = Directory / "chart.db";
   std::cout << "DB Path: " << path.string() << "\n";
@@ -18,8 +18,7 @@ sqlite3 *ChartDBHelper::Connect()
   int rc;
   rc = sqlite3_open(path.string().c_str(), &db);
   sqlite3_busy_timeout(db, 1000);
-  if (rc)
-  {
+  if (rc) {
     std::cerr << "Can't open database: " << sqlite3_errmsg(db) << "\n";
     sqlite3_close(db);
     return nullptr;
@@ -29,18 +28,15 @@ sqlite3 *ChartDBHelper::Connect()
 
 void ChartDBHelper::Close(sqlite3 *db) { sqlite3_close(db); }
 
-void ChartDBHelper::BeginTransaction(sqlite3 *db)
-{
+void ChartDBHelper::BeginTransaction(sqlite3 *db) {
   sqlite3_exec(db, "BEGIN", nullptr, nullptr, nullptr);
 }
 
-void ChartDBHelper::CommitTransaction(sqlite3 *db)
-{
+void ChartDBHelper::CommitTransaction(sqlite3 *db) {
   sqlite3_exec(db, "COMMIT", nullptr, nullptr, nullptr);
 }
 
-bool ChartDBHelper::CreateChartMetaTable(sqlite3 *db)
-{
+bool ChartDBHelper::CreateChartMetaTable(sqlite3 *db) {
   auto query = "CREATE TABLE IF NOT EXISTS chart_meta ("
                "path       TEXT primary key,"
                "md5        TEXT not null,"
@@ -72,8 +68,7 @@ bool ChartDBHelper::CreateChartMetaTable(sqlite3 *db)
                ")";
   char *errMsg;
   int rc = sqlite3_exec(db, query, nullptr, nullptr, &errMsg);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
     std::cerr << "SQL error while creating chart meta table: " << errMsg
               << "\n";
     sqlite3_free(errMsg);
@@ -83,8 +78,7 @@ bool ChartDBHelper::CreateChartMetaTable(sqlite3 *db)
 }
 
 bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
-                                    bms_parser::ChartMeta &chartMeta)
-{
+                                    bms_parser::ChartMeta &chartMeta) {
   auto query = "REPLACE INTO chart_meta ("
                "path,"
                "md5,"
@@ -144,8 +138,7 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
                ")";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
     std::string err = std::string(sqlite3_errmsg(db));
     // UE_LOG(LogTemp, Error, TEXT("SQL error while preparing statement to
     // insert a chart: %s"), *err);
@@ -167,12 +160,16 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
                     SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 8, ws2s(chartMeta.SubArtist).c_str(), -1,
                     SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 9, chartMeta.Folder.string().c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 9, chartMeta.Folder.string().c_str(), -1,
+                    SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 10, chartMeta.StageFile.string().c_str(), -1,
                     SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 11, chartMeta.Banner.string().c_str(), -1, SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 12, chartMeta.BackBmp.string().c_str(), -1, SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 13, chartMeta.Preview.string().c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 11, chartMeta.Banner.string().c_str(), -1,
+                    SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 12, chartMeta.BackBmp.string().c_str(), -1,
+                    SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 13, chartMeta.Preview.string().c_str(), -1,
+                    SQLITE_TRANSIENT);
   sqlite3_bind_double(stmt, 14, chartMeta.PlayLevel);
   sqlite3_bind_int(stmt, 15, chartMeta.Difficulty);
   sqlite3_bind_double(stmt, 16, chartMeta.Total);
@@ -188,8 +185,7 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
   sqlite3_bind_int(stmt, 26, chartMeta.TotalScratchNotes);
   sqlite3_bind_int(stmt, 27, chartMeta.TotalBackSpinNotes);
   rc = sqlite3_step(stmt);
-  if (rc != SQLITE_DONE)
-  {
+  if (rc != SQLITE_DONE) {
     std::cerr << "SQL error while inserting a chart: " << sqlite3_errmsg(db)
               << "\n";
     sqlite3_free(stmt);
@@ -200,8 +196,7 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
 }
 
 void ChartDBHelper::SelectAllChartMeta(
-    sqlite3 *db, std::vector<bms_parser::ChartMeta> &chartMetas)
-{
+    sqlite3 *db, std::vector<bms_parser::ChartMeta> &chartMetas) {
   auto query = "SELECT "
                "path,"
                "md5,"
@@ -233,16 +228,14 @@ void ChartDBHelper::SelectAllChartMeta(
                " FROM chart_meta";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
     std::cerr << "SQL error while getting all charts: " << sqlite3_errmsg(db)
               << "\n";
     sqlite3_free(stmt);
     return;
   }
 
-  while (sqlite3_step(stmt) == SQLITE_ROW)
-  {
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
     auto chartMeta = ReadChartMeta(stmt);
     chartMetas.push_back(chartMeta);
   }
@@ -251,8 +244,7 @@ void ChartDBHelper::SelectAllChartMeta(
 
 void ChartDBHelper::SearchChartMeta(
     sqlite3 *db, std::string &text,
-    std::vector<bms_parser::ChartMeta> &chartMetas)
-{
+    std::vector<bms_parser::ChartMeta> &chartMetas) {
   auto query =
       "SELECT "
       "path,"
@@ -286,8 +278,7 @@ void ChartDBHelper::SearchChartMeta(
       "|| ' ' || sub_artist || ' ' || genre) LIKE @text GROUP BY sha256";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
     std::cerr << "SQL error while searching for charts: " << sqlite3_errmsg(db)
               << "\n";
     sqlite3_free(stmt);
@@ -296,22 +287,19 @@ void ChartDBHelper::SearchChartMeta(
   // %text%
   sqlite3_bind_text(stmt, 1, ("%" + text + "%").c_str(), -1, SQLITE_TRANSIENT);
 
-  while (sqlite3_step(stmt) == SQLITE_ROW)
-  {
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
     auto chartMeta = ReadChartMeta(stmt);
     chartMetas.push_back(chartMeta);
   }
   sqlite3_finalize(stmt);
 }
 
-bool ChartDBHelper::DeleteChartMeta(sqlite3 *db, std::filesystem::path &path)
-{
+bool ChartDBHelper::DeleteChartMeta(sqlite3 *db, std::filesystem::path &path) {
   std::filesystem::path pathRel = ToRelativePath(path);
   auto query = "DELETE FROM chart_meta WHERE path = @path";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
     std::cerr << "SQL error while preparing statement to delete a chart: "
               << sqlite3_errmsg(db) << "\n";
     sqlite3_free(stmt);
@@ -319,8 +307,7 @@ bool ChartDBHelper::DeleteChartMeta(sqlite3 *db, std::filesystem::path &path)
   }
   sqlite3_bind_text(stmt, 1, pathRel.string().c_str(), -1, SQLITE_TRANSIENT);
   rc = sqlite3_step(stmt);
-  if (rc != SQLITE_DONE)
-  {
+  if (rc != SQLITE_DONE) {
     std::cerr << "SQL error while deleting a chart: " << sqlite3_errmsg(db)
               << "\n";
     sqlite3_close(db);
@@ -330,20 +317,17 @@ bool ChartDBHelper::DeleteChartMeta(sqlite3 *db, std::filesystem::path &path)
   return true;
 }
 
-bool ChartDBHelper::ClearChartMeta(sqlite3 *db)
-{
+bool ChartDBHelper::ClearChartMeta(sqlite3 *db) {
   auto query = "DELETE FROM chart_meta";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
     std::cerr << "SQL error while clearing: " << sqlite3_errmsg(db) << "\n";
     sqlite3_free(stmt);
     return false;
   }
   rc = sqlite3_step(stmt);
-  if (rc != SQLITE_DONE)
-  {
+  if (rc != SQLITE_DONE) {
 
     std::cerr << "SQL error while clearing: " << sqlite3_errmsg(db) << "\n";
     sqlite3_free(stmt);
@@ -353,8 +337,7 @@ bool ChartDBHelper::ClearChartMeta(sqlite3 *db)
   return true;
 }
 
-bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt)
-{
+bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
   int idx = 0;
   bms_parser::ChartMeta chartMeta;
   std::filesystem::path path = std::filesystem::path(
@@ -402,8 +385,7 @@ bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt)
   return chartMeta;
 }
 
-bool ChartDBHelper::CreateEntriesTable(sqlite3 *db)
-{
+bool ChartDBHelper::CreateEntriesTable(sqlite3 *db) {
   // save paths to search for charts
   auto query = "CREATE TABLE IF NOT EXISTS entries ("
                "path       TEXT primary key"
@@ -411,8 +393,7 @@ bool ChartDBHelper::CreateEntriesTable(sqlite3 *db)
 
   char *errMsg;
   int rc = sqlite3_exec(db, query, nullptr, nullptr, &errMsg);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
     std::cerr << "SQL error while creating entries table: "
               << sqlite3_errmsg(db) << "\n";
     sqlite3_free(errMsg);
@@ -421,8 +402,7 @@ bool ChartDBHelper::CreateEntriesTable(sqlite3 *db)
   return true;
 }
 
-bool ChartDBHelper::InsertEntry(sqlite3 *db, std::filesystem::path &path)
-{
+bool ChartDBHelper::InsertEntry(sqlite3 *db, std::filesystem::path &path) {
   auto query = "REPLACE INTO entries ("
                "path"
                ") VALUES("
@@ -430,8 +410,7 @@ bool ChartDBHelper::InsertEntry(sqlite3 *db, std::filesystem::path &path)
                ")";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
     std::cerr << "SQL error while preparing statement to insert an entry: "
               << sqlite3_errmsg(db) << "\n";
     sqlite3_close(db);
@@ -439,8 +418,7 @@ bool ChartDBHelper::InsertEntry(sqlite3 *db, std::filesystem::path &path)
   }
   sqlite3_bind_text(stmt, 1, path.string().c_str(), -1, SQLITE_TRANSIENT);
   rc = sqlite3_step(stmt);
-  if (rc != SQLITE_DONE)
-  {
+  if (rc != SQLITE_DONE) {
     std::cerr << "SQL error while inserting an entry: " << sqlite3_errmsg(db)
               << "\n";
     sqlite3_free(stmt);
@@ -450,23 +428,20 @@ bool ChartDBHelper::InsertEntry(sqlite3 *db, std::filesystem::path &path)
   return true;
 }
 
-std::vector<path_t> ChartDBHelper::SelectAllEntries(sqlite3 *db)
-{
+std::vector<path_t> ChartDBHelper::SelectAllEntries(sqlite3 *db) {
   auto query = "SELECT "
                "path"
                " FROM entries";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
     std::cerr << "SQL error while getting all entries: " << sqlite3_errmsg(db)
               << "\n";
     sqlite3_free(stmt);
     return std::vector<path_t>();
   }
   std::vector<path_t> entries;
-  while (sqlite3_step(stmt) == SQLITE_ROW)
-  {
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
     std::filesystem::path entry = std::filesystem::path(
         reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0)));
     entries.push_back(fspath_to_path_t(entry));
@@ -475,13 +450,11 @@ std::vector<path_t> ChartDBHelper::SelectAllEntries(sqlite3 *db)
   return entries;
 }
 
-bool ChartDBHelper::DeleteEntry(sqlite3 *db, std::filesystem::path &path)
-{
+bool ChartDBHelper::DeleteEntry(sqlite3 *db, std::filesystem::path &path) {
   auto query = "DELETE FROM entries WHERE path = @path";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
     std::cerr << "SQL error while preparing statement to delete an entry: "
               << sqlite3_errmsg(db) << "\n";
     sqlite3_free(stmt);
@@ -489,8 +462,7 @@ bool ChartDBHelper::DeleteEntry(sqlite3 *db, std::filesystem::path &path)
   }
   sqlite3_bind_text(stmt, 1, path.string().c_str(), -1, SQLITE_TRANSIENT);
   rc = sqlite3_step(stmt);
-  if (rc != SQLITE_DONE)
-  {
+  if (rc != SQLITE_DONE) {
     std::cerr << "SQL error while deleting an entry: " << sqlite3_errmsg(db)
               << "\n";
     sqlite3_close(db);
@@ -500,21 +472,18 @@ bool ChartDBHelper::DeleteEntry(sqlite3 *db, std::filesystem::path &path)
   return true;
 }
 
-bool ChartDBHelper::ClearEntries(sqlite3 *db)
-{
+bool ChartDBHelper::ClearEntries(sqlite3 *db) {
   auto query = "DELETE FROM entries";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
-  if (rc != SQLITE_OK)
-  {
+  if (rc != SQLITE_OK) {
 
     std::cerr << "SQL error while clearing: " << sqlite3_errmsg(db) << "\n";
     sqlite3_free(stmt);
     return false;
   }
   rc = sqlite3_step(stmt);
-  if (rc != SQLITE_DONE)
-  {
+  if (rc != SQLITE_DONE) {
     std::cerr << "SQL error while clearing: " << sqlite3_errmsg(db) << "\n";
     sqlite3_free(stmt);
     return false;
@@ -524,8 +493,7 @@ bool ChartDBHelper::ClearEntries(sqlite3 *db)
 }
 
 std::filesystem::path
-ChartDBHelper::ToRelativePath(std::filesystem::path &path)
-{
+ChartDBHelper::ToRelativePath(std::filesystem::path &path) {
   // for iOS, remove Documents
 #if PLATFORM_IOS
   FString Documents = FPaths::Combine(GetIOSDocumentsPath(), "BMS/");
@@ -534,8 +502,7 @@ ChartDBHelper::ToRelativePath(std::filesystem::path &path)
           *Documents);
   UE_LOG(LogTemp, Log, TEXT("ToRel - DocumentsAbs: %s, Path: %s"),
          *DocumentsAbs, *path);
-  if (path.StartsWith(DocumentsAbs))
-  {
+  if (path.StartsWith(DocumentsAbs)) {
     UE_LOG(LogTemp, Log, TEXT("Relative Path: %s"),
            *path.RightChop(DocumentsAbs.Len()));
     return path.RightChop(DocumentsAbs.Len());
@@ -546,8 +513,7 @@ ChartDBHelper::ToRelativePath(std::filesystem::path &path)
 }
 
 std::filesystem::path
-ChartDBHelper::ToAbsolutePath(std::filesystem::path &path)
-{
+ChartDBHelper::ToAbsolutePath(std::filesystem::path &path) {
   // for iOS, add Documents
 #if PLATFORM_IOS
   FString Documents = FPaths::Combine(GetIOSDocumentsPath(), "BMS/");
@@ -556,8 +522,7 @@ ChartDBHelper::ToAbsolutePath(std::filesystem::path &path)
           *Documents);
   UE_LOG(LogTemp, Log, TEXT("ToAbs - DocumentsAbs: %s, Path: %s"),
          *DocumentsAbs, *path);
-  if (!path.StartsWith(DocumentsAbs))
-  {
+  if (!path.StartsWith(DocumentsAbs)) {
     UE_LOG(LogTemp, Log, TEXT("Absolute Path: %s"),
            *FPaths::Combine(DocumentsAbs, path));
     return FPaths::Combine(DocumentsAbs, path);
