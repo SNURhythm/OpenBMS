@@ -27,12 +27,12 @@
 		B77B0DD52BF7B15900945F27 /* SDL_config.h.cmake in Resources */ = {isa = PBXBuildFile; fileRef = B77B0D9D2BF7B15900945F27 /* SDL_config.h.cmake */; };
 		B77B0DD62BF7B15900945F27 /* SDL_config.h.in in Resources */ = {isa = PBXBuildFile; fileRef = B77B0DC62BF7B15900945F27 /* SDL_config.h.in */; };
 		B77B0DFD2BF7BD3900945F27 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; };
-		B77B0DFE2BF7BD3900945F27 /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B77B0E1C2BF7BDC400945F27 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E062BF7BD6000945F27 /* SDL2_ttf.framework */; };
 		B77B0E1D2BF7BDC400945F27 /* SDL2_ttf.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E062BF7BD6000945F27 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B77B0E202BF7C46D00945F27 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E1E2BF7C46700945F27 /* Foundation.framework */; };
 		B77B0E242BF7C48B00945F27 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E222BF7C48700945F27 /* CoreFoundation.framework */; };
 		B77B0E2E2BF7CB2800945F27 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = B77B0E2D2BF7CB2800945F27 /* assets */; };
+		B7FFC2C32BF7D834000C838E /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -144,7 +144,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				B77B0E1D2BF7BDC400945F27 /* SDL2_ttf.framework in Embed Frameworks */,
-				B77B0DFE2BF7BD3900945F27 /* SDL2.framework in Embed Frameworks */,
+				B7FFC2C32BF7D834000C838E /* SDL2.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
