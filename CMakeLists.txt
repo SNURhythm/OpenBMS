@@ -13,6 +13,8 @@ add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedanti
 
 # Include directories
 include_directories(include)
+include_directories(bgfx/bgfx/include)
+include_directories(bgfx/bx/include)
 
 # Source directory
 set(SRC_DIR src)
@@ -79,7 +81,7 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.cpp)
 
 # Main executable
 add_executable(main ${SRC_FILES} ${MM_SRC_FILES})
-target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS})
+target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
 
 # Custom target for copying assets
 add_custom_command(
@@ -109,3 +111,5 @@ install(TARGETS main DESTINATION bin)
 install(DIRECTORY assets DESTINATION ${BUILD_DIR})
 
 # Additional targets for different build types like Debug, Release, etc.
+
+add_subdirectory(bgfx)

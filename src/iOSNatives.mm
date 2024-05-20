@@ -1,11 +1,20 @@
 #include "iOSNatives.hpp"
 #if TARGET_OS_IOS
 #include <Foundation/Foundation.h>
+#include <UIKit/UIKit.h>
 std::string GetIOSDocumentsPath() {
   return std::string([[NSSearchPathForDirectoriesInDomains(
-                                                          NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] UTF8String]);
+      NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] UTF8String]);
 }
 
+// get nwh
+void *GetIOSWindowHandle() {
+  // get rootviewcontroller.view.layer;
+  UIViewController *rootViewController =
+      [UIApplication sharedApplication].keyWindow.rootViewController;
+  // cast
+  return (__bridge void *)rootViewController.view.layer;
+}
 // register touch event
 // void RegisterTouchEvent() {
 //   // get root view controller
