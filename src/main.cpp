@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 #include "targets.h"
 #include "main.h"
 #include "scene/MainMenuScene.h"
@@ -15,7 +16,10 @@
 #include <vector>
 #include "tinyfiledialogs.h"
 #include "Utils.h"
-
+#include <bgfx/bgfx.h>
+#include <bgfx/embedded_shader.h>
+#include <bgfx/platform.h>
+#include <bx/platform.h>
 #ifdef _WIN32
 #include <windows.h>
 
@@ -25,6 +29,7 @@
 #if TARGET_OS_IPHONE && TARGET_IPHONE_SIMULATOR
 // define something for simulator
 #elif TARGET_OS_IPHONE
+#include "iOSNatives.hpp"
 // define something for iphone
 #include <dirent.h>
 #include <sys/stat.h>
@@ -57,7 +62,19 @@ public:
     std::cout << "Main function is quitting..." << std::endl;
   }
 };
+
+struct PosColorVertex {
+  static bgfx::VertexLayout ms_decl;
+  float x;
+  float y;
+  float z;
+  uint32_t abgr;
+};
 int main(int argv, char **args) {
+
+  // print bgfx version
+  std::cout << "bgfx version: " << BGFX_API_VERSION << "OSX:" << BX_PLATFORM_OSX
+            << std::endl;
   // print libsdl version
   SDL_version compiled;
   SDL_version linked;
@@ -144,18 +161,94 @@ int main(int argv, char **args) {
   }
 
   SceneManager sceneManager;
-
-  SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, 620, 387,
+  int width = 800;
+  int height = 600;
+  SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, width, height,
                                      SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
   if (win == nullptr) {
     cerr << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
     return EXIT_FAILURE;
   }
+#if !BX_PLATFORM_EMSCRIPTEN
+  SDL_SysWMinfo wmi;
+  SDL_VERSION(&wmi.version);
+  if (!SDL_GetWindowWMInfo(win, &wmi)) {
+    printf("SDL_SysWMinfo could not be retrieved. SDL_Error: %s\n",
+           SDL_GetError());
+    return 1;
+  }
+  bgfx::renderFrame(); // single threaded mode
+#endif                 // !BX_PLATFORM_EMSCRIPTEN
+
+  bgfx::PlatformData pd{};
+#if BX_PLATFORM_WINDOWS
+  pd.nwh = wmi.info.win.window;
+#elif BX_PLATFORM_OSX
+  pd.nwh = wmi.info.cocoa.window;
+#elif BX_PLATFORM_LINUX
+  pd.ndt = wmi.info.x11.display;
+  pd.nwh = (void *)(uintptr_t)wmi.info.x11.window;
+#elif BX_PLATFORM_EMSCRIPTEN
+  pd.nwh = (void *)"#canvas";
+#elif BX_PLATFORM_IOS
+  pd.nwh = GetIOSWindowHandle();
+#endif // BX_PLATFORM_WINDOWS ? BX_PLATFORM_OSX ? BX_PLATFORM_LINUX ?
+       // BX_PLATFORM_EMSCRIPTEN
+  bgfx::Init bgfx_init;
+  bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
+  bgfx_init.resolution.width = width;
+  bgfx_init.resolution.height = height;
+  bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
+  bgfx_init.platformData = pd;
+  bgfx::init(bgfx_init);
+  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x6495EDFF, 1.0f,
+                     0);
+  bgfx::setViewRect(0, 0, 0, width, height);
+  // // draw rectangle
+  // bgfx::TransientVertexBuffer tvb;
+  // bgfx::TransientIndexBuffer tib;
+  // bgfx::allocTransientBuffers(&tvb, PosColorVertex::ms_decl, 4, &tib, 6);
+  // PosColorVertex *verts = (PosColorVertex *)tvb.data;
+  // verts[0].x = 0.0f;
+  // verts[0].y = 0.0f;
+  // verts[0].z = 0.0f;
+  // verts[0].abgr = 0xff0000ff;
+  // verts[1].x = 1.0f;
+  // verts[1].y = 0.0f;
+  // verts[1].z = 0.0f;
+  // verts[1].abgr = 0xff00ff00;
+  // verts[2].x = 1.0f;
+  // verts[2].y = 1.0f;
+  // verts[2].z = 0.0f;
+  // verts[2].abgr = 0xffff0000;
+  // verts[3].x = 0.0f;
+  // verts[3].y = 1.0f;
+  // verts[3].z = 0.0f;
+  // verts[3].abgr = 0xffffffff;
+  // uint16_t *indices = (uint16_t *)tib.data;
+  // indices[0] = 0;
+  // indices[1] = 1;
+  // indices[2] = 2;
+  // indices[3] = 2;
+  // indices[4] = 3;
+  // indices[5] = 0;
+  // bgfx::VertexLayout vl;
+  // vl.begin()
+  //     .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+  //     .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+  //     .end();
+  // bgfx::setVertexBuffer(0, &tvb);
+  // bgfx::setIndexBuffer(&tib);
+  // bgfx::setViewTransform(0, nullptr, nullptr);
+  // bgfx::setViewRect(0, 0, 0, width, height);
+  // bgfx::setState(BGFX_STATE_DEFAULT);
+  // bgfx::submit(0);
 
   SDL_Renderer *ren = SDL_CreateRenderer(
       win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   if (ren == nullptr) {
     cerr << "SDL_CreateRenderer Error" << SDL_GetError() << endl;
+    bgfx::shutdown();
     SDL_DestroyWindow(win);
     SDL_Quit();
     return EXIT_FAILURE;
@@ -166,7 +259,7 @@ int main(int argv, char **args) {
   if (bmp == nullptr) {
     cerr << "SDL_LoadBMP Error: " << SDL_GetError() << endl;
     SDL_DestroyRenderer(ren);
-
+    bgfx::shutdown();
     SDL_DestroyWindow(win);
     SDL_Quit();
     return EXIT_FAILURE;
@@ -177,6 +270,7 @@ int main(int argv, char **args) {
   if (tex == nullptr) {
     cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << endl;
     SDL_FreeSurface(bmp);
+    bgfx::shutdown();
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
@@ -219,6 +313,7 @@ int main(int argv, char **args) {
 
   SDL_DestroyTexture(tex);
   SDL_DestroyRenderer(ren);
+  bgfx::shutdown();
   SDL_DestroyWindow(win);
   SDL_Quit();
   std::cout << "SDL quit" << std::endl;
