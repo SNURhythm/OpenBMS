@@ -781,6 +781,7 @@
 		B799B7A22BFD209400115C26 /* MacNatives.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MacNatives.mm; sourceTree = "<group>"; };
 		B799B7A32BFD209400115C26 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B799B7A42BFD209400115C26 /* targets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = targets.h; sourceTree = "<group>"; };
+		B799B7B52BFD224200115C26 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B79B1BCB2BFAC19F00FAD60F /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		B79B1BCD2BFAC1E700FAD60F /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		B79B1BCF2BFAC20100FAD60F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -835,6 +836,7 @@
 		B70027032BF7A8D8000DB8EC /* OpenBMS */ = {
 			isa = PBXGroup;
 			children = (
+				B799B7B52BFD224200115C26 /* Info.plist */,
 				B799B77A2BFD209400115C26 /* src */,
 				B7459F6A2BFC2A58002C5A6F /* shaders */,
 				B77B0E2D2BF7CB2800945F27 /* assets */,
@@ -2027,13 +2029,16 @@
 					"\"$(SRCROOT)/../../../bgfx/bgfx/include\"",
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
 				);
+				INFOPLIST_FILE = OpenBMS/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music-games";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2062,13 +2067,16 @@
 					"\"$(SRCROOT)/../../../bgfx/bgfx/include\"",
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
 				);
+				INFOPLIST_FILE = OpenBMS/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music-games";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = metal;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

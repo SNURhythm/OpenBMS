@@ -11,6 +11,7 @@
 #define TARGET_OS_OSX 1
 #endif
 #elif __linux
+#define TARGET_OS_LINUX 1
 #elif __unix // all unices not caught above
 // Unix
 #elif __posix

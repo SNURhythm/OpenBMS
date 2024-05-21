@@ -8,6 +8,7 @@
 #include <thread>
 #include <unordered_set>
 #include <vector>
+#include "../targets.h"
 class MainMenuScene : public Scene {
 public:
   inline explicit MainMenuScene() : Scene() {}
@@ -38,12 +39,18 @@ private:
                            const std::unordered_set<path_t> &oldFilesWs,
                            std::vector<path_t> &directoriesToVisit,
                            std::atomic_bool &isCancelled);
-#else
+#elif TARGET_OS_OSX || TARGET_OS_LINUX
   static void
   FindFilesUnix(const std::filesystem::path &path, std::vector<Diff> &diffs,
                 const std::unordered_set<path_t> &oldFilesWs,
                 std::vector<std::filesystem::path> &directoriesToVisit,
                 std::atomic_bool &isCancelled);
+#elif TARGET_OS_IPHONE
+  static void
+  FindFilesIOS(const std::filesystem::path &path, std::vector<Diff> &diffs,
+               const std::unordered_set<path_t> &oldFilesWs,
+               std::vector<std::filesystem::path> &directoriesToVisit,
+               std::atomic_bool &isCancelled);
 #endif
   static void FindNewBmsFiles(std::vector<Diff> &diffs,
                               const std::unordered_set<path_t> &oldFilesWs,
