@@ -2,20 +2,12 @@
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
 TextInputBox::TextInputBox(const std::string &fontPath, int fontSize)
-    : TextView(fontPath, fontSize) {}
+    : TextView(fontPath, fontSize) {
+  viewRect = {getX(), getY(), getWidth(), getHeight()};
+}
 
 TextInputBox::~TextInputBox() {}
-size_t TextInputBox::popBack(std::string &utf8) {
-  if (utf8.empty())
-    return 0;
 
-  auto cp = utf8.data() + utf8.size();
-  while (--cp >= utf8.data() && ((*cp & 0b10000000) && !(*cp & 0b01000000))) {
-  }
-  if (cp >= utf8.data())
-    utf8.resize(cp - utf8.data());
-  return utf8.size();
-}
 size_t TextInputBox::getNextUnicodePos(size_t pos) {
   if (pos >= text.size())
     return pos;
@@ -25,25 +17,54 @@ size_t TextInputBox::getNextUnicodePos(size_t pos) {
   }
   return cp - text.data();
 }
+size_t TextInputBox::getPrevUnicodePos(size_t pos) {
+  if (pos == 0)
+    return 0;
+  auto cp = text.data() + pos;
+  while (--cp >= text.data() && ((*cp & 0b10000000) && !(*cp & 0b01000000))) {
+  }
+  return cp - text.data();
+}
 void TextInputBox::handleEvents(SDL_Event &event) {
+  bool shouldUpdate = false;
   std::string composition;
   switch (event.type) {
   case SDL_TEXTINPUT:
-
+    shouldUpdate = true;
     // Add new text to the cursor position
     text.insert(cursorPos, event.text.text);
     cursorPos += strlen(event.text.text);
     break;
   case SDL_KEYDOWN:
     if (event.key.keysym.sym == SDLK_BACKSPACE && text.length() > 0) {
-      cursorPos = popBack(text);
+      size_t prevPos = getPrevUnicodePos(cursorPos);
+      text.erase(prevPos, cursorPos - prevPos);
+      cursorPos = prevPos;
+    } else if (event.key.keysym.sym == SDLK_DELETE && text.length() > 0) {
+      size_t nextPos = getNextUnicodePos(cursorPos);
+      text.erase(cursorPos, nextPos - cursorPos);
+    } else if (event.key.keysym.sym == SDLK_RIGHT) {
+      cursorPos = getNextUnicodePos(cursorPos);
+    } else if (event.key.keysym.sym == SDLK_LEFT) {
+      cursorPos = getPrevUnicodePos(cursorPos);
+    } // paste
+    else if (event.key.keysym.sym == SDLK_v &&
+             (SDL_GetModState() & KMOD_CTRL) && SDL_HasClipboardText()) {
+      std::string clipboard = SDL_GetClipboardText();
+      text.insert(cursorPos, clipboard);
+      cursorPos += clipboard.size();
+    } else {
+      shouldUpdate = false;
     }
+    shouldUpdate = true;
     break;
   case SDL_TEXTEDITING:
+    shouldUpdate = true;
     // Update the composition text.
     composition = event.edit.text;
     break;
   case SDL_MOUSEBUTTONDOWN:
+
     // check if the mouse is inside the text box
     if (event.button.button == SDL_BUTTON_LEFT && event.button.x >= getX() &&
         event.button.x <= getX() + getWidth() && event.button.y >= getY() &&
@@ -51,13 +72,10 @@ void TextInputBox::handleEvents(SDL_Event &event) {
 
       cursorPos = posToCursor(event.button.x - getX(), event.button.y - getY());
       SDL_Log("TextInputBox::handleEvents: cursorPos: %d", cursorPos);
-      viewRect = {getX(), getY(), getWidth(), getHeight()};
-      SDL_Log("TextInputBox::handleEvents: SDL_SetTextInputViewReviewRect: %d "
-              "%d %d %d",
-              viewRect.x, viewRect.y, viewRect.w, viewRect.h);
       SDL_SetTextInputRect(&viewRect);
       onSelected();
       SDL_StartTextInput();
+      shouldUpdate = true;
 
     } else {
       onUnselected();
@@ -75,12 +93,32 @@ void TextInputBox::handleEvents(SDL_Event &event) {
     }
     break;
   }
-  std::string backup = text;
-  std::string composited = text;
-  if (!composition.empty())
-    composited.insert(cursorPos, composition);
-  setText(composited);
-  text = backup;
+  if (shouldUpdate) {
+    std::string backup = text;
+    std::string composited = text;
+    if (!composition.empty())
+      composited.insert(cursorPos, composition);
+    setText(composited);
+    text = backup;
+    int cursorX, cursorY;
+    cursorToPos(cursorPos, cursorX, cursorY);
+    viewRect = {cursorX, cursorY, getWidth(), getHeight()};
+    SDL_SetTextInputRect(&viewRect);
+  }
+}
+void TextInputBox::onMove(int newX, int newY) {
+  TextView::onMove(newX, newY);
+  int cursorX, cursorY;
+  cursorToPos(cursorPos, cursorX, cursorY);
+  viewRect = {cursorX, cursorY, getWidth(), getHeight()};
+  SDL_SetTextInputRect(&viewRect);
+}
+void TextInputBox::onResize(int newWidth, int newHeight) {
+  TextView::onResize(newWidth, newHeight);
+  int cursorX, cursorY;
+  cursorToPos(cursorPos, cursorX, cursorY);
+  viewRect = {cursorX, cursorY, getWidth(), getHeight()};
+  SDL_SetTextInputRect(&viewRect);
 }
 
 void TextInputBox::render(RenderContext &context) {
@@ -128,6 +166,8 @@ void TextInputBox::cursorToPos(size_t cursorPos, int &x, int &y) {
   utf8.resize(cursorPos);
 
   TTF_SizeUTF8(font, utf8.c_str(), &x, &y);
+  x += getX();
+  y += getY();
 }
 
 size_t TextInputBox::posToCursor(int x, int y) {

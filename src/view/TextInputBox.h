@@ -15,7 +15,8 @@ public:
   void handleEvents(SDL_Event &event) override;
   void onSelected() override;
   void onUnselected() override;
-
+  void onMove(int newX, int newY) override;
+  void onResize(int newWidth, int newHeight) override;
   void render(RenderContext &context) override;
 
   [[nodiscard]] inline bool getSelected() const { return isSelected; }
@@ -25,8 +26,6 @@ private:
   SDL_Rect viewRect;
   size_t cursorPos = 0;
 
-  size_t popBack(std::string &utf8);
-
   // convert cursor position to x, y position
   void cursorToPos(size_t cursorPos, int &x, int &y);
 
@@ -34,4 +33,5 @@ private:
   size_t posToCursor(int x, int y);
 
   size_t getNextUnicodePos(size_t pos);
+  size_t getPrevUnicodePos(size_t pos);
 };
