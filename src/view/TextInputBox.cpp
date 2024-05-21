@@ -5,7 +5,7 @@ TextInputBox::TextInputBox(const std::string &fontPath, int fontSize)
     : TextView(fontPath, fontSize) {}
 
 TextInputBox::~TextInputBox() {}
-int TextInputBox::popBack(std::string &utf8) {
+size_t TextInputBox::popBack(std::string &utf8) {
   if (utf8.empty())
     return 0;
 
@@ -16,7 +16,7 @@ int TextInputBox::popBack(std::string &utf8) {
     utf8.resize(cp - utf8.data());
   return utf8.size();
 }
-int TextInputBox::getNextUnicodePos(int pos) {
+size_t TextInputBox::getNextUnicodePos(size_t pos) {
   if (pos >= text.size())
     return pos;
   auto cp = text.data() + pos;
@@ -118,7 +118,7 @@ void TextInputBox::render(RenderContext &context) {
   }
 }
 
-void TextInputBox::cursorToPos(int cursorPos, int &x, int &y) {
+void TextInputBox::cursorToPos(size_t cursorPos, int &x, int &y) {
   // TODO: this will not work for multi-line text
   std::string utf8 = text;
   if (cursorPos > utf8.size())
@@ -130,13 +130,13 @@ void TextInputBox::cursorToPos(int cursorPos, int &x, int &y) {
   TTF_SizeUTF8(font, utf8.c_str(), &x, &y);
 }
 
-int TextInputBox::posToCursor(int x, int y) {
+size_t TextInputBox::posToCursor(int x, int y) {
   // TODO: this will not work for multi-line text
-  int cursorPos = 0;
+  size_t cursorPos = 0;
   int w = 0, h = 0;
   int dw = 0;
   int dh = 0;
-  int glyphs = 0;
+  size_t glyphs = 0;
   for (cursorPos = 0; cursorPos < text.size();) {
 
     int prevW = w;
