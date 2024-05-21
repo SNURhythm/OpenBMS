@@ -4,6 +4,6 @@
 #include <string>
 // get Documents path
 std::string GetIOSDocumentsPath();
-void *GetIOSWindowHandle();
+void *GetIOSWindowHandle(void *uiwindow);
 void RegisterTouchEvent();
 #endif

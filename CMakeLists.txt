@@ -106,6 +106,12 @@ if(NOT "${VLC_PLUGINS_TAR}" STREQUAL "")
     )
 endif()
 
+# Copy shaders
+add_custom_command(
+    TARGET main POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
+)
+
 # Installation rules
 install(TARGETS main DESTINATION bin)
 install(DIRECTORY assets DESTINATION ${BUILD_DIR})

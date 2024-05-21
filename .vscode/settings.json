@@ -97,5 +97,8 @@
         "set": "cpp",
         "unordered_set": "cpp",
         "deque": "cpp"
+    },
+    "files.watcherExclude": {
+        "**/target": true
     }
 }
