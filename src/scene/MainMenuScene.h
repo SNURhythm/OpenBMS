@@ -27,7 +27,8 @@ private:
   static void CheckEntries(ApplicationContext &context, MainMenuScene &scene);
 
   static void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
-                         MainMenuScene &scene, std::atomic_bool &isCancelled);
+                         std::vector<path_t> &entries, MainMenuScene &scene,
+                         std::atomic_bool &isCancelled);
   enum DiffType { Deleted, Added };
   struct Diff {
     std::filesystem::path path;
