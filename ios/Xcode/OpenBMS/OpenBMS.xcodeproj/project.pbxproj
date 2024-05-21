@@ -34,16 +34,6 @@
 		B799B7B22BFD209400115C26 /* SceneManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B799B7A02BFD209400115C26 /* SceneManager.cpp */; };
 		B799B7B32BFD209400115C26 /* MacNatives.mm in Sources */ = {isa = PBXBuildFile; fileRef = B799B7A22BFD209400115C26 /* MacNatives.mm */; };
 		B799B7B42BFD209400115C26 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B799B7A32BFD209400115C26 /* main.cpp */; };
-		B79B1BC12BFAC0C000FAD60F /* libfcpp.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC37B2BFAAF67000C838E /* libfcpp.a */; };
-		B79B1BC22BFAC0C000FAD60F /* libglsl-optimizer.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3812BFAAF67000C838E /* libglsl-optimizer.a */; };
-		B79B1BC32BFAC0C000FAD60F /* libglslang.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3832BFAAF67000C838E /* libglslang.a */; };
-		B79B1BC42BFAC0C000FAD60F /* libspirv-cross.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3872BFAAF67000C838E /* libspirv-cross.a */; };
-		B79B1BC52BFAC0C000FAD60F /* libspirv-opt.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3892BFAAF67000C838E /* libspirv-opt.a */; };
-		B79B1BC62BFAC0DA00FAD60F /* libfcpp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC37B2BFAAF67000C838E /* libfcpp.a */; };
-		B79B1BC72BFAC0DA00FAD60F /* libglsl-optimizer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3812BFAAF67000C838E /* libglsl-optimizer.a */; };
-		B79B1BC82BFAC0DA00FAD60F /* libglslang.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3832BFAAF67000C838E /* libglslang.a */; };
-		B79B1BC92BFAC0DA00FAD60F /* libspirv-cross.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3872BFAAF67000C838E /* libspirv-cross.a */; };
-		B79B1BCA2BFAC0DA00FAD60F /* libspirv-opt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3892BFAAF67000C838E /* libspirv-opt.a */; };
 		B79B1BCC2BFAC19F00FAD60F /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B79B1BCB2BFAC19F00FAD60F /* Metal.framework */; };
 		B79B1BCE2BFAC1E700FAD60F /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B79B1BCD2BFAC1E700FAD60F /* MetalKit.framework */; };
 		B79B1BD02BFAC20100FAD60F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B79B1BCF2BFAC20100FAD60F /* UIKit.framework */; };
@@ -604,11 +594,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				B79B1BC12BFAC0C000FAD60F /* libfcpp.a in Embed Frameworks */,
-				B79B1BC22BFAC0C000FAD60F /* libglsl-optimizer.a in Embed Frameworks */,
-				B79B1BC32BFAC0C000FAD60F /* libglslang.a in Embed Frameworks */,
-				B79B1BC42BFAC0C000FAD60F /* libspirv-cross.a in Embed Frameworks */,
-				B79B1BC52BFAC0C000FAD60F /* libspirv-opt.a in Embed Frameworks */,
 				B7FFC3A12BFAAFE7000C838E /* libbgfx.a in Embed Frameworks */,
 				B7FFC3A22BFAAFE7000C838E /* libbimg.a in Embed Frameworks */,
 				B7FFC3A32BFAAFE7000C838E /* libbimg_decode.a in Embed Frameworks */,
@@ -816,13 +801,8 @@
 				B7FFC3A72BFAAFF3000C838E /* libbimg_decode.a in Frameworks */,
 				B7FFC39F2BFAAFA7000C838E /* CoreFoundation.framework in Frameworks */,
 				B77B0E1C2BF7BDC400945F27 /* SDL2_ttf.framework in Frameworks */,
-				B79B1BCA2BFAC0DA00FAD60F /* libspirv-opt.a in Frameworks */,
 				B7FFC3A82BFAAFF3000C838E /* libbimg_encode.a in Frameworks */,
 				B77B0E202BF7C46D00945F27 /* Foundation.framework in Frameworks */,
-				B79B1BC82BFAC0DA00FAD60F /* libglslang.a in Frameworks */,
-				B79B1BC92BFAC0DA00FAD60F /* libspirv-cross.a in Frameworks */,
-				B79B1BC72BFAC0DA00FAD60F /* libglsl-optimizer.a in Frameworks */,
-				B79B1BC62BFAC0DA00FAD60F /* libfcpp.a in Frameworks */,
 				B77B0DFD2BF7BD3900945F27 /* SDL2.framework in Frameworks */,
 				B7FFC3A92BFAAFF3000C838E /* libbimg.a in Frameworks */,
 				B7FFC3A62BFAAFF3000C838E /* libbgfx.a in Frameworks */,

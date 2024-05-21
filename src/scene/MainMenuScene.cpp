@@ -152,7 +152,7 @@ void MainMenuScene::update(float dt) {
 
 void MainMenuScene::renderScene() {
   // Render the scene
-  SDL_Log("Rendering Main Menu Scene");
+  // SDL_Log("Rendering Main Menu Scene");
   rootLayout->setSize(rendering::window_width, rendering::window_height);
 }
 
