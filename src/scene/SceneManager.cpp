@@ -6,7 +6,7 @@ void SceneManager::changeScene(Scene *newScene) {
     currentScene->cleanup();
   }
   currentScene.reset(newScene);
-  currentScene->init();
+  currentScene->init(context);
 }
 
 EventHandleResult SceneManager::handleEvents(SDL_Event &event) {

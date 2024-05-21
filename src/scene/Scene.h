@@ -1,5 +1,6 @@
 #pragma once
 #include "../view/View.h"
+#include "../context.h"
 #include <SDL2/SDL.h>
 #include <vector>
 struct EventHandleResult {
@@ -9,7 +10,7 @@ class Scene {
 public:
   Scene() {}
   std::vector<View *> views;
-  virtual void init() = 0; // Initialize the scene
+  virtual void init(ApplicationContext &context) = 0; // Initialize the scene
   virtual EventHandleResult handleEvents(SDL_Event &event) = 0; // Handle input
   virtual void update(float dt) = 0; // Update the scene logic
   // Render the scene (non-virtual public method)
