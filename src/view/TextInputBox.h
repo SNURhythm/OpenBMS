@@ -28,7 +28,7 @@ private:
   int compositionWidth = 0;
   int compositionHeight = 0;
   bool isSelected = false;
-  bool resetCaretBlink = false;
+  int lastRenderedCaretCursor = -1;
   Uint32 lastBlink = 0;
   SDL_Rect viewRect;
   size_t cursorPos = 0;

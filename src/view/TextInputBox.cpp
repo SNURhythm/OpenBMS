@@ -28,7 +28,7 @@ size_t TextInputBox::getPrevUnicodePos(size_t pos) {
 }
 void TextInputBox::handleEvents(SDL_Event &event) {
   bool shouldUpdate = false;
-  std::string textBefore = text;
+
   switch (event.type) {
   case SDL_TEXTINPUT:
     if (!isSelected)
@@ -69,8 +69,10 @@ void TextInputBox::handleEvents(SDL_Event &event) {
       text.erase(cursorPos, nextPos - cursorPos);
     } else if (event.key.keysym.sym == SDLK_RIGHT) {
       cursorPos = getNextUnicodePos(cursorPos);
+
     } else if (event.key.keysym.sym == SDLK_LEFT) {
       cursorPos = getPrevUnicodePos(cursorPos);
+
     } // paste
     else if (event.key.keysym.sym == SDLK_v &&
              (SDL_GetModState() & KMOD_CTRL) && SDL_HasClipboardText()) {
@@ -109,6 +111,7 @@ void TextInputBox::handleEvents(SDL_Event &event) {
       onSelected();
       SDL_StartTextInput();
       shouldUpdate = true;
+      lastRenderedCaretCursor = -1;
 
     } else {
       onUnselected();
@@ -145,10 +148,6 @@ void TextInputBox::handleEvents(SDL_Event &event) {
     viewRect = {cursorX, cursorY, getWidth(), getHeight()};
     SDL_SetTextInputRect(&viewRect);
   }
-
-  if (textBefore != text) {
-    resetCaretBlink = true;
-  }
 }
 void TextInputBox::onMove(int newX, int newY) {
   TextView::onMove(newX, newY);
@@ -171,9 +170,9 @@ void TextInputBox::render(RenderContext &context) {
     // Caret blink interval
     Uint32 blinkInterval = 500;
     Uint32 currentTime = SDL_GetTicks();
-    if (resetCaretBlink) {
+    if (lastRenderedCaretCursor != cursorPos) {
       lastBlink = currentTime;
-      resetCaretBlink = false;
+      lastRenderedCaretCursor = cursorPos;
     }
 
     // Determine whether to show the caret
