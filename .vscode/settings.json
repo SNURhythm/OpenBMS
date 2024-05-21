@@ -100,5 +100,16 @@
     },
     "files.watcherExclude": {
         "**/target": true
-    }
+    },
+    "cSpell.words": [
+        "bgfx",
+        "FINGERDOWN",
+        "FINGERMOTION",
+        "FINGERUP",
+        "MOUSEBUTTONDOWN",
+        "MOUSEBUTTONUP",
+        "MOUSEID",
+        "MOUSEWHEEL",
+        "tfinger"
+    ]
 }
