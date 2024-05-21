@@ -123,7 +123,14 @@ int main(int argv, char **args) {
     cerr << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
     return EXIT_FAILURE;
   }
+  SDL_Renderer *ren = nullptr;
 
+  // this is intended; we don't need renderer for bgfx but SDL creates window
+  // handler after renderer creation on iOS
+#if TARGET_OS_IPHONE
+  ren = SDL_CreateRenderer(
+      win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+#endif
 #if !BX_PLATFORM_EMSCRIPTEN
   SDL_SysWMinfo wmi;
   SDL_VERSION(&wmi.version);
@@ -317,6 +324,9 @@ int main(int argv, char **args) {
   bgfx::destroy(vbh);
   bgfx::destroy(ibh);
   bgfx::shutdown();
+  if (ren != nullptr) {
+    SDL_DestroyRenderer(ren);
+  }
   SDL_DestroyWindow(win);
   SDL_Quit();
   std::cout << "SDL quit" << std::endl;
