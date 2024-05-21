@@ -137,9 +137,10 @@ void MainMenuScene::initView() {
                        Orientation::VERTICAL);
 
   rootLayout->addView(recyclerView, {0, 0, 1});
-  TextInputBox *inputBox = new TextInputBox("assets/fonts/notosansjp.ttf", 32);
+  TextInputBox *inputBox =
+      new TextInputBox("assets/fonts/NotoSansKR-Regular.ttf", 32);
   inputBox->setText("asdf");
-  rootLayout->addView(inputBox, {0, 30, 1});
+  rootLayout->addView(inputBox, {0, 50, 0});
   addView(rootLayout);
 }
 

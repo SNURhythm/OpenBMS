@@ -81,7 +81,7 @@ public:
   std::function<void(T, int)> onUnselected;
   int selectedIndex = -1;
 
-  void render() override {
+  void render(RenderContext &context) override {
 
     if (!touchDragging && touchDragged) {
       SDL_Log("touchScrollSpeed: %f", touchScrollSpeedReal);
@@ -101,14 +101,17 @@ public:
       }
     }
     // clip the rendering area
-    bgfx::setViewScissor(rendering::ui_view, this->getX(), this->getY(),
-                         this->getWidth(), this->getHeight());
-    SDL_Log("RecyclerView::render scissors: %d, %d, %d, %d", this->getX(),
-            this->getY(), this->getWidth(), this->getHeight());
+
+    auto scissors = context.scissor;
+    context.scissor = {this->getX(), this->getY(), this->getWidth(),
+                       this->getHeight()};
     for (auto entry : viewEntries) {
-      entry.first->render();
+
+      entry.first->render(context);
     }
-    bgfx::setViewScissor(rendering::ui_view);
+    context.scissor = scissors;
+    // flush rendering
+    bgfx::setScissor();
     rendering::PosColorVertex vertices[] = {
         {-0.5f, -0.5f, 0.0f, 0xffffffff}, // Bottom-left
         {0.5f, -0.5f, 0.0f, 0xffffffff},  // Bottom-right
@@ -158,6 +161,8 @@ public:
     bgfx::setIndexBuffer(&ibh);
     auto program =
         rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
+    bgfx::setScissor(context.scissor.x, context.scissor.y,
+                     context.scissor.width, context.scissor.height);
     bgfx::submit(rendering::ui_view, program);
 
     // // scroll bar thumb
@@ -171,8 +176,10 @@ public:
     bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
     bgfx::setVertexBuffer(0, &thumbVbh);
     bgfx::setIndexBuffer(&ibh);
-
+    bgfx::setScissor(context.scissor.x, context.scissor.y,
+                     context.scissor.width, context.scissor.height);
     bgfx::submit(rendering::ui_view, program);
+
     // int itemsSize = std::max(6, static_cast<int>(items.size())) * itemHeight;
     // int thumbHeight = this->getHeight() * this->getHeight() / itemsSize;
     // int thumbY = this->getY() + scrollOffset * this->getHeight() / itemsSize;
