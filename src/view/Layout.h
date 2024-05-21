@@ -24,7 +24,7 @@ public:
     views.clear();
     layout();
   }
-  inline void render() override {
+  void render() override {
     for (auto &view : views) {
       view->render();
     }
