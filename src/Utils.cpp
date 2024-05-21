@@ -38,7 +38,6 @@ std::string ws2s_utf8(const std::wstring &wstr) {
 
 std::filesystem::path
 Utils::GetDocumentsPath(const std::filesystem::path &SubPath) {
-  std::cout << "TARGET_OS_IOS: " << TARGET_OS_IOS << std::endl;
 #if TARGET_OS_IOS
   std::cout << "GetIOSDocumentsPath() / SubPath: "
             << GetIOSDocumentsPath() / SubPath << std::endl;

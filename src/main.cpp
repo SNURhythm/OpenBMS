@@ -84,11 +84,6 @@ int main(int argv, char **args) {
   SDL_version linked;
   SDL_VERSION(&compiled);
   SDL_GetVersion(&linked);
-  std::cout << "TARGET_OS_OSX: " << TARGET_OS_OSX << std::endl;
-  std::cout << "TARGET_OS_IPHONE: " << TARGET_OS_IPHONE << std::endl;
-  std::cout << "TARGET_OS_IPHONE_SIMULATOR: " << TARGET_IPHONE_SIMULATOR
-            << std::endl;
-  std::cout << "TARGET_OS_IOS: " << TARGET_OS_IOS << std::endl;
 
   std::cout << "SDL compile version: " << static_cast<int>(compiled.major)
             << "." << static_cast<int>(compiled.minor) << "."

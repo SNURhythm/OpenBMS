@@ -18,6 +18,26 @@ include_directories(bgfx/bx/include)
 include_directories(bgfx/bimg/include)
 include_directories(bgfx/bgfx/3rdparty)
 
+if(MINGW)
+    include_directories(bgfx/bx/include/compat/mingw)
+endif()
+
+if(UNIX AND NOT APPLE)
+    include_directories(bgfx/bx/include/compat/linux)
+endif()
+
+if(APPLE AND NOT IOS)
+    include_directories(bgfx/bx/include/compat/osx)
+endif()
+
+if(IOS)
+    include_directories(bgfx/bx/include/compat/ios)
+endif()
+
+if(MSVC)
+    include_directories(bgfx/bx/include/compat/msvc)
+endif()
+
 # Source directory
 set(SRC_DIR src)
 

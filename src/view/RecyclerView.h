@@ -141,9 +141,9 @@ public:
     bgfx::allocTransientIndexBuffer(&ibh, 6);
 
     // Copy data to the vertex buffer
-    std::memcpy(tvb.data, vertices, sizeof(vertices));
-    std::memcpy(thumbVbh.data, thumbVertices, sizeof(thumbVertices));
-    std::memcpy(ibh.data, indices, sizeof(indices));
+    bx::memCopy(tvb.data, vertices, sizeof(vertices));
+    bx::memCopy(thumbVbh.data, thumbVertices, sizeof(thumbVertices));
+    bx::memCopy(ibh.data, indices, sizeof(indices));
 
     // scroll bar area
     // scale
