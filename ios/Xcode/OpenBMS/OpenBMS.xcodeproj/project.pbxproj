@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B70027142BF7A8DA000DB8EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B70027132BF7A8DA000DB8EC /* Assets.xcassets */; };
 		B70027172BF7A8DA000DB8EC /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B70027152BF7A8DA000DB8EC /* LaunchScreen.storyboard */; };
+		B7459FBC2BFC2A58002C5A6F /* shaders in Resources */ = {isa = PBXBuildFile; fileRef = B7459F6A2BFC2A58002C5A6F /* shaders */; };
 		B77B0D452BF7B13200945F27 /* iOSNatives.mm in Sources */ = {isa = PBXBuildFile; fileRef = B77B0D252BF7B13200945F27 /* iOSNatives.mm */; };
 		B77B0D462BF7B13200945F27 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B77B0D262BF7B13200945F27 /* Utils.cpp */; };
 		B77B0D472BF7B13200945F27 /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = B77B0D272BF7B13200945F27 /* sqlite3.c */; };
@@ -623,6 +624,7 @@
 		B70027012BF7A8D8000DB8EC /* OpenBMS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenBMS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B70027132BF7A8DA000DB8EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B70027162BF7A8DA000DB8EC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		B7459F6A2BFC2A58002C5A6F /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shaders; path = ../../../../shaders; sourceTree = "<group>"; };
 		B77B0D232BF7B13200945F27 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		B77B0D242BF7B13200945F27 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		B77B0D252BF7B13200945F27 /* iOSNatives.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = iOSNatives.mm; sourceTree = "<group>"; };
@@ -844,6 +846,7 @@
 		B70027032BF7A8D8000DB8EC /* OpenBMS */ = {
 			isa = PBXGroup;
 			children = (
+				B7459F6A2BFC2A58002C5A6F /* shaders */,
 				B77B0E2D2BF7CB2800945F27 /* assets */,
 				B77B0D532BF7B15900945F27 /* include */,
 				B77B0D222BF7B13200945F27 /* src */,
@@ -1834,6 +1837,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7459FBC2BFC2A58002C5A6F /* shaders in Resources */,
 				B70027172BF7A8DA000DB8EC /* LaunchScreen.storyboard in Resources */,
 				B77B0DD42BF7B15900945F27 /* SDL_revision.h.cmake in Resources */,
 				B70027142BF7A8DA000DB8EC /* Assets.xcassets in Resources */,

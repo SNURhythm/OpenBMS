@@ -8,12 +8,11 @@ std::string GetIOSDocumentsPath() {
 }
 
 // get nwh
-void *GetIOSWindowHandle() {
+void *GetIOSWindowHandle(void *uiwindow) {
   // get rootviewcontroller.view.layer;
-  UIViewController *rootViewController =
-      [UIApplication sharedApplication].keyWindow.rootViewController;
-  // cast
-  return (__bridge void *)rootViewController.view.layer;
+
+  return (__bridge void *)(((__bridge UIWindow *)uiwindow)
+                               .rootViewController.view.layer);
 }
 // register touch event
 // void RegisterTouchEvent() {
