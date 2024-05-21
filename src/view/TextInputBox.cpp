@@ -28,7 +28,7 @@ size_t TextInputBox::getPrevUnicodePos(size_t pos) {
 }
 void TextInputBox::handleEvents(SDL_Event &event) {
   bool shouldUpdate = false;
-
+  std::string textBefore = text;
   switch (event.type) {
   case SDL_TEXTINPUT:
     if (!isSelected)
@@ -145,6 +145,10 @@ void TextInputBox::handleEvents(SDL_Event &event) {
     viewRect = {cursorX, cursorY, getWidth(), getHeight()};
     SDL_SetTextInputRect(&viewRect);
   }
+
+  if (textBefore != text) {
+    resetCaretBlink = true;
+  }
 }
 void TextInputBox::onMove(int newX, int newY) {
   TextView::onMove(newX, newY);
@@ -164,19 +168,28 @@ void TextInputBox::onResize(int newWidth, int newHeight) {
 void TextInputBox::render(RenderContext &context) {
   TextView::render(context);
   if (isSelected) {
-    // Current time in milliseconds
-    Uint32 currentTime = SDL_GetTicks();
-    // Blink interval (e.g., 500 ms on, 500 ms off)
+    // Caret blink interval
     Uint32 blinkInterval = 500;
+    Uint32 currentTime = SDL_GetTicks();
+    if (resetCaretBlink) {
+      lastBlink = currentTime;
+      resetCaretBlink = false;
+    }
 
     // Determine whether to show the caret
-    bool showCaret = (currentTime / blinkInterval) % 2 == 0;
+    bool showCaret =
+        (currentTime - lastBlink) % (2 * blinkInterval) < blinkInterval;
 
     if (showCaret) {
       bgfx::TransientVertexBuffer tvb;
       bgfx::TransientIndexBuffer tib;
       int caretX, caretY;
       cursorToPos(cursorPos, text, caretX, caretY);
+      int height = rect.h;
+      if (height == 0) {
+        height = TTF_FontHeight(font);
+      }
+
       if (!composition.empty()) {
         caretX = compositionX + compositionWidth;
         caretY = compositionY;
@@ -186,7 +199,7 @@ void TextInputBox::render(RenderContext &context) {
       // sdl color to abgr
       SDL_Color &c = color;
       xcolor = ((c.r << 24) | (c.g << 16) | (c.b << 8) | c.a);
-      rendering::createRect(tvb, tib, caretX, getY(), 2, rect.h, xcolor);
+      rendering::createRect(tvb, tib, caretX, getY(), 2, height, xcolor);
       bgfx::setVertexBuffer(0, &tvb);
       bgfx::setIndexBuffer(&tib);
       bgfx::setScissor(context.scissor.x, context.scissor.y,
