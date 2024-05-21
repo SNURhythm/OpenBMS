@@ -25,7 +25,7 @@ void createRect(bgfx::TransientVertexBuffer &tvb,
 
 bgfx::TextureHandle sdlSurfaceToBgfxTexture(SDL_Surface *surface) {
   // Calculate the total size needed for the copy considering pitch
-  uint32_t totalSize = surface->h * surface->pitch;
+  uint32_t totalSize = surface->h * surface->w * sizeof(Uint32);
   const bgfx::Memory *mem = bgfx::alloc(totalSize);
 
   // Copy row by row considering the pitch

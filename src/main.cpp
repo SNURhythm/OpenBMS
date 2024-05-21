@@ -1,7 +1,6 @@
 
-#include "bx/allocator.h"
+
 #include "rendering/ShaderManager.h"
-#define BX_CONFIG_DEBUG 1
 
 #include "bx/math.h"
 #include <cstdio>
@@ -12,18 +11,10 @@
 #include "main.h"
 #include "scene/MainMenuScene.h"
 #include "scene/SceneManager.h"
-#include <algorithm>
 #include <cerrno>
 #include <cstdlib>
-#include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <string>
-#include <thread>
-#include <unordered_set>
-#include <vector>
-#include "tinyfiledialogs.h"
-#include "Utils.h"
 #include <bgfx/bgfx.h>
 #include <bgfx/embedded_shader.h>
 #include <bgfx/platform.h>
@@ -169,7 +160,7 @@ int main(int argv, char **args) {
   bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
   bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
-  bgfx::setDebug(BGFX_DEBUG_TEXT);
+  // bgfx::setDebug(BGFX_DEBUG_TEXT);
 
   // bgfx::setPlatformData(pd);
 
@@ -264,6 +255,8 @@ int main(int argv, char **args) {
     sceneManager.update(deltaTime);
 
     bgfx::reset(rendering::window_width, rendering::window_height);
+    // SDL_Log("Window size: %d x %d", rendering::window_width,
+    //         rendering::window_height);
     bgfx::touch(rendering::ui_view);
     // ortho
     float ortho[16];
