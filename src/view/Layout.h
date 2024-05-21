@@ -43,7 +43,7 @@ protected:
   Padding padding = {0, 0, 0, 0};
   inline void onResize(int newWidth, int newHeight) override { layout(); }
   inline void onMove(int newX, int newY) override {
-    SDL_Log("Layout::onMove");
+    // SDL_Log("Layout::onMove");
     layout();
   }
 };

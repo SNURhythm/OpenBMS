@@ -1,6 +1,5 @@
 #pragma once
-#include "bx/allocator.h"
-#include "bx/file.h"
+
 #include <bgfx/bgfx.h>
 #include <string>
 #define SHADER_SIMPLE "simple"
@@ -37,8 +36,13 @@ struct PosTexVertex {
 
 static bgfx::ViewId ui_view = 255;
 static bgfx::ViewId main_view = 0;
-// common shader program
+
 extern int window_width;
 extern int window_height;
 
+bgfx::TextureHandle sdlSurfaceToBgfxTexture(SDL_Surface *surface);
+
+void createRect(bgfx::TransientVertexBuffer &tvb,
+                bgfx::TransientIndexBuffer &tib, int x, int y, int width,
+                int height, uint32_t color);
 } // namespace rendering
