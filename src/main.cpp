@@ -73,7 +73,8 @@ static const uint16_t cubeTriList[] = {
     0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7, 0, 2, 4, 4, 2, 6,
     1, 5, 3, 5, 7, 3, 0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7,
 };
-
+int rendering::window_width = 800;
+int rendering::window_height = 600;
 int main(int argv, char **args) {
 
   // print bgfx version
@@ -254,6 +255,8 @@ int main(int argv, char **args) {
           e.window.event == SDL_WINDOWEVENT_RESIZED) {
         rendering::window_width = e.window.data1;
         rendering::window_height = e.window.data2;
+        SDL_Log("Window size: %d x %d", rendering::window_width,
+                rendering::window_height);
       }
     }
     sceneManager.update(deltaTime);
