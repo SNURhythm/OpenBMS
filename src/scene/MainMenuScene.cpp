@@ -56,7 +56,8 @@ void MainMenuScene::CheckEntries(ApplicationContext &context,
     auto path = Utils::GetDocumentsPath("BMS");
     std::filesystem::create_directories(path);
     entries.push_back(path);
-    dbHelper.InsertEntry(db, path);
+    // for iOS, not writing the entry to db is intentional, since it may change
+    // due to update with new code signing
 #else
     char *folder_c = tinyfd_selectFolderDialog("Select Folder", nullptr);
     std::string folder;
