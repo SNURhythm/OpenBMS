@@ -9,7 +9,7 @@ class TextView : public View {
 public:
   enum TextAlign { LEFT, CENTER, RIGHT };
   enum TextVAlign { TOP, MIDDLE, BOTTOM };
-  TextView(SDL_Renderer *renderer, const std::string &fontPath, int fontSize);
+  TextView(const std::string &fontPath, int fontSize);
   ~TextView() override;
 
   void setText(const std::string &newText);
