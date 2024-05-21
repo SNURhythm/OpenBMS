@@ -103,7 +103,8 @@ public:
     // clip the rendering area
     bgfx::setViewScissor(rendering::ui_view, this->getX(), this->getY(),
                          this->getWidth(), this->getHeight());
-
+    SDL_Log("RecyclerView::render scissors: %d, %d, %d, %d", this->getX(),
+            this->getY(), this->getWidth(), this->getHeight());
     for (auto entry : viewEntries) {
       entry.first->render();
     }

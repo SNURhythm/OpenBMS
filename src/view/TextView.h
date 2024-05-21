@@ -19,7 +19,7 @@ public:
   void setVAlign(TextVAlign newVAlign);
   void render() override;
 
-private:
+protected:
   TextAlign align = TextAlign::LEFT;
   TextVAlign valign = TextVAlign::TOP;
   TTF_Font *font;
@@ -28,7 +28,7 @@ private:
   SDL_Rect rect{};
   std::string text;
   bgfx::TextureHandle texture;
-  bgfx::TextureHandle sdlSurfaceToBgfxTexture(SDL_Surface *surface);
+
   bgfx::UniformHandle s_texColor;
   void createTexture();
 };

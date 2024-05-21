@@ -31,33 +31,25 @@ TextView::~TextView() {
 
 void TextView::setText(const std::string &newText) {
   this->text = newText;
+  if (newText.empty()) {
+    rect.w = 0;
+    rect.h = 0;
+    return;
+  }
   SDL_Surface *surface = TTF_RenderUTF8_Blended(font, newText.c_str(), color);
   if (bgfx::isValid(texture)) {
     bgfx::destroy(texture);
   }
+  if (!surface) {
+    SDL_Log("Failed to render text: %s", TTF_GetError());
+    return;
+  }
   rect.w = surface->w;
   rect.h = surface->h;
-  texture = sdlSurfaceToBgfxTexture(surface);
+  texture = rendering::sdlSurfaceToBgfxTexture(surface);
   SDL_FreeSurface(surface);
 }
 
-bgfx::TextureHandle TextView::sdlSurfaceToBgfxTexture(SDL_Surface *surface) {
-  // Calculate the total size needed for the copy considering pitch
-  uint32_t totalSize = surface->h * surface->pitch;
-  const bgfx::Memory *mem = bgfx::alloc(totalSize);
-
-  // Copy row by row considering the pitch
-  uint8_t *dst = (uint8_t *)mem->data;
-  uint8_t *src = (uint8_t *)surface->pixels;
-  for (int i = 0; i < surface->h; ++i) {
-    bx::memCopy(dst, src, surface->w * sizeof(Uint32));
-    src += surface->pitch;
-    dst += surface->w * sizeof(Uint32);
-  }
-
-  return bgfx::createTexture2D((uint16_t)surface->w, (uint16_t)surface->h,
-                               false, 1, bgfx::TextureFormat::BGRA8, 0, mem);
-}
 void TextView::render() {
   if (bgfx::isValid(texture)) {
 

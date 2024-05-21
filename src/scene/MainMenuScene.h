@@ -1,5 +1,6 @@
 #pragma once
 #include "../view/RecyclerView.h"
+#include "../view/LinearLayout.h"
 #include "Scene.h"
 #include "../ChartDBHelper.h"
 #include "../path.h"
@@ -11,7 +12,7 @@ class MainMenuScene : public Scene {
 public:
   inline explicit MainMenuScene() : Scene() {}
   void init(ApplicationContext &context) override;
-  EventHandleResult handleEvents(SDL_Event &event) override;
+
   void update(float dt) override;
   void renderScene() override;
   void cleanupScene() override;
@@ -19,6 +20,7 @@ public:
 private:
   std::thread checkEntriesThread;
   RecyclerView<std::string> *recyclerView = nullptr;
+  LinearLayout *rootLayout = nullptr;
 
   void initView();
   static void CheckEntries(ApplicationContext &context, MainMenuScene &scene);
