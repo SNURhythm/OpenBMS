@@ -22,12 +22,17 @@ public:
   [[nodiscard]] inline bool getSelected() const { return isSelected; }
 
 private:
+  std::string composition;
+  int compositionX = 0;
+  int compositionY = 0;
+  int compositionWidth = 0;
+  int compositionHeight = 0;
   bool isSelected = false;
   SDL_Rect viewRect;
   size_t cursorPos = 0;
 
   // convert cursor position to x, y position
-  void cursorToPos(size_t cursorPos, int &x, int &y);
+  void cursorToPos(size_t cursorPos, const std::string &text, int &x, int &y);
 
   // convert x, y position to cursor position
   size_t posToCursor(int x, int y);
