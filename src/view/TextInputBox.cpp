@@ -27,20 +27,43 @@ size_t TextInputBox::getPrevUnicodePos(size_t pos) {
 }
 void TextInputBox::handleEvents(SDL_Event &event) {
   bool shouldUpdate = false;
-  std::string composition;
+
   switch (event.type) {
   case SDL_TEXTINPUT:
+    if (!isSelected)
+      return;
+    composition.clear();
     shouldUpdate = true;
     // Add new text to the cursor position
     text.insert(cursorPos, event.text.text);
     cursorPos += strlen(event.text.text);
     break;
   case SDL_KEYDOWN:
+    if (!isSelected)
+      return;
+    shouldUpdate = true;
     if (event.key.keysym.sym == SDLK_BACKSPACE && text.length() > 0) {
-      size_t prevPos = getPrevUnicodePos(cursorPos);
-      text.erase(prevPos, cursorPos - prevPos);
-      cursorPos = prevPos;
+      if (!composition.empty()) {
+        break;
+      }
+      // cmd + backspace - delete whole word
+      if (event.key.keysym.sym == SDLK_BACKSPACE &&
+          (SDL_GetModState() & KMOD_CTRL)) {
+        size_t prevPos = getPrevUnicodePos(cursorPos);
+        while (prevPos > 0 && !std::isspace(text[prevPos - 1])) {
+          prevPos = getPrevUnicodePos(prevPos);
+        }
+        text.erase(prevPos, cursorPos - prevPos);
+        cursorPos = prevPos;
+      } else {
+        size_t prevPos = getPrevUnicodePos(cursorPos);
+        text.erase(prevPos, cursorPos - prevPos);
+        cursorPos = prevPos;
+      }
     } else if (event.key.keysym.sym == SDLK_DELETE && text.length() > 0) {
+      if (!composition.empty()) {
+        break;
+      }
       size_t nextPos = getNextUnicodePos(cursorPos);
       text.erase(cursorPos, nextPos - cursorPos);
     } else if (event.key.keysym.sym == SDLK_RIGHT) {
@@ -53,13 +76,14 @@ void TextInputBox::handleEvents(SDL_Event &event) {
       std::string clipboard = SDL_GetClipboardText();
       text.insert(cursorPos, clipboard);
       cursorPos += clipboard.size();
-    } else {
-      shouldUpdate = false;
     }
-    shouldUpdate = true;
+
     break;
   case SDL_TEXTEDITING:
+    if (!isSelected)
+      return;
     shouldUpdate = true;
+    SDL_Log("Text editing: %s", event.edit.text);
     // Update the composition text.
     composition = event.edit.text;
     break;
@@ -71,7 +95,6 @@ void TextInputBox::handleEvents(SDL_Event &event) {
         event.button.y <= getY() + getHeight()) {
 
       cursorPos = posToCursor(event.button.x - getX(), event.button.y - getY());
-      SDL_Log("TextInputBox::handleEvents: cursorPos: %d", cursorPos);
       SDL_SetTextInputRect(&viewRect);
       onSelected();
       SDL_StartTextInput();
@@ -96,12 +119,19 @@ void TextInputBox::handleEvents(SDL_Event &event) {
   if (shouldUpdate) {
     std::string backup = text;
     std::string composited = text;
-    if (!composition.empty())
+    if (!composition.empty()) {
       composited.insert(cursorPos, composition);
+      cursorToPos(cursorPos, text, compositionX, compositionY);
+      cursorToPos(cursorPos + composition.size(), composited, compositionWidth,
+                  compositionHeight);
+      compositionWidth -= compositionX;
+      SDL_Log("Composition x: %d, y: %d, w: %d, h: %d", compositionX,
+              compositionY, compositionWidth, compositionHeight);
+    }
     setText(composited);
     text = backup;
     int cursorX, cursorY;
-    cursorToPos(cursorPos, cursorX, cursorY);
+    cursorToPos(cursorPos, text, cursorX, cursorY);
     viewRect = {cursorX, cursorY, getWidth(), getHeight()};
     SDL_SetTextInputRect(&viewRect);
   }
@@ -109,14 +139,14 @@ void TextInputBox::handleEvents(SDL_Event &event) {
 void TextInputBox::onMove(int newX, int newY) {
   TextView::onMove(newX, newY);
   int cursorX, cursorY;
-  cursorToPos(cursorPos, cursorX, cursorY);
+  cursorToPos(cursorPos, text, cursorX, cursorY);
   viewRect = {cursorX, cursorY, getWidth(), getHeight()};
   SDL_SetTextInputRect(&viewRect);
 }
 void TextInputBox::onResize(int newWidth, int newHeight) {
   TextView::onResize(newWidth, newHeight);
   int cursorX, cursorY;
-  cursorToPos(cursorPos, cursorX, cursorY);
+  cursorToPos(cursorPos, text, cursorX, cursorY);
   viewRect = {cursorX, cursorY, getWidth(), getHeight()};
   SDL_SetTextInputRect(&viewRect);
 }
@@ -136,7 +166,11 @@ void TextInputBox::render(RenderContext &context) {
       bgfx::TransientVertexBuffer tvb;
       bgfx::TransientIndexBuffer tib;
       int caretX, caretY;
-      cursorToPos(cursorPos, caretX, caretY);
+      cursorToPos(cursorPos, text, caretX, caretY);
+      if (!composition.empty()) {
+        caretX = compositionX + compositionWidth;
+        caretY = compositionY;
+      }
 
       uint32_t xcolor;
       // sdl color to abgr
@@ -153,10 +187,30 @@ void TextInputBox::render(RenderContext &context) {
           rendering::ui_view,
           rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE));
     }
+    // render blue underline for composition text
+    if (!composition.empty()) {
+
+      bgfx::TransientVertexBuffer tvb2;
+      bgfx::TransientIndexBuffer tib2;
+      rendering::createRect(tvb2, tib2, compositionX, compositionY,
+                            compositionWidth, 2, 0xFFFFFFFF);
+      // SDL_Log("Draw Composition x: %d, y: %d, w: %d, h: %d", compositionX,
+      //         compositionY - 20, compositionWidth, 200);
+      bgfx::setVertexBuffer(0, &tvb2);
+      bgfx::setIndexBuffer(&tib2);
+      bgfx::setScissor(context.scissor.x, context.scissor.y,
+                       context.scissor.width, context.scissor.height);
+      bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
+                     BGFX_STATE_BLEND_ALPHA);
+      bgfx::submit(
+          rendering::ui_view,
+          rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE));
+    }
   }
 }
 
-void TextInputBox::cursorToPos(size_t cursorPos, int &x, int &y) {
+void TextInputBox::cursorToPos(size_t cursorPos, const std::string &text,
+                               int &x, int &y) {
   // TODO: this will not work for multi-line text
   std::string utf8 = text;
   if (cursorPos > utf8.size())

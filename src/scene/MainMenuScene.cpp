@@ -138,7 +138,7 @@ void MainMenuScene::initView() {
 
   rootLayout->addView(recyclerView, {0, 0, 1});
   TextInputBox *inputBox =
-      new TextInputBox("assets/fonts/NotoSansKR-Regular.ttf", 32);
+      new TextInputBox("assets/fonts/notosanscjkjp.ttf", 32);
   inputBox->setText("asdf");
   rootLayout->addView(inputBox, {0, 50, 0});
   addView(rootLayout);
