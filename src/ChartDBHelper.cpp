@@ -9,9 +9,7 @@
 #include <filesystem>
 #include <iostream>
 #include "targets.h"
-#if TARGET_OS_IOS
-#include "iOSNatives.hpp"
-#endif
+
 sqlite3 *ChartDBHelper::Connect() {
   std::filesystem::path Directory = Utils::GetDocumentsPath("db");
   std::cout << "DB Directory: " << Directory.string() << "\n";
@@ -161,8 +159,8 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
   sqlite3_bind_text(stmt, 7, (chartMeta.Artist).c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 8, (chartMeta.SubArtist).c_str(), -1,
                     SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 9, chartMeta.Folder.string().c_str(), -1,
-                    SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 9, ToRelativePath(chartMeta.Folder).string().c_str(),
+                    -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 10, chartMeta.StageFile.string().c_str(), -1,
                     SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 11, chartMeta.Banner.string().c_str(), -1,
@@ -496,7 +494,7 @@ std::filesystem::path
 ChartDBHelper::ToRelativePath(std::filesystem::path &path) {
   // for iOS, remove Documents
 #if TARGET_OS_IOS
-  std::filesystem::path Documents = GetIOSDocumentsPath() + "/BMS/";
+  std::filesystem::path Documents = Utils::GetDocumentsPath("BMS/");
   if (path.string().find(Documents.string()) != std::string::npos) {
     return path.string().substr(Documents.string().length());
   }
@@ -510,7 +508,7 @@ std::filesystem::path
 ChartDBHelper::ToAbsolutePath(std::filesystem::path &path) {
   // for iOS, add Documents
 #if TARGET_OS_IOS
-  std::filesystem::path Documents = GetIOSDocumentsPath() + "/BMS/";
+  std::filesystem::path Documents = Utils::GetDocumentsPath("BMS/");
   return Documents / path;
 #endif
   // otherwise, noop
