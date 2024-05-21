@@ -4,10 +4,14 @@
 #include "Utils.h"
 #include <SDL2/SDL.h>
 #include "path.h"
+
 #include <codecvt>
 #include <filesystem>
 #include <iostream>
-
+#include "targets.h"
+#if TARGET_OS_IOS
+#include "iOSNatives.hpp"
+#endif
 sqlite3 *ChartDBHelper::Connect() {
   std::filesystem::path Directory = Utils::GetDocumentsPath("db");
   std::cout << "DB Directory: " << Directory.string() << "\n";
@@ -491,18 +495,12 @@ bool ChartDBHelper::ClearEntries(sqlite3 *db) {
 std::filesystem::path
 ChartDBHelper::ToRelativePath(std::filesystem::path &path) {
   // for iOS, remove Documents
-#if PLATFORM_IOS
-  FString Documents = FPaths::Combine(GetIOSDocumentsPath(), "BMS/");
-  FString DocumentsAbs =
-      IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(
-          *Documents);
-  UE_LOG(LogTemp, Log, TEXT("ToRel - DocumentsAbs: %s, Path: %s"),
-         *DocumentsAbs, *path);
-  if (path.StartsWith(DocumentsAbs)) {
-    UE_LOG(LogTemp, Log, TEXT("Relative Path: %s"),
-           *path.RightChop(DocumentsAbs.Len()));
-    return path.RightChop(DocumentsAbs.Len());
+#if TARGET_OS_IOS
+  std::filesystem::path Documents = GetIOSDocumentsPath() + "/BMS/";
+  if (path.string().find(Documents.string()) != std::string::npos) {
+    return path.string().substr(Documents.string().length());
   }
+
 #endif
   // otherwise, noop
   return path;
@@ -511,18 +509,9 @@ ChartDBHelper::ToRelativePath(std::filesystem::path &path) {
 std::filesystem::path
 ChartDBHelper::ToAbsolutePath(std::filesystem::path &path) {
   // for iOS, add Documents
-#if PLATFORM_IOS
-  FString Documents = FPaths::Combine(GetIOSDocumentsPath(), "BMS/");
-  FString DocumentsAbs =
-      IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead(
-          *Documents);
-  UE_LOG(LogTemp, Log, TEXT("ToAbs - DocumentsAbs: %s, Path: %s"),
-         *DocumentsAbs, *path);
-  if (!path.StartsWith(DocumentsAbs)) {
-    UE_LOG(LogTemp, Log, TEXT("Absolute Path: %s"),
-           *FPaths::Combine(DocumentsAbs, path));
-    return FPaths::Combine(DocumentsAbs, path);
-  }
+#if TARGET_OS_IOS
+  std::filesystem::path Documents = GetIOSDocumentsPath() + "/BMS/";
+  return Documents / path;
 #endif
   // otherwise, noop
   return path;
