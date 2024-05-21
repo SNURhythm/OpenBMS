@@ -38,7 +38,7 @@ struct PosTexVertex {
 static bgfx::ViewId ui_view = 255;
 static bgfx::ViewId main_view = 0;
 // common shader program
-static int window_width = 800;
-static int window_height = 600;
+extern int window_width;
+extern int window_height;
 
 } // namespace rendering
