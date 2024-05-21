@@ -6,24 +6,9 @@
 #include "../rendering/ShaderManager.h"
 #include "bgfx/defines.h"
 #include "bx/math.h"
-struct PosTexVertex {
-  float x, y, z;
-  float u, v;
 
-  static void init() {
-    ms_decl.begin()
-        .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-        .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
-        .end();
-  }
-
-  static bgfx::VertexLayout ms_decl;
-};
-
-bgfx::VertexLayout PosTexVertex::ms_decl;
 TextView::TextView(const std::string &fontPath, int fontSize)
     : View(0, 0, 0, 0), texture(BGFX_INVALID_HANDLE) {
-  PosTexVertex::init();
   TTF_Init();
   font = TTF_OpenFont(fontPath.c_str(), fontSize);
   if (!font) {
@@ -101,7 +86,7 @@ void TextView::render() {
       break;
     }
 
-    PosTexVertex vertices[] = {
+    rendering::PosTexVertex vertices[] = {
         {0.0f, 0.0f, 0.0f, 0.0f, 0.0f},                   // Top-left
         {(float)rect.w, 0.0f, 0.0f, 1.0f, 0.0f},          // Top-right
         {(float)rect.w, (float)rect.h, 0.0f, 1.0f, 1.0f}, // Bottom-right
@@ -111,7 +96,7 @@ void TextView::render() {
     const uint16_t indices[] = {0, 1, 2, 0, 2, 3};
     bgfx::TransientVertexBuffer tvb;
     bgfx::TransientIndexBuffer tib;
-    bgfx::allocTransientVertexBuffer(&tvb, 4, PosTexVertex::ms_decl);
+    bgfx::allocTransientVertexBuffer(&tvb, 4, rendering::PosTexVertex::ms_decl);
     bgfx::allocTransientIndexBuffer(&tib, 6);
     std::memcpy(tvb.data, vertices, sizeof(vertices));
     std::memcpy(tib.data, indices, sizeof(indices));
