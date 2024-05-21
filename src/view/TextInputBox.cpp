@@ -1,6 +1,7 @@
 #include "TextInputBox.h"
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
+#include "SDL2/SDL_events.h"
 TextInputBox::TextInputBox(const std::string &fontPath, int fontSize)
     : TextView(fontPath, fontSize) {
   viewRect = {getX(), getY(), getWidth(), getHeight()};
@@ -82,10 +83,19 @@ void TextInputBox::handleEvents(SDL_Event &event) {
   case SDL_TEXTEDITING:
     if (!isSelected)
       return;
-    shouldUpdate = true;
     SDL_Log("Text editing: %s", event.edit.text);
     // Update the composition text.
     composition = event.edit.text;
+    shouldUpdate = true;
+    break;
+  case SDL_TEXTEDITING_EXT:
+
+    if (!isSelected)
+      return;
+    shouldUpdate = true;
+    SDL_Log("Text editing: %s", event.editExt.text);
+    // Update the composition text.
+    composition = event.editExt.text;
     break;
   case SDL_MOUSEBUTTONDOWN:
 
