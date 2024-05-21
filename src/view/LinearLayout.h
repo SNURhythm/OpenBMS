@@ -1,3 +1,4 @@
+#pragma once
 #include "Layout.h"
 enum class Orientation { HORIZONTAL, VERTICAL };
 struct LinearLayoutConfig {

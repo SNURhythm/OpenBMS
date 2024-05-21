@@ -3,6 +3,7 @@
 #include <fstream>
 #include "../view/ChartListItemView.h"
 #include "../view/TextView.h"
+#include "../view/TextInputBox.h"
 #include "../Utils.h"
 #ifdef _WIN32
 #include <windows.h>
@@ -131,15 +132,15 @@ void MainMenuScene::initView() {
   }
   recyclerView->setItems(items);
 
-  addView(recyclerView);
-}
+  rootLayout =
+      new LinearLayout(0, 0, rendering::window_width, rendering::window_height,
+                       Orientation::VERTICAL);
 
-EventHandleResult MainMenuScene::handleEvents(SDL_Event &event) {
-  // Handle input
-  EventHandleResult result;
-  recyclerView->handleEvents(event);
-
-  return result;
+  rootLayout->addView(recyclerView, {0, 0, 1});
+  TextInputBox *inputBox = new TextInputBox("assets/fonts/notosansjp.ttf", 32);
+  inputBox->setText("asdf");
+  rootLayout->addView(inputBox, {0, 30, 1});
+  addView(rootLayout);
 }
 
 void MainMenuScene::update(float dt) {
@@ -149,7 +150,7 @@ void MainMenuScene::update(float dt) {
 
 void MainMenuScene::renderScene() {
   // Render the scene
-  recyclerView->setSize(rendering::window_width, rendering::window_height);
+  rootLayout->setSize(rendering::window_width, rendering::window_height);
 }
 
 void MainMenuScene::cleanupScene() {

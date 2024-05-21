@@ -11,7 +11,12 @@ public:
   Scene() {}
   std::vector<View *> views;
   virtual void init(ApplicationContext &context) = 0; // Initialize the scene
-  virtual EventHandleResult handleEvents(SDL_Event &event) = 0; // Handle input
+  EventHandleResult handleEvents(SDL_Event &event) {
+    for (auto view : views) {
+      view->handleEvents(event);
+    }
+    return handleEventsScene(event);
+  }
   virtual void update(float dt) = 0; // Update the scene logic
   // Render the scene (non-virtual public method)
   void render() {
@@ -38,4 +43,8 @@ protected:
   virtual void renderScene() = 0;
 
   virtual void cleanupScene() = 0;
+
+  virtual EventHandleResult handleEventsScene(SDL_Event &event) {
+    return EventHandleResult();
+  }
 };
