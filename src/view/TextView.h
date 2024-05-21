@@ -1,6 +1,7 @@
 #pragma once
 
 #include "View.h"
+#include <bgfx/bgfx.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
@@ -22,10 +23,12 @@ private:
   TextAlign align = TextAlign::LEFT;
   TextVAlign valign = TextVAlign::TOP;
   TTF_Font *font;
-  SDL_Texture *texture;
+
   SDL_Color color{};
   SDL_Rect rect{};
   std::string text;
-
+  bgfx::TextureHandle texture;
+  bgfx::TextureHandle sdlSurfaceToBgfxTexture(SDL_Surface *surface);
+  bgfx::UniformHandle s_texColor;
   void createTexture();
 };

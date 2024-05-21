@@ -15,6 +15,8 @@ add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedanti
 include_directories(include)
 include_directories(bgfx/bgfx/include)
 include_directories(bgfx/bx/include)
+include_directories(bgfx/bimg/include)
+include_directories(bgfx/bgfx/3rdparty)
 
 # Source directory
 set(SRC_DIR src)

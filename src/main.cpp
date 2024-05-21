@@ -1,3 +1,5 @@
+#include "bx/allocator.h"
+#include "rendering/ShaderManager.h"
 #define BX_CONFIG_DEBUG 1
 
 #include "bx/math.h"
@@ -26,6 +28,7 @@
 #include <bgfx/platform.h>
 #include <bx/platform.h>
 #include "rendering/common.h"
+#include "rendering/ShaderManager.h"
 #ifdef _WIN32
 #include <windows.h>
 
@@ -70,6 +73,7 @@ public:
 };
 
 bgfx::VertexLayout rendering::PosColorVertex::ms_decl;
+
 static rendering::PosColorVertex cubeVertices[] = {
     {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
     {-1.0f, -1.0f, 1.0f, 0xff00ff00},  {1.0f, -1.0f, 1.0f, 0xff00ffff},
@@ -81,56 +85,6 @@ static const uint16_t cubeTriList[] = {
     0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7, 0, 2, 4, 4, 2, 6,
     1, 5, 3, 5, 7, 3, 0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7,
 };
-bgfx::ShaderHandle loadShader(const char *FILENAME) {
-  const char *shaderPath = "???";
-  switch (bgfx::getRendererType()) {
-  case bgfx::RendererType::Noop:
-  case bgfx::RendererType::Direct3D11:
-  case bgfx::RendererType::Direct3D12:
-    shaderPath = "./shaders/dx11/";
-    break;
-  case bgfx::RendererType::Gnm:
-    shaderPath = "./shaders/pssl/";
-    break;
-  case bgfx::RendererType::Metal:
-    shaderPath = "./shaders/metal/";
-    break;
-  case bgfx::RendererType::OpenGL:
-    shaderPath = "./shaders/glsl/";
-    break;
-  case bgfx::RendererType::OpenGLES:
-    shaderPath = "./shaders/essl/";
-    break;
-  case bgfx::RendererType::Vulkan:
-    shaderPath = "./shaders/spirv/";
-    break;
-  default:
-    throw std::runtime_error("Unknown renderer type");
-  }
-
-  size_t shaderLen = strlen(shaderPath);
-  size_t fileLen = strlen(FILENAME);
-  char *filePath = (char *)malloc(shaderLen + fileLen);
-  memcpy(filePath, shaderPath, shaderLen);
-  memcpy(&filePath[shaderLen], FILENAME, fileLen);
-  SDL_Log("Loading %s", filePath);
-
-  FILE *file = fopen(filePath, "rb");
-  if (!file) {
-    perror("file open error");
-    throw std::runtime_error("no such file");
-  }
-  fseek(file, 0, SEEK_END);
-  long fileSize = ftell(file);
-  fseek(file, 0, SEEK_SET);
-
-  const bgfx::Memory *mem = bgfx::alloc(fileSize + 1);
-  fread(mem->data, 1, fileSize, file);
-  mem->data[mem->size - 1] = '\0';
-  fclose(file);
-
-  return bgfx::createShader(mem);
-}
 
 int main(int argv, char **args) {
 
@@ -274,6 +228,7 @@ int main(int argv, char **args) {
   bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
   bgfx::setDebug(BGFX_DEBUG_TEXT);
+
   // bgfx::setPlatformData(pd);
 
   bgfx::setViewMode(0, bgfx::ViewMode::Sequential);
@@ -324,10 +279,6 @@ int main(int argv, char **args) {
                                rendering::PosColorVertex::ms_decl);
   bgfx::IndexBufferHandle rectIbh =
       bgfx::createIndexBuffer(bgfx::makeRef(rectInd, sizeof(rectInd)));
-  auto vs_handle = loadShader("vs_simple.bin");
-  auto fs_handle = loadShader("fs_simple.bin");
-  auto vs_ui_handle = loadShader("vs_ui.bin");
-  auto fs_ui_handle = loadShader("fs_ui.bin");
 
   // We will use this to reference where we're drawing
   // This is set once to determine the clear color to use on starting a new
@@ -339,7 +290,8 @@ int main(int argv, char **args) {
   // This is set to determine the size of the drawable surface
   bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
                     rendering::window_height);
-  rendering::simple_program = bgfx::createProgram(vs_handle, fs_handle, true);
+  auto program =
+      rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
 
   while (!quit) {
 
@@ -394,7 +346,7 @@ int main(int argv, char **args) {
 
     bgfx::setVertexBuffer(0, triangleVbh);
     bgfx::setIndexBuffer(triangleIbh);
-    bgfx::submit(rendering::ui_view, rendering::simple_program);
+    bgfx::submit(rendering::ui_view, program);
 
     bx::mtxTranslate(translate, 300.0f, 500.0f, 0.0f);
     bx::mtxRotateZ(rotate, bx::toRad(45.0f));
@@ -403,7 +355,7 @@ int main(int argv, char **args) {
     bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
     bgfx::setVertexBuffer(0, rectVbh);
     bgfx::setIndexBuffer(rectIbh);
-    bgfx::submit(rendering::ui_view, rendering::simple_program);
+    bgfx::submit(rendering::ui_view, program);
     // bgfx::frame();
 
     // draw cube
@@ -423,7 +375,7 @@ int main(int argv, char **args) {
     bgfx::setVertexBuffer(0, vbh);
     bgfx::setIndexBuffer(ibh);
     bgfx::setState(BGFX_STATE_DEFAULT);
-    bgfx::submit(rendering::main_view, rendering::simple_program);
+    bgfx::submit(rendering::main_view, program);
 
     bgfx::frame();
   }

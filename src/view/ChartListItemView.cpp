@@ -51,7 +51,7 @@ void ChartListItemView::render() {
   // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128);
   // SDL_Rect rect = {getX(), getY(), getWidth(), getHeight()};
   // SDL_RenderFillRect(renderer, &rect);
-  // rootLayout->render();
+  rootLayout->render();
 }
 
 void ChartListItemView::onSelected() {

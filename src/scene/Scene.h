@@ -13,7 +13,7 @@ public:
   virtual EventHandleResult handleEvents(SDL_Event &event) = 0; // Handle input
   virtual void update(float dt) = 0; // Update the scene logic
   // Render the scene (non-virtual public method)
-  inline void render() {
+  void render() {
     for (auto view : views) {
       view->render();
     }
