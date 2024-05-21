@@ -50,7 +50,7 @@ bgfx::TextureHandle TextView::sdlSurfaceToBgfxTexture(SDL_Surface *surface) {
   uint8_t *dst = (uint8_t *)mem->data;
   uint8_t *src = (uint8_t *)surface->pixels;
   for (int i = 0; i < surface->h; ++i) {
-    std::memcpy(dst, src, surface->w * sizeof(Uint32));
+    bx::memCopy(dst, src, surface->w * sizeof(Uint32));
     src += surface->pitch;
     dst += surface->w * sizeof(Uint32);
   }
@@ -98,8 +98,8 @@ void TextView::render() {
     bgfx::TransientIndexBuffer tib;
     bgfx::allocTransientVertexBuffer(&tvb, 4, rendering::PosTexVertex::ms_decl);
     bgfx::allocTransientIndexBuffer(&tib, 6);
-    std::memcpy(tvb.data, vertices, sizeof(vertices));
-    std::memcpy(tib.data, indices, sizeof(indices));
+    bx::memCopy(tvb.data, vertices, sizeof(vertices));
+    bx::memCopy(tib.data, indices, sizeof(indices));
 
     float translate[16];
     bx::mtxTranslate(translate, rect.x, rect.y, 0.0f);
