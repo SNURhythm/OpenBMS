@@ -6,12 +6,10 @@
 void MainMenuScene::init() {
   // Initialize the scene
   // get screen width
-  int screenWidth, screenHeight;
-  SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
-  recyclerView =
-      new RecyclerView<std::string>(renderer, 0, 0, screenWidth, screenHeight);
-  recyclerView->onCreateView = [this, screenWidth](const std::string &item) {
-    return new ChartListItemView(renderer, 0, 0, screenWidth, 100, item,
+  recyclerView = new RecyclerView<std::string>(0, 0, rendering::window_width,
+                                               rendering::window_height);
+  recyclerView->onCreateView = [this](const std::string &item) {
+    return new ChartListItemView(0, 0, rendering::window_width, 100, item,
                                  "Artist", "Level");
   };
   recyclerView->itemHeight = 100;
@@ -42,7 +40,7 @@ void MainMenuScene::init() {
   };
   // create 100 items
   std::vector<std::string> items;
-  for (int i = 0; i < 100000; i++) {
+  for (int i = 0; i < 100; i++) {
     items.push_back("Item " + std::to_string(i));
   }
   recyclerView->setItems(items);
@@ -65,9 +63,7 @@ void MainMenuScene::update(float dt) {
 
 void MainMenuScene::renderScene() {
   // Render the scene
-  int screenWidth, screenHeight;
-  SDL_GetRendererOutputSize(renderer, &screenWidth, &screenHeight);
-  recyclerView->setSize(screenWidth, screenHeight);
+  recyclerView->setSize(rendering::window_width, rendering::window_height);
 }
 
 void MainMenuScene::cleanupScene() {

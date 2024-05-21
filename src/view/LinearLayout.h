@@ -6,9 +6,9 @@ struct LinearLayoutConfig {
 };
 class LinearLayout : public Layout {
 public:
-  inline LinearLayout(SDL_Renderer *renderer, int x, int y, int width,
-                      int height, Orientation orientation)
-      : Layout(renderer, x, y, width, height), orientation(orientation) {}
+  inline LinearLayout(int x, int y, int width, int height,
+                      Orientation orientation)
+      : Layout(x, y, width, height), orientation(orientation) {}
   inline void addView(View *view, LinearLayoutConfig layoutConfig) {
     views.push_back(view);
     layoutConfigs[view] = layoutConfig;

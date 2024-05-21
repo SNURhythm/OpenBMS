@@ -7,13 +7,13 @@ struct EventHandleResult {
 };
 class Scene {
 public:
-  Scene(SDL_Renderer *renderer) : renderer(renderer) {}
+  Scene() {}
   std::vector<View *> views;
   virtual void init() = 0; // Initialize the scene
   virtual EventHandleResult handleEvents(SDL_Event &event) = 0; // Handle input
   virtual void update(float dt) = 0; // Update the scene logic
   // Render the scene (non-virtual public method)
-  inline void render(SDL_Renderer *renderer) {
+  inline void render() {
     for (auto view : views) {
       view->render();
     }
@@ -33,7 +33,6 @@ public:
   virtual ~Scene() {}
 
 protected:
-  SDL_Renderer *renderer;
   // Protected virtual methods for customization by derived classes
   virtual void renderScene() = 0;
 

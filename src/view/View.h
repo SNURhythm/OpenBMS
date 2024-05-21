@@ -8,9 +8,8 @@
 
 class View {
 public:
-  inline View(SDL_Renderer *renderer, int x, int y, int width, int height)
-      : renderer(renderer), x(x), y(y), width(width), height(height),
-        isVisible(true) {}
+  inline View(int x, int y, int width, int height)
+      : x(x), y(y), width(width), height(height), isVisible(true) {}
 
   virtual ~View() = default;
 
@@ -43,7 +42,6 @@ public:
   virtual void onUnselected() {}
 
 protected:
-  SDL_Renderer *renderer;
   // onResize
   virtual void onResize(int newWidth, int newHeight) {}
   // onMove

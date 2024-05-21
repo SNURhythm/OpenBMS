@@ -7,7 +7,7 @@
 
 class ChartListItemView : public View {
 public:
-  ChartListItemView(SDL_Renderer *renderer, int x, int y, int width, int height,
+  ChartListItemView(int x, int y, int width, int height,
                     const std::string &title, const std::string &artist,
                     const std::string &level);
   void render() override;
