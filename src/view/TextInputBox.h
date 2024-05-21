@@ -23,15 +23,15 @@ public:
 private:
   bool isSelected = false;
   SDL_Rect viewRect;
-  int cursorPos = 0;
+  size_t cursorPos = 0;
 
-  int popBack(std::string &utf8);
+  size_t popBack(std::string &utf8);
 
   // convert cursor position to x, y position
-  void cursorToPos(int cursorPos, int &x, int &y);
+  void cursorToPos(size_t cursorPos, int &x, int &y);
 
   // convert x, y position to cursor position
-  int posToCursor(int x, int y);
+  size_t posToCursor(int x, int y);
 
-  int getNextUnicodePos(int pos);
+  size_t getNextUnicodePos(size_t pos);
 };
