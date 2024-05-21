@@ -4,6 +4,7 @@
 #include "../ChartDBHelper.h"
 #include "../path.h"
 #include <filesystem>
+#include <thread>
 #include <unordered_set>
 #include <vector>
 class MainMenuScene : public Scene {
@@ -16,13 +17,14 @@ public:
   void cleanupScene() override;
 
 private:
+  std::thread checkEntriesThread;
   RecyclerView<std::string> *recyclerView = nullptr;
 
   void initView();
-  static void CheckEntries(ApplicationContext &context);
+  static void CheckEntries(ApplicationContext &context, MainMenuScene &scene);
 
   static void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
-                         std::atomic_bool &isCancelled);
+                         MainMenuScene &scene, std::atomic_bool &isCancelled);
   enum DiffType { Deleted, Added };
   struct Diff {
     std::filesystem::path path;
