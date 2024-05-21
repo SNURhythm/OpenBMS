@@ -9,6 +9,7 @@
 #include <map>
 #include <stdexcept>
 #include "../rendering/common.h"
+#include "../rendering/ShaderManager.h"
 #include <bx/math.h>
 #include <string>
 #include <vector>
@@ -100,12 +101,13 @@ public:
       }
     }
     // clip the rendering area
-    // bgfx::setScissor(this->getX(), this->getY(), this->getWidth(),
-    //                  this->getHeight());
+    bgfx::setViewScissor(rendering::ui_view, this->getX(), this->getY(),
+                         this->getWidth(), this->getHeight());
 
     for (auto entry : viewEntries) {
       entry.first->render();
     }
+    bgfx::setViewScissor(rendering::ui_view);
     rendering::PosColorVertex vertices[] = {
         {-0.5f, -0.5f, 0.0f, 0xffffffff}, // Bottom-left
         {0.5f, -0.5f, 0.0f, 0xffffffff},  // Bottom-right
@@ -113,10 +115,10 @@ public:
         {-0.5f, 0.5f, 0.0f, 0xffffffff}   // Top-left
     };
     rendering::PosColorVertex thumbVertices[] = {
-        {-0.5f, -0.5f, 0.0f, 0x993333FF}, // Bottom-left
-        {0.5f, -0.5f, 0.0f, 0x993333FF},  // Bottom-right
-        {0.5f, 0.5f, 0.0f, 0x993333FF},   // Top-right
-        {-0.5f, 0.5f, 0.0f, 0x993333FF}   // Top-left
+        {-0.5f, -0.5f, 0.0f, 0xFF3333FF}, // Bottom-left
+        {0.5f, -0.5f, 0.0f, 0xFF3333FF},  // Bottom-right
+        {0.5f, 0.5f, 0.0f, 0xFF3333FF},   // Top-right
+        {-0.5f, 0.5f, 0.0f, 0xFF3333FF}   // Top-left
     };
     uint16_t indices[] = {0, 1, 2, 2, 3, 0};
 
@@ -153,8 +155,9 @@ public:
     bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
     bgfx::setVertexBuffer(0, &tvb);
     bgfx::setIndexBuffer(&ibh);
-
-    bgfx::submit(rendering::ui_view, rendering::simple_program);
+    auto program =
+        rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
+    bgfx::submit(rendering::ui_view, program);
 
     // // scroll bar thumb
     int itemsSize = std::max(1, static_cast<int>(items.size())) * itemHeight;
@@ -168,7 +171,7 @@ public:
     bgfx::setVertexBuffer(0, &thumbVbh);
     bgfx::setIndexBuffer(&ibh);
 
-    bgfx::submit(rendering::ui_view, rendering::simple_program);
+    bgfx::submit(rendering::ui_view, program);
     // int itemsSize = std::max(6, static_cast<int>(items.size())) * itemHeight;
     // int thumbHeight = this->getHeight() * this->getHeight() / itemsSize;
     // int thumbY = this->getY() + scrollOffset * this->getHeight() / itemsSize;
