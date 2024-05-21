@@ -16,10 +16,22 @@ public:
   void onSelected() override;
   void onUnselected() override;
 
-  void render() override;
+  void render(RenderContext &context) override;
 
   [[nodiscard]] inline bool getSelected() const { return isSelected; }
 
 private:
   bool isSelected = false;
+  SDL_Rect viewRect;
+  int cursorPos = 0;
+
+  int popBack(std::string &utf8);
+
+  // convert cursor position to x, y position
+  void cursorToPos(int cursorPos, int &x, int &y);
+
+  // convert x, y position to cursor position
+  int posToCursor(int x, int y);
+
+  int getNextUnicodePos(int pos);
 };
