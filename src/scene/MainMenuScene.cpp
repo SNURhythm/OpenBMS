@@ -5,6 +5,7 @@
 #include "../view/TextView.h"
 #include "../view/TextInputBox.h"
 #include "../Utils.h"
+#include "../targets.h"
 #ifdef _WIN32
 #include <windows.h>
 
@@ -283,7 +284,7 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
     FindClose(hFind);
   }
 }
-#else
+#elif TARGET_OS_OSX || TARGET_OS_LINUX
 void MainMenuScene::resolveDType(const std::filesystem::path &directoryPath,
                                  struct dirent *entry) {
   if (entry->d_type == DT_UNKNOWN) {
@@ -330,12 +331,39 @@ void MainMenuScene::FindFilesUnix(
         if (filename != "." && filename != "..") {
           directoriesToVisit.push_back(directoryPath / filename);
         }
+      } else {
+        SDL_Log("Unknown file type: %s", entry->d_name);
       }
     }
     closedir(dir);
+  } else {
+    SDL_Log("Failed to open directory: %s", directoryPath.c_str());
   }
 }
 
+#elif TARGET_OS_IOS
+void MainMenuScene::FindFilesIOS(
+    const std::filesystem::path &path, std::vector<Diff> &diffs,
+    const std::unordered_set<path_t> &oldFilesWs,
+    std::vector<std::filesystem::path> &directoriesToVisit,
+    std::atomic_bool &isCancelled) {
+  // use iosnatives
+  auto files = ListDocumentFilesRecursively();
+  SDL_Log("Found %d files", files.size());
+  for (auto &file : files) {
+    // SDL_Log("File: %s", file.c_str());
+    if (file.size() > 4) {
+      std::string ext = file.substr(file.size() - 4);
+      std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+      if (ext == ".bms" || ext == ".bme" || ext == ".bml") {
+        path_t fullPath = GetIOSDocumentsPath() + "/" + file;
+        if (oldFilesWs.find(fullPath) == oldFilesWs.end()) {
+          diffs.push_back({fullPath, Added});
+        }
+      }
+    }
+  }
+}
 #endif
 
 void MainMenuScene::FindNewBmsFiles(
@@ -348,7 +376,7 @@ void MainMenuScene::FindNewBmsFiles(
   std::vector<std::filesystem::path> directoriesToVisit;
   directoriesToVisit.push_back(path);
 #endif
-
+  SDL_Log("Finding new bms files in %s", path.c_str());
   while (!directoriesToVisit.empty()) {
     if (isCancelled) {
       break;
@@ -360,9 +388,12 @@ void MainMenuScene::FindNewBmsFiles(
 
     FindFilesWin(currentDir, diffs, oldFilesWs, directoriesToVisit,
                  isCancelled);
-#else
+#elif TARGET_OS_OSX || TARGET_OS_LINUX
     FindFilesUnix(currentDir, diffs, oldFilesWs, directoriesToVisit,
                   isCancelled);
+#elif TARGET_OS_IOS
+    FindFilesIOS(currentDir, diffs, oldFilesWs, directoriesToVisit,
+                 isCancelled);
 #endif
   }
 }

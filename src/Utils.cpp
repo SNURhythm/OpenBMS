@@ -1,6 +1,7 @@
 #include "Utils.h"
 #include <codecvt>
 #include <iostream>
+#include <fstream>
 #include "targets.h"
 #if TARGET_OS_IOS
 #include "iOSNatives.hpp"

@@ -14,6 +14,26 @@ void *GetIOSWindowHandle(void *uiwindow) {
   return (__bridge void *)(((__bridge UIWindow *)uiwindow)
                                .rootViewController.view.layer);
 }
+
+// list files recursively
+std::vector<std::string> ListDocumentFilesRecursively() {
+  // get file manager
+  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+                                                       NSUserDomainMask, YES);
+  NSString *documentsDirectory = [paths objectAtIndex:0];
+  NSArray *filePathsArray = [[NSFileManager defaultManager]
+      subpathsOfDirectoryAtPath:documentsDirectory
+                          error:nil];
+
+  // convert to vector
+  std::vector<std::string> filesVec;
+  for (NSString *file in filePathsArray) {
+    filesVec.push_back([file UTF8String]);
+  }
+  // return
+  return filesVec;
+}
+
 // register touch event
 // void RegisterTouchEvent() {
 //   // get root view controller

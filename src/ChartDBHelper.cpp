@@ -2,7 +2,7 @@
 
 #include "ChartDBHelper.h"
 #include "Utils.h"
-
+#include <SDL2/SDL.h>
 #include "path.h"
 #include <codecvt>
 #include <filesystem>
@@ -183,8 +183,7 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
   sqlite3_bind_int(stmt, 27, chartMeta.TotalBackSpinNotes);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) {
-    std::cerr << "SQL error while inserting a chart: " << sqlite3_errmsg(db)
-              << "\n";
+    SDL_Log("SQL error while inserting a chart: %s", sqlite3_errmsg(db));
     sqlite3_free(stmt);
     return false;
   }

@@ -6,4 +6,5 @@
 std::string GetIOSDocumentsPath();
 void *GetIOSWindowHandle(void *uiwindow);
 void RegisterTouchEvent();
+std::vector<std::string> ListDocumentFilesRecursively();
 #endif
