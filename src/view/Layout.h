@@ -9,8 +9,8 @@ struct Padding {
 };
 class Layout : public View {
 public:
-  inline Layout(SDL_Renderer *renderer, int x, int y, int width, int height)
-      : View(renderer, x, y, width, height) {}
+  inline Layout(int x, int y, int width, int height)
+      : View(x, y, width, height) {}
   inline ~Layout() {
     for (auto view : views) {
       delete view;

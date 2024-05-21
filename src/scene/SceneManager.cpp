@@ -23,8 +23,8 @@ void SceneManager::update(float dt) {
   }
 }
 
-void SceneManager::render(SDL_Renderer *renderer) {
+void SceneManager::render() {
   if (currentScene) {
-    currentScene->render(renderer);
+    currentScene->render();
   }
 }

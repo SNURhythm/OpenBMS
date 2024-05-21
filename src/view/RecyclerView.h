@@ -2,20 +2,22 @@
 
 #include "SDL2/SDL_events.h"
 #include "View.h"
+#include <bgfx/bgfx.h>
 #include <SDL2/SDL.h>
 #include <deque>
 #include <functional>
 #include <map>
 #include <stdexcept>
+#include "../rendering/common.h"
+#include <bx/math.h>
 #include <string>
 #include <vector>
 
 template <typename T> class RecyclerView : public View {
 public:
-  inline RecyclerView(SDL_Renderer *renderer, int x, int y, int width,
-                      int height)
+  inline RecyclerView(int x, int y, int width, int height)
       : scrollOffset(0), itemHeight(100), topMargin(1), bottomMargin(1),
-        View(renderer, x, y, width, height) {}
+        View(x, y, width, height) {}
   inline ~RecyclerView() {
     for (auto entry : viewEntries) {
       recycleView(entry.first);
@@ -78,7 +80,8 @@ public:
   std::function<void(T, int)> onUnselected;
   int selectedIndex = -1;
 
-  inline void render() override {
+  void render() override {
+
     if (!touchDragging && touchDragged) {
       SDL_Log("touchScrollSpeed: %f", touchScrollSpeedReal);
       touchScrollSpeed *= 0.98;
@@ -97,29 +100,89 @@ public:
       }
     }
     // clip the rendering area
-    SDL_Rect clip = {this->getX(), this->getY(), this->getWidth(),
-                     this->getHeight()};
-    SDL_RenderSetClipRect(renderer, &clip);
+    // bgfx::setScissor(this->getX(), this->getY(), this->getWidth(),
+    //                  this->getHeight());
+
     for (auto entry : viewEntries) {
       entry.first->render();
     }
+    rendering::PosColorVertex vertices[] = {
+        {-0.5f, -0.5f, 0.0f, 0xffffffff}, // Bottom-left
+        {0.5f, -0.5f, 0.0f, 0xffffffff},  // Bottom-right
+        {0.5f, 0.5f, 0.0f, 0xffffffff},   // Top-right
+        {-0.5f, 0.5f, 0.0f, 0xffffffff}   // Top-left
+    };
+    rendering::PosColorVertex thumbVertices[] = {
+        {-0.5f, -0.5f, 0.0f, 0x993333FF}, // Bottom-left
+        {0.5f, -0.5f, 0.0f, 0x993333FF},  // Bottom-right
+        {0.5f, 0.5f, 0.0f, 0x993333FF},   // Top-right
+        {-0.5f, 0.5f, 0.0f, 0x993333FF}   // Top-left
+    };
+    uint16_t indices[] = {0, 1, 2, 2, 3, 0};
 
-    // scroll bar
-    SDL_Rect scrollBar = {this->getX() + this->getWidth() - 10, this->getY(),
-                          10, this->getHeight()};
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderFillRect(renderer, &scrollBar);
+    // Create vertex and index buffers
+    bgfx::TransientVertexBuffer tvb;
+    bgfx::TransientVertexBuffer thumbVbh;
+    bgfx::TransientIndexBuffer ibh;
+    if (bgfx::getAvailTransientVertexBuffer(
+            4, rendering::PosColorVertex::ms_decl) < 4 ||
+        bgfx::getAvailTransientVertexBuffer(
+            4, rendering::PosColorVertex::ms_decl) < 4 ||
+        bgfx::getAvailTransientIndexBuffer(6) < 6) {
+      SDL_Log("Not enough space for transient buffers");
+      return;
+    }
+    bgfx::allocTransientVertexBuffer(&tvb, 4,
+                                     rendering::PosColorVertex::ms_decl);
+    bgfx::allocTransientVertexBuffer(&thumbVbh, 4,
+                                     rendering::PosColorVertex::ms_decl);
+    bgfx::allocTransientIndexBuffer(&ibh, 6);
 
-    // scroll bar thumb
-    int itemsSize = std::max(6, static_cast<int>(items.size())) * itemHeight;
+    // Copy data to the vertex buffer
+    std::memcpy(tvb.data, vertices, sizeof(vertices));
+    std::memcpy(thumbVbh.data, thumbVertices, sizeof(thumbVertices));
+    std::memcpy(ibh.data, indices, sizeof(indices));
+
+    // scroll bar area
+    // scale
+    float mtx[16];
+    bx::mtxSRT(mtx, 10.0f, this->getHeight(), 1.0f, 0.0f, 0.0f, 0.0f,
+               this->getX() + this->getWidth() - 5,
+               this->getY() + this->getHeight() / 2, 0.0f);
+    bgfx::setTransform(mtx);
+    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+    bgfx::setVertexBuffer(0, &tvb);
+    bgfx::setIndexBuffer(&ibh);
+
+    bgfx::submit(rendering::ui_view, rendering::simple_program);
+
+    // // scroll bar thumb
+    int itemsSize = std::max(1, static_cast<int>(items.size())) * itemHeight;
     int thumbHeight = this->getHeight() * this->getHeight() / itemsSize;
-    int thumbY = this->getY() + scrollOffset * this->getHeight() / itemsSize;
-    SDL_Rect scrollBarThumb = {this->getX() + this->getWidth() - 10, thumbY, 10,
-                               thumbHeight};
-    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
-    SDL_RenderFillRect(renderer, &scrollBarThumb);
+    int thumbY = this->getY() + scrollOffset * this->getHeight() / itemsSize +
+                 thumbHeight / 2;
+    bx::mtxSRT(mtx, 10.0f, thumbHeight, 1.0f, 0.0f, 0.0f, 0.0f,
+               this->getX() + this->getWidth() - 5, thumbY, 0.0f);
+    bgfx::setTransform(mtx);
+    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+    bgfx::setVertexBuffer(0, &thumbVbh);
+    bgfx::setIndexBuffer(&ibh);
 
-    SDL_RenderSetClipRect(renderer, nullptr);
+    bgfx::submit(rendering::ui_view, rendering::simple_program);
+    // int itemsSize = std::max(6, static_cast<int>(items.size())) * itemHeight;
+    // int thumbHeight = this->getHeight() * this->getHeight() / itemsSize;
+    // int thumbY = this->getY() + scrollOffset * this->getHeight() / itemsSize;
+    // SDL_Rect scrollBarThumb = {this->getX() + this->getWidth() - 10, thumbY,
+    // 10,
+    //                            thumbHeight};
+    // SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+    // SDL_RenderFillRect(renderer, &scrollBarThumb);
+
+    // SDL_RenderSetClipRect(renderer, nullptr);
+    // bgfx::setScissor();
+    // bgfx::setScissor(this->getX() + 100 + this->getWidth() - 10,
+    // this->getY(),
+    //                  10, this->getHeight());
   }
 
   inline void handleEvents(SDL_Event &event) override {

@@ -25,6 +25,7 @@
 #include <bgfx/embedded_shader.h>
 #include <bgfx/platform.h>
 #include <bx/platform.h>
+#include "rendering/common.h"
 #ifdef _WIN32
 #include <windows.h>
 
@@ -68,24 +69,8 @@ public:
   }
 };
 
-struct PosColorVertex {
-  static bgfx::VertexLayout ms_decl;
-  float x;
-  float y;
-  float z;
-  uint32_t abgr;
-};
-
-struct PosColorVertex2D {
-  static bgfx::VertexLayout ms_decl;
-  float x;
-  float y;
-  uint32_t abgr;
-};
-
-bgfx::VertexLayout PosColorVertex::ms_decl;
-bgfx::VertexLayout PosColorVertex2D::ms_decl;
-static PosColorVertex cubeVertices[] = {
+bgfx::VertexLayout rendering::PosColorVertex::ms_decl;
+static rendering::PosColorVertex cubeVertices[] = {
     {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
     {-1.0f, -1.0f, 1.0f, 0xff00ff00},  {1.0f, -1.0f, 1.0f, 0xff00ffff},
     {-1.0f, 1.0f, -1.0f, 0xffff0000},  {1.0f, 1.0f, -1.0f, 0xffff00ff},
@@ -238,26 +223,20 @@ int main(int argv, char **args) {
   }
 
   SceneManager sceneManager;
-  int width = 800;
-  int height = 600;
-  SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, width, height,
-                                     SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+  rendering::window_width = 800;
+  rendering::window_height = 600;
+  SDL_Window *win = SDL_CreateWindow(
+      "Hello World!", 100, 100, rendering::window_width,
+      rendering::window_height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
   // this is intended to get actual window size on mobile devices
-  SDL_GetWindowSize(win, &width, &height);
-  SDL_Log("Window size: %d x %d", width, height);
+  SDL_GetWindowSize(win, &rendering::window_width, &rendering::window_height);
+  SDL_Log("Window size: %d x %d", rendering::window_width,
+          rendering::window_height);
   if (win == nullptr) {
     cerr << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
     return EXIT_FAILURE;
   }
-  SDL_Renderer *ren = SDL_CreateRenderer(
-      win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-  if (ren == nullptr) {
-    cerr << "SDL_CreateRenderer Error" << SDL_GetError() << endl;
-    bgfx::shutdown();
-    SDL_DestroyWindow(win);
-    SDL_Quit();
-    return EXIT_FAILURE;
-  }
+
 #if !BX_PLATFORM_EMSCRIPTEN
   SDL_SysWMinfo wmi;
   SDL_VERSION(&wmi.version);
@@ -289,8 +268,8 @@ int main(int argv, char **args) {
        // BX_PLATFORM_EMSCRIPTEN
   bgfx::Init bgfx_init;
   bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
-  bgfx_init.resolution.width = width;
-  bgfx_init.resolution.height = height;
+  bgfx_init.resolution.width = rendering::window_width;
+  bgfx_init.resolution.height = rendering::window_height;
   bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
   bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
@@ -299,30 +278,7 @@ int main(int argv, char **args) {
 
   bgfx::setViewMode(0, bgfx::ViewMode::Sequential);
 
-  sceneManager.changeScene(new MainMenuScene(ren));
-
-  SDL_Surface *bmp = SDL_LoadBMP("./assets/img/sdl.bmp");
-  if (bmp == nullptr) {
-    cerr << "SDL_LoadBMP Error: " << SDL_GetError() << endl;
-    SDL_DestroyRenderer(ren);
-    bgfx::shutdown();
-    SDL_DestroyWindow(win);
-    SDL_Quit();
-    return EXIT_FAILURE;
-  }
-
-  SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, bmp);
-
-  if (tex == nullptr) {
-    cerr << "SDL_CreateTextureFromSurface Error: " << SDL_GetError() << endl;
-    SDL_FreeSurface(bmp);
-    bgfx::shutdown();
-    SDL_DestroyRenderer(ren);
-    SDL_DestroyWindow(win);
-    SDL_Quit();
-    return EXIT_FAILURE;
-  }
-  SDL_FreeSurface(bmp);
+  sceneManager.changeScene(new MainMenuScene());
 
   // SDL_RenderClear(ren);
   // SDL_RenderCopy(ren, tex, nullptr, nullptr);
@@ -331,44 +287,41 @@ int main(int argv, char **args) {
   bool quit = false;
   auto lastFrameTime = std::chrono::high_resolution_clock::now();
 
-  // Create vertex buffer
-  PosColorVertex::ms_decl.begin()
+  // Initialize bgfx
+  rendering::PosColorVertex::ms_decl.begin()
       .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
       .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
       .end();
-  PosColorVertex2D::ms_decl.begin()
-      .add(bgfx::Attrib::Position, 2, bgfx::AttribType::Float)
-      .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
-      .end();
+
   bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(
       bgfx::makeRef(cubeVertices, sizeof(cubeVertices)),
-      PosColorVertex::ms_decl);
+      rendering::PosColorVertex::ms_decl);
 
   // Create index buffer
   bgfx::IndexBufferHandle ibh =
       bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
-  PosColorVertex triangleVert[] = {
+  rendering::PosColorVertex triangleVert[] = {
       {-100.0f, -100.0f, 0.0f, 0x339933FF},
       {100.0f, -100.0f, 0.0f, 0x993333FF},
       {0.0f, 100.0f, 0.0f, 0x333399FF},
   };
   uint16_t triangleInd[] = {0, 1, 2};
 
-  PosColorVertex rectVert[] = {
+  bgfx::VertexBufferHandle triangleVbh = bgfx::createVertexBuffer(
+      bgfx::makeRef(triangleVert, sizeof(triangleVert)),
+      rendering::PosColorVertex::ms_decl);
+  bgfx::IndexBufferHandle triangleIbh =
+      bgfx::createIndexBuffer(bgfx::makeRef(triangleInd, sizeof(triangleInd)));
+  rendering::PosColorVertex rectVert[] = {
       {-100.0f, -100.0f, 0.0f, 0x339933FF},
       {100.0f, -100.0f, 0.0f, 0x993333FF},
       {100.0f, 100.0f, 0.0f, 0x333399FF},
       {-100.0f, 100.0f, 0.0f, 0x993399FF},
   };
   uint16_t rectInd[] = {0, 1, 2, 0, 2, 3};
-
-  bgfx::VertexBufferHandle triangleVbh = bgfx::createVertexBuffer(
-      bgfx::makeRef(triangleVert, sizeof(triangleVert)),
-      PosColorVertex::ms_decl);
-  bgfx::IndexBufferHandle triangleIbh =
-      bgfx::createIndexBuffer(bgfx::makeRef(triangleInd, sizeof(triangleInd)));
-  bgfx::VertexBufferHandle rectVbh = bgfx::createVertexBuffer(
-      bgfx::makeRef(rectVert, sizeof(rectVert)), PosColorVertex::ms_decl);
+  bgfx::VertexBufferHandle rectVbh =
+      bgfx::createVertexBuffer(bgfx::makeRef(rectVert, sizeof(rectVert)),
+                               rendering::PosColorVertex::ms_decl);
   bgfx::IndexBufferHandle rectIbh =
       bgfx::createIndexBuffer(bgfx::makeRef(rectInd, sizeof(rectInd)));
   auto vs_handle = loadShader("vs_simple.bin");
@@ -377,20 +330,19 @@ int main(int argv, char **args) {
   auto fs_ui_handle = loadShader("fs_ui.bin");
 
   // We will use this to reference where we're drawing
-  const bgfx::ViewId main_view_id = 1;
-  const bgfx::ViewId secondary_view_id = 0;
   // This is set once to determine the clear color to use on starting a new
   // frame
-  bgfx::setViewClear(main_view_id, BGFX_CLEAR_DEPTH,
-                     0x303030ff); // Clear to dark gray
-  bgfx::setViewClear(secondary_view_id, BGFX_CLEAR_DEPTH | BGFX_CLEAR_COLOR,
-                     0x202020ff, 1.0f, 0);
+  bgfx::setViewClear(rendering::ui_view, BGFX_CLEAR_DEPTH,
+                     0x30303000); // Clear to dark gray
+  bgfx::setViewClear(rendering::main_view, BGFX_CLEAR_DEPTH | BGFX_CLEAR_COLOR,
+                     0x20202000, 1.0f, 0);
   // This is set to determine the size of the drawable surface
-  bgfx::setViewRect(main_view_id, 0, 0, width, height);
-  auto program = bgfx::createProgram(vs_handle, fs_handle, true);
-  auto program_ui = bgfx::createProgram(vs_ui_handle, fs_ui_handle, true);
+  bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
+                    rendering::window_height);
+  rendering::simple_program = bgfx::createProgram(vs_handle, fs_handle, true);
 
   while (!quit) {
+
     // SDL_RenderCopy(ren, tex, nullptr, nullptr);
     auto currentFrameTime = std::chrono::high_resolution_clock::now();
     float deltaTime =
@@ -407,16 +359,28 @@ int main(int argv, char **args) {
       if (result.quit) {
         quit = true;
       }
+
+      // on window resize
+      if (e.type == SDL_WINDOWEVENT &&
+          e.window.event == SDL_WINDOWEVENT_RESIZED) {
+        rendering::window_width = e.window.data1;
+        rendering::window_height = e.window.data2;
+      }
     }
     sceneManager.update(deltaTime);
-    // sceneManager.render(ren);
-    bgfx::reset(width, height);
-    bgfx::setViewRect(main_view_id, 0, 0, bgfx::BackbufferRatio::Equal);
-    bgfx::touch(main_view_id);
+
+    bgfx::reset(rendering::window_width, rendering::window_height);
+    bgfx::touch(rendering::ui_view);
     // ortho
     float ortho[16];
-    bx::mtxOrtho(ortho, 0.0f, width, height, 0.0f, 0.0f, 100.0f, 0.0f,
-                 bgfx::getCaps()->homogeneousDepth);
+    bx::mtxOrtho(ortho, 0.0f, rendering::window_width, rendering::window_height,
+                 0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
+
+    bgfx::setViewTransform(rendering::ui_view, nullptr, ortho);
+    bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
+                      rendering::window_height);
+    sceneManager.render();
+
     // shift left by 1
     float translate[16];
     bx::mtxTranslate(translate, 200.0f, 500.0f, 0.0f);
@@ -425,13 +389,12 @@ int main(int argv, char **args) {
     float mtx[16];
     bx::mtxMul(mtx, rotate, translate);
     bgfx::setTransform(mtx);
-    bgfx::setViewTransform(main_view_id, nullptr, ortho);
-    bgfx::setViewRect(main_view_id, 0, 0, width, height);
+
     bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
 
     bgfx::setVertexBuffer(0, triangleVbh);
     bgfx::setIndexBuffer(triangleIbh);
-    bgfx::submit(main_view_id, program);
+    bgfx::submit(rendering::ui_view, rendering::simple_program);
 
     bx::mtxTranslate(translate, 300.0f, 500.0f, 0.0f);
     bx::mtxRotateZ(rotate, bx::toRad(45.0f));
@@ -440,30 +403,31 @@ int main(int argv, char **args) {
     bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
     bgfx::setVertexBuffer(0, rectVbh);
     bgfx::setIndexBuffer(rectIbh);
-    bgfx::submit(main_view_id, program);
+    bgfx::submit(rendering::ui_view, rendering::simple_program);
     // bgfx::frame();
 
     // draw cube
-    // bgfx::touch(secondary_view_id);
+    // bgfx::touch(rendering::main_view);
     bx::Vec3 at = {0.0f, 0.0f, 0.0f};
     bx::Vec3 eye = {0.0f, 2.0f, -5.0f};
     float viewMtx[16];
     bx::mtxLookAt(viewMtx, eye, at);
     float projMtx[16];
-    bx::mtxProj(projMtx, 60.0f, float(width) / float(height), 0.1f, 100.0f,
-                bgfx::getCaps()->homogeneousDepth);
-    bgfx::setViewTransform(secondary_view_id, viewMtx, projMtx);
-    bgfx::setViewRect(secondary_view_id, 0, 0, width, height);
+    bx::mtxProj(projMtx, 60.0f,
+                float(rendering::window_width) /
+                    float(rendering::window_height),
+                0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+    bgfx::setViewTransform(rendering::main_view, viewMtx, projMtx);
+    bgfx::setViewRect(rendering::main_view, 0, 0, rendering::window_width,
+                      rendering::window_height);
     bgfx::setVertexBuffer(0, vbh);
     bgfx::setIndexBuffer(ibh);
     bgfx::setState(BGFX_STATE_DEFAULT);
-    bgfx::submit(secondary_view_id, program);
+    bgfx::submit(rendering::main_view, rendering::simple_program);
 
     bgfx::frame();
   }
 
-  SDL_DestroyTexture(tex);
-  SDL_DestroyRenderer(ren);
   bgfx::shutdown();
   SDL_DestroyWindow(win);
   SDL_Quit();
