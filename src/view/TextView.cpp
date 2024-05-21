@@ -31,7 +31,7 @@ TextView::~TextView() {
 
 void TextView::setText(const std::string &newText) {
   this->text = newText;
-  SDL_Surface *surface = TTF_RenderText_Blended(font, newText.c_str(), color);
+  SDL_Surface *surface = TTF_RenderUTF8_Blended(font, newText.c_str(), color);
   if (bgfx::isValid(texture)) {
     bgfx::destroy(texture);
   }

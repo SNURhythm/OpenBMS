@@ -36,11 +36,12 @@
 void MainMenuScene::init(ApplicationContext &context) {
   // Initialize the scene
   initView();
-  std::thread t1(CheckEntries, std::ref(context));
-  context.threads.emplace_back("CheckEntries", std::move(t1));
+  checkEntriesThread =
+      std::thread(CheckEntries, std::ref(context), std::ref(*this));
 }
 
-void MainMenuScene::CheckEntries(ApplicationContext &context) {
+void MainMenuScene::CheckEntries(ApplicationContext &context,
+                                 MainMenuScene &scene) {
   auto dbHelper = ChartDBHelper::GetInstance();
   auto db = dbHelper.Connect();
   dbHelper.CreateChartMetaTable(db);
@@ -86,9 +87,8 @@ void MainMenuScene::CheckEntries(ApplicationContext &context) {
     dbHelper.InsertEntry(db, path);
 #endif
   }
-  std::thread t1(LoadCharts, std::ref(dbHelper), std::ref(db),
-                 std::ref(context.quitFlag));
-  threadRAII t1_raii(std::move(t1));
+  LoadCharts(dbHelper, db, scene, context.quitFlag);
+  dbHelper.Close(db);
 }
 
 void MainMenuScene::initView() {
@@ -97,7 +97,7 @@ void MainMenuScene::initView() {
   recyclerView = new RecyclerView<std::string>(0, 0, rendering::window_width,
                                                rendering::window_height);
   recyclerView->onCreateView = [this](const std::string &item) {
-    return new ChartListItemView(0, 0, rendering::window_width, 100, item,
+    return new ChartListItemView(0, 0, rendering::window_width, 100, (item),
                                  "Artist", "Level");
   };
   recyclerView->itemHeight = 100;
@@ -112,15 +112,13 @@ void MainMenuScene::initView() {
     }
   };
   recyclerView->onSelected = [this](const std::string &item, int idx) {
-    std::cout << "Selected item: " << item << " at index: " << idx << std::endl;
     auto selectedView = recyclerView->getViewByIndex(idx);
+    std::cout << "Selected " << (item) << std::endl;
     if (selectedView) {
       selectedView->onSelected();
     }
   };
   recyclerView->onUnselected = [this](const std::string &item, int idx) {
-    std::cout << "Unselected item: " << item << " at index: " << idx
-              << std::endl;
     auto unselectedView = recyclerView->getViewByIndex(idx);
     if (unselectedView) {
       unselectedView->onUnselected();
@@ -156,9 +154,11 @@ void MainMenuScene::renderScene() {
 
 void MainMenuScene::cleanupScene() {
   // Cleanup resources when exiting the scene
+  checkEntriesThread.join();
 }
 
 void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
+                               MainMenuScene &scene,
                                std::atomic_bool &isCancelled) {
   std::vector<bms_parser::ChartMeta> chartMetas;
   dbHelper.SelectAllChartMeta(db, chartMetas);
@@ -227,6 +227,15 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
   });
   dbHelper.CommitTransaction(db);
   std::cout << "Inserted " << success_count << " new charts" << std::endl;
+  // set items
+  chartMetas.clear();
+  dbHelper.SelectAllChartMeta(db, chartMetas);
+  std::vector<std::string> items;
+  for (auto &chartMeta : chartMetas) {
+    items.push_back(chartMeta.Title);
+    std::cout << "Item: " << (chartMeta.Title) << std::endl;
+  }
+  scene.recyclerView->setItems(items);
 }
 
 #ifdef _WIN32
@@ -237,7 +246,7 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
                                  std::atomic_bool &isCancelled) {
   WIN32_FIND_DATAW findFileData;
   HANDLE hFind =
-      FindFirstFileW((path.wstring() + L"\\*.*").c_str(), &findFileData);
+      FindFirstFileW((path.string() + L"\\*.*").c_str(), &findFileData);
 
   if (hFind != INVALID_HANDLE_VALUE) {
     do {
@@ -254,7 +263,7 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
           if (ext == L".bms" || ext == L".bme" || ext == L".bml") {
             path_t dirPath;
 
-            path_t fullPath = path.wstring() + L"\\" + filename;
+            path_t fullPath = path.string() + L"\\" + filename;
             if (oldFilesWs.find(fullPath) == oldFilesWs.end()) {
               diffs.push_back({fullPath, Added});
             }
@@ -264,7 +273,7 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
         path_t filename(findFileData.cFileName);
 
         if (filename != L"." && filename != L"..") {
-          directoriesToVisit.push_back(path.wstring() + L"\\" + filename);
+          directoriesToVisit.push_back(path.string() + L"\\" + filename);
         }
       }
     } while (FindNextFileW(hFind, &findFileData) != 0);
@@ -331,7 +340,7 @@ void MainMenuScene::FindNewBmsFiles(
     const std::filesystem::path &path, std::atomic_bool &isCancelled) {
 #ifdef _WIN32
   std::vector<path_t> directoriesToVisit;
-  directoriesToVisit.push_back(path.wstring());
+  directoriesToVisit.push_back(path.string());
 #else
   std::vector<std::filesystem::path> directoriesToVisit;
   directoriesToVisit.push_back(path);
