@@ -4,6 +4,7 @@
 #include <string>
 #include <SDL2/SDL.h>
 #include <map>
+#include <filesystem>
 namespace rendering {
 // singleton
 class ShaderManager {
@@ -11,8 +12,8 @@ private:
   std::map<std::string, bgfx::ProgramHandle> programMap;
 
   ShaderManager() {} // Private constructor
-  bgfx::ShaderHandle loadShader(const char *FILENAME) {
-    const char *shaderPath = "???";
+  bgfx::ShaderHandle loadShader(const std::string &FILENAME) {
+    std::filesystem::path shaderPath;
     switch (bgfx::getRendererType()) {
     case bgfx::RendererType::Noop:
     case bgfx::RendererType::Direct3D11:
@@ -38,28 +39,20 @@ private:
       throw std::runtime_error("Unknown renderer type");
     }
 
-    size_t shaderLen = strlen(shaderPath);
-    size_t fileLen = strlen(FILENAME);
-    char *filePath = (char *)malloc(shaderLen + fileLen);
-    memcpy(filePath, shaderPath, shaderLen);
-    memcpy(&filePath[shaderLen], FILENAME, fileLen);
-    SDL_Log("Loading %s", filePath);
-
-    FILE *file = fopen(filePath, "rb");
-    if (!file) {
-      perror("file open error");
-      throw std::runtime_error("no such file");
+    std::string path = (shaderPath / FILENAME).string();
+    SDL_RWops *rw = SDL_RWFromFile(path.c_str(), "rb");
+    if (rw == nullptr) {
+      throw std::runtime_error("Failed to open shader file: " + path);
     }
-    fseek(file, 0, SEEK_END);
-    long fileSize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    const bgfx::Memory *mem = bgfx::alloc(fileSize + 1);
-    fread(mem->data, 1, fileSize, file);
-    mem->data[mem->size - 1] = '\0';
-    fclose(file);
-
-    return bgfx::createShader(mem);
+    size_t size = SDL_RWsize(rw);
+    void *data = SDL_malloc(size);
+    if (SDL_RWread(rw, data, 1, size) != size) {
+      SDL_free(data);
+      SDL_RWclose(rw);
+      throw std::runtime_error("Failed to read shader file: " + path);
+    }
+    SDL_RWclose(rw);
+    return bgfx::createShader(bgfx::copy(data, size));
   }
 
 public:
