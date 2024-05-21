@@ -50,7 +50,7 @@ void TextView::setText(const std::string &newText) {
   SDL_FreeSurface(surface);
 }
 
-void TextView::render() {
+void TextView::render(RenderContext &context) {
   if (bgfx::isValid(texture)) {
 
     rect.x = this->getX();
@@ -102,9 +102,12 @@ void TextView::render() {
 
     bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
                    BGFX_STATE_BLEND_ALPHA);
+    bgfx::setScissor(context.scissor.x, context.scissor.y,
+                     context.scissor.width, context.scissor.height);
     bgfx::submit(
         rendering::ui_view,
         rendering::ShaderManager::getInstance().getProgram(SHADER_TEXT));
+
   } else {
     SDL_Log("Invalid texture handle");
   }

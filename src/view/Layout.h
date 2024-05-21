@@ -24,9 +24,9 @@ public:
     views.clear();
     layout();
   }
-  void render() override {
+  void render(RenderContext &context) override {
     for (auto &view : views) {
-      view->render();
+      view->render(context);
     }
   }
   inline void handleEvents(SDL_Event &event) override {

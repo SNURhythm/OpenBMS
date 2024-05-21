@@ -10,7 +10,7 @@ public:
   ChartListItemView(int x, int y, int width, int height,
                     const std::string &title, const std::string &artist,
                     const std::string &level);
-  void render() override;
+  void render(RenderContext &context) override;
   void setTitle(const std::string &title);
   void setArtist(const std::string &artist);
   void setLevel(const std::string &level);

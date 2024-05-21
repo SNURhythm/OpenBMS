@@ -1,11 +1,12 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-
-#pragma once
-
-#include <SDL2/SDL.h>
-
+struct Scissor {
+  int x, y, width, height;
+};
+struct RenderContext {
+  Scissor scissor = {0, 0, -1, -1};
+};
 class View {
 public:
   inline View(int x, int y, int width, int height)
@@ -13,7 +14,7 @@ public:
 
   virtual ~View() = default;
 
-  virtual void render() = 0;
+  virtual void render(RenderContext &context) = 0;
 
   virtual inline void handleEvents(SDL_Event &event) {}
 

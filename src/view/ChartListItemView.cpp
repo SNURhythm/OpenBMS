@@ -7,9 +7,9 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
     : View(x, y, width, height) {
   rootLayout = new LinearLayout(x, y, width, height, Orientation::HORIZONTAL);
   textLayout = new LinearLayout(x, y, width, height, Orientation::VERTICAL);
-  titleView = new TextView("assets/fonts/notosansjp.ttf", 32);
+  titleView = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   titleView->setVAlign(TextView::TextVAlign::BOTTOM);
-  artistView = new TextView("assets/fonts/notosansjp.ttf", 16);
+  artistView = new TextView("assets/fonts/notosanscjkjp.ttf", 16);
   artistView->setVAlign(TextView::TextVAlign::TOP);
   LinearLayoutConfig titleConfig{};
 
@@ -25,7 +25,7 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
   artistView->setText(artist);
   textLayout->addView(titleView, titleConfig);
   textLayout->addView(artistView, artistConfig);
-  levelView = new TextView("assets/fonts/notosansjp.ttf", 16);
+  levelView = new TextView("assets/fonts/notosanscjkjp.ttf", 16);
   levelView->setText(level);
   levelView->setAlign(TextView::TextAlign::RIGHT);
   levelView->setVAlign(TextView::TextVAlign::MIDDLE);
@@ -46,12 +46,12 @@ void ChartListItemView::setLevel(const std::string &level) {
   levelView->setText(level);
 }
 
-void ChartListItemView::render() {
+void ChartListItemView::render(RenderContext &context) {
   // SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128);
   // SDL_Rect rect = {getX(), getY(), getWidth(), getHeight()};
   // SDL_RenderFillRect(renderer, &rect);
-  rootLayout->render();
+  rootLayout->render(context);
 }
 
 void ChartListItemView::onSelected() {

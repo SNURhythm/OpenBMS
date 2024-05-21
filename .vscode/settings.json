@@ -96,7 +96,9 @@
         "*.rh": "cpp",
         "set": "cpp",
         "unordered_set": "cpp",
-        "deque": "cpp"
+        "deque": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     },
     "files.watcherExclude": {
         "**/target": true

@@ -20,8 +20,9 @@ public:
   virtual void update(float dt) = 0; // Update the scene logic
   // Render the scene (non-virtual public method)
   void render() {
+    RenderContext context;
     for (auto view : views) {
-      view->render();
+      view->render(context);
     }
     renderScene(); // Additional custom rendering
   }

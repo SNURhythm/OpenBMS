@@ -17,7 +17,7 @@ public:
   void setColor(SDL_Color newColor);
   void setAlign(TextAlign newAlign);
   void setVAlign(TextVAlign newVAlign);
-  void render() override;
+  void render(RenderContext &context) override;
 
 protected:
   TextAlign align = TextAlign::LEFT;
