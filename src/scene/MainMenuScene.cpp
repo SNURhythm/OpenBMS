@@ -233,7 +233,6 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
   std::vector<std::string> items;
   for (auto &chartMeta : chartMetas) {
     items.push_back(chartMeta.Title);
-    std::cout << "Item: " << (chartMeta.Title) << std::endl;
   }
   scene.recyclerView->setItems(items);
 }
@@ -246,7 +245,7 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
                                  std::atomic_bool &isCancelled) {
   WIN32_FIND_DATAW findFileData;
   HANDLE hFind =
-      FindFirstFileW((path.string() + L"\\*.*").c_str(), &findFileData);
+      FindFirstFileW((path.wstring() + L"\\*.*").c_str(), &findFileData);
 
   if (hFind != INVALID_HANDLE_VALUE) {
     do {
@@ -263,7 +262,7 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
           if (ext == L".bms" || ext == L".bme" || ext == L".bml") {
             path_t dirPath;
 
-            path_t fullPath = path.string() + L"\\" + filename;
+            path_t fullPath = path.wstring() + L"\\" + filename;
             if (oldFilesWs.find(fullPath) == oldFilesWs.end()) {
               diffs.push_back({fullPath, Added});
             }
@@ -273,7 +272,7 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
         path_t filename(findFileData.cFileName);
 
         if (filename != L"." && filename != L"..") {
-          directoriesToVisit.push_back(path.string() + L"\\" + filename);
+          directoriesToVisit.push_back(path.wstring() + L"\\" + filename);
         }
       }
     } while (FindNextFileW(hFind, &findFileData) != 0);
@@ -340,7 +339,7 @@ void MainMenuScene::FindNewBmsFiles(
     const std::filesystem::path &path, std::atomic_bool &isCancelled) {
 #ifdef _WIN32
   std::vector<path_t> directoriesToVisit;
-  directoriesToVisit.push_back(path.string());
+  directoriesToVisit.push_back(path.wstring());
 #else
   std::vector<std::filesystem::path> directoriesToVisit;
   directoriesToVisit.push_back(path);
