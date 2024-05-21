@@ -91,7 +91,7 @@ void MainMenuScene::CheckEntries(ApplicationContext &context,
     dbHelper.InsertEntry(db, path);
 #endif
   }
-  LoadCharts(dbHelper, db, scene, context.quitFlag);
+  LoadCharts(dbHelper, db, entries, scene, context.quitFlag);
   dbHelper.Close(db);
 }
 
@@ -164,6 +164,7 @@ void MainMenuScene::cleanupScene() {
 }
 
 void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
+                               std::vector<path_t> &entries,
                                MainMenuScene &scene,
                                std::atomic_bool &isCancelled) {
   std::vector<bms_parser::ChartMeta> chartMetas;
@@ -175,7 +176,6 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
             });
   std::vector<Diff> diffs;
   std::cout << "Finding new bms files" << std::endl;
-  auto entries = dbHelper.SelectAllEntries(db);
   std::unordered_set<path_t> oldFilesWs;
 
   for (auto &chartMeta : chartMetas) {
