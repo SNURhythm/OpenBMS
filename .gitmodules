@@ -2,10 +2,13 @@
 	path = SDL
 	url = https://github.com/libsdl-org/SDL.git
     branch = SDL2
+	shallow = true
 [submodule "SDL_ttf"]
 	path = SDL_ttf
 	url = https://github.com/VioletXF/SDL_ttf.git
     branch = SDL2
+	shallow = true
 [submodule "bgfx"]
 	path = bgfx
 	url = https://github.com/bkaradzic/bgfx.cmake.git
+	shallow = true
