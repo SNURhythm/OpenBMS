@@ -10,12 +10,12 @@ public:
   AudioWrapper();
   ~AudioWrapper();
 
-  void loadSound(const char *path);   // Load and store a sound
+  bool loadSound(const char *path);   // Load and store a sound
   void unloadSound(const char *path); // Unload a sound
   void unloadSounds();                // Unload all sounds
   void preloadSounds(
       const std::vector<std::string> &paths); // Preload multiple sounds
-  void playSound(const char *path);           // Play a preloaded sound
+  bool playSound(const char *path);           // Play a preloaded sound
 
 private:
   ma_engine engine;
