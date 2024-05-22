@@ -135,6 +135,7 @@ void TextInputBox::handleEvents(SDL_Event &event) {
     if (!composition.empty()) {
       composited.insert(cursorPos, composition);
       cursorToPos(cursorPos, text, compositionX, compositionY);
+      compositionY += TTF_FontHeight(font);
       cursorToPos(cursorPos + composition.size(), composited, compositionWidth,
                   compositionHeight);
       compositionWidth -= compositionX;
@@ -243,7 +244,7 @@ void TextInputBox::cursorToPos(size_t cursorPos, const std::string &text,
 
   TTF_SizeUTF8(font, utf8.c_str(), &x, &y);
   x += getX();
-  y += getY();
+  y += getY() - TTF_FontHeight(font);
 }
 
 size_t TextInputBox::posToCursor(int x, int y) {

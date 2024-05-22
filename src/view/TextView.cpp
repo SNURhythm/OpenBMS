@@ -34,6 +34,9 @@ void TextView::setText(const std::string &newText) {
   if (newText.empty()) {
     rect.w = 0;
     rect.h = 0;
+    if (bgfx::isValid(texture)) {
+      bgfx::destroy(texture);
+    }
     return;
   }
   SDL_Surface *surface = TTF_RenderUTF8_Blended(font, newText.c_str(), color);
@@ -107,9 +110,6 @@ void TextView::render(RenderContext &context) {
     bgfx::submit(
         rendering::ui_view,
         rendering::ShaderManager::getInstance().getProgram(SHADER_TEXT));
-
-  } else {
-    SDL_Log("Invalid texture handle");
   }
 }
 
