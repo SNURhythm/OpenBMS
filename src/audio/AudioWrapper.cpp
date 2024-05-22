@@ -1,5 +1,7 @@
 
 #define MINIAUDIO_IMPLEMENTATION
+// NOTE: Should be compiled as Objective-C++ in iOS
+// TODO: Find a way to automatically compile as Objective-C++ in iOS
 #include "AudioWrapper.h"
 #include <stdexcept>
 #include <SDL2/SDL.h>
@@ -15,13 +17,11 @@ AudioWrapper::~AudioWrapper() {
   unloadSounds();
 }
 
-void AudioWrapper::loadSound(const char *path) {
+bool AudioWrapper::loadSound(const char *path) {
   SDL_Log("Loading sound: %s", path);
   auto result = ma_sound_init_from_file(&engine, path, MA_SOUND_FLAG_DECODE,
                                         nullptr, nullptr, &sounds[path]);
-  if (result != MA_SUCCESS) {
-    throw std::runtime_error("Failed to load sound.");
-  }
+  return result == MA_SUCCESS;
 }
 
 void AudioWrapper::preloadSounds(const std::vector<std::string> &paths) {
@@ -30,11 +30,13 @@ void AudioWrapper::preloadSounds(const std::vector<std::string> &paths) {
   }
 }
 
-void AudioWrapper::playSound(const char *path) {
+bool AudioWrapper::playSound(const char *path) {
+  bool result = true;
   if (sounds.find(path) == sounds.end()) {
-    loadSound(path);
+    result = loadSound(path);
   }
   ma_engine_play_sound(&engine, path, nullptr);
+  return result;
 }
 
 void AudioWrapper::unloadSound(const char *path) {

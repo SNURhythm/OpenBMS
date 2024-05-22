@@ -169,6 +169,12 @@ int main(int argv, char **args) {
   bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
   // bgfx::setDebug(BGFX_DEBUG_TEXT);
+  AudioWrapper audioWrapper;
+  if (audioWrapper.loadSound("assets/audio/sample.wav")) {
+    audioWrapper.playSound("assets/audio/sample.wav");
+  } else {
+    SDL_Log("Failed to load sound");
+  }
 
   // bgfx::setPlatformData(pd);
 
