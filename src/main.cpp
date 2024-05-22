@@ -22,6 +22,7 @@
 #include "rendering/common.h"
 #include "rendering/ShaderManager.h"
 #include "context.h"
+#include "audio/AudioWrapper.h"
 #ifdef _WIN32
 #include <windows.h>
 

@@ -98,7 +98,12 @@
         "unordered_set": "cpp",
         "deque": "cpp",
         "queue": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "cfenv": "cpp",
+        "condition_variable": "cpp",
+        "coroutine": "cpp",
+        "future": "cpp",
+        "numeric": "cpp"
     },
     "files.watcherExclude": {
         "**/target": true
