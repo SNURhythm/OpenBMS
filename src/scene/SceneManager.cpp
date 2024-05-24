@@ -28,3 +28,10 @@ void SceneManager::render() {
     currentScene->render();
   }
 }
+
+void SceneManager::cleanup() {
+  if (currentScene) {
+    currentScene->cleanup();
+    currentScene.reset();
+  }
+}

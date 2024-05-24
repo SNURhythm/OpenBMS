@@ -10,10 +10,11 @@ private:
 
 public:
   SceneManager() = delete;
+  ~SceneManager() { cleanup(); }
   explicit SceneManager(ApplicationContext &context) : context(context) {}
   void changeScene(Scene *newScene);
   EventHandleResult handleEvents(SDL_Event &event);
-
+  void cleanup();
   void update(float dt);
 
   void render();
