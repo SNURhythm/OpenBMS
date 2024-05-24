@@ -35,9 +35,10 @@
 // POSIX
 #endif
 #include <iostream>
+
 void MainMenuScene::init(ApplicationContext &context) {
   // Initialize the scene
-  initView();
+  initView(context);
   SDL_Log("Main Menu Scene Initialized");
   checkEntriesThread =
       std::thread(CheckEntries, std::ref(context), std::ref(*this));
@@ -95,45 +96,67 @@ void MainMenuScene::CheckEntries(ApplicationContext &context,
   dbHelper.Close(db);
 }
 
-void MainMenuScene::initView() {
+void MainMenuScene::initView(ApplicationContext &context) {
   // Initialize the view
   // get screen width
-  recyclerView = new RecyclerView<std::string>(0, 0, rendering::window_width,
-                                               rendering::window_height);
-  recyclerView->onCreateView = [this](const std::string &item) {
-    return new ChartListItemView(0, 0, rendering::window_width, 100, (item),
-                                 "Artist", "Level");
+  recyclerView = new RecyclerView<bms_parser::ChartMeta>(
+      0, 0, rendering::window_width, rendering::window_height,
+      [](const bms_parser::ChartMeta &a, const bms_parser::ChartMeta &b) {
+        return a.SHA256 == b.SHA256;
+      });
+  recyclerView->onCreateView = [this](const bms_parser::ChartMeta &item) {
+    return new ChartListItemView(0, 0, rendering::window_width, 100, item.Title,
+                                 item.Artist, std::to_string(item.PlayLevel));
   };
   recyclerView->itemHeight = 100;
-  recyclerView->onBind = [this](View *view, const std::string &item, int idx,
-                                bool isSelected) {
+  recyclerView->onBind = [this](View *view, const bms_parser::ChartMeta &item,
+                                int idx, bool isSelected) {
     auto *chartListItemView = dynamic_cast<ChartListItemView *>(view);
-    chartListItemView->setTitle(item);
+    chartListItemView->setTitle(item.Title);
+    chartListItemView->setArtist(item.Artist);
+    chartListItemView->setLevel(std::to_string(item.PlayLevel));
     if (isSelected) {
       chartListItemView->onSelected();
     } else {
       chartListItemView->onUnselected();
     }
   };
-  recyclerView->onSelected = [this](const std::string &item, int idx) {
+  recyclerView->onSelected = [this, &context](const bms_parser::ChartMeta &item,
+                                              int idx) {
     auto selectedView = recyclerView->getViewByIndex(idx);
-    std::cout << "Selected " << (item) << std::endl;
+    std::cout << "Selected: " << (item.Title) << std::endl;
     if (selectedView) {
       selectedView->onSelected();
     }
+    previewLoadCancelled = true;
+    if (previewThread.joinable()) {
+      previewThread.join();
+    }
+    previewThread = std::thread([this, item]() {
+      previewLoadCancelled = false;
+      bms_parser::Parser parser;
+      bms_parser::Chart *chart;
+
+      try {
+        SDL_Log("Parsing %s", item.BmsPath.c_str());
+        parser.Parse(item.BmsPath, &chart, false, false, previewLoadCancelled);
+      } catch (std::exception &e) {
+        delete chart;
+        SDL_Log("Error parsing %s: %s", item.BmsPath.c_str(), e.what());
+        return;
+      }
+      jukebox.loadChart(*chart, previewLoadCancelled);
+      jukebox.play();
+      delete chart;
+    });
   };
-  recyclerView->onUnselected = [this](const std::string &item, int idx) {
+  recyclerView->onUnselected = [this](const bms_parser::ChartMeta &item,
+                                      int idx) {
     auto unselectedView = recyclerView->getViewByIndex(idx);
     if (unselectedView) {
       unselectedView->onUnselected();
     }
   };
-  // create 100 items
-  std::vector<std::string> items;
-  for (int i = 0; i < 10000; i++) {
-    items.push_back("Item " + std::to_string(i));
-  }
-  recyclerView->setItems(items);
 
   rootLayout =
       new LinearLayout(0, 0, rendering::window_width, rendering::window_height,
@@ -160,7 +183,13 @@ void MainMenuScene::renderScene() {
 
 void MainMenuScene::cleanupScene() {
   // Cleanup resources when exiting the scene
-  checkEntriesThread.join();
+  if (checkEntriesThread.joinable()) {
+    checkEntriesThread.join();
+  }
+  previewLoadCancelled = true;
+  if (previewThread.joinable()) {
+    previewThread.join();
+  }
 }
 
 void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
@@ -236,11 +265,8 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
   // set items
   chartMetas.clear();
   dbHelper.SelectAllChartMeta(db, chartMetas);
-  std::vector<std::string> items;
-  for (auto &chartMeta : chartMetas) {
-    items.push_back(chartMeta.Title);
-  }
-  scene.recyclerView->setItems(items);
+
+  scene.recyclerView->setItems(chartMetas);
 }
 
 #ifdef _WIN32
