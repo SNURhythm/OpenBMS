@@ -29,10 +29,11 @@ public:
 
   // Cleanup resources when exiting the scene (non-virtual public method)
   inline void cleanup() {
+
+    cleanupScene(); // Additional custom cleanup
     for (auto view : views) {
       delete view;
     }
-    cleanupScene(); // Additional custom cleanup
   }
 
   inline void addView(View *view) { views.push_back(view); }

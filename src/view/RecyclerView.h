@@ -16,9 +16,10 @@
 
 template <typename T> class RecyclerView : public View {
 public:
-  inline RecyclerView(int x, int y, int width, int height)
+  inline RecyclerView(int x, int y, int width, int height,
+                      std::function<bool(const T &, const T &)> itemComparator)
       : scrollOffset(0), itemHeight(100), topMargin(1), bottomMargin(1),
-        View(x, y, width, height) {}
+        itemComparator(itemComparator), View(x, y, width, height) {}
   inline ~RecyclerView() {
     for (auto entry : viewEntries) {
       recycleView(entry.first);
@@ -73,8 +74,7 @@ public:
   // on bound to the view (delegate)
   std::function<void(View *, T, int, bool isSelected)> onBind;
   std::function<View *(T)> onCreateView;
-  std::function<bool(const T &, const T &)> itemComparator =
-      [](const T &a, const T &b) { return a == b; };
+  std::function<bool(const T &, const T &)> itemComparator;
 
   // on click
   std::function<void(T, int)> onSelected;
@@ -198,6 +198,46 @@ public:
 
   inline void handleEvents(SDL_Event &event) override {
     switch (event.type) {
+    case SDL_KEYDOWN: {
+      bool changed = false;
+      if (event.key.keysym.sym == SDLK_UP) {
+        changed = true;
+        if (selectedIndex > 0) {
+          selectedIndex--;
+          if (onUnselected) {
+            onUnselected(items[selectedIndex + 1], selectedIndex + 1);
+          }
+          if (onSelected) {
+            onSelected(items[selectedIndex], selectedIndex);
+          }
+        }
+      } else if (event.key.keysym.sym == SDLK_DOWN) {
+        changed = true;
+        if (selectedIndex < items.size() - 1) {
+          selectedIndex++;
+          if (onUnselected) {
+            onUnselected(items[selectedIndex - 1], selectedIndex - 1);
+          }
+          if (onSelected) {
+            onSelected(items[selectedIndex], selectedIndex);
+          }
+        }
+      }
+      // scroll to the selected item
+      if (changed) {
+        int itemsSize =
+            std::max(1, static_cast<int>(items.size())) * itemHeight;
+        int selectedY = selectedIndex * itemHeight;
+        if (selectedY < scrollOffset) {
+          scrollOffset = selectedY;
+        }
+        if (selectedY > scrollOffset + this->getHeight() - itemHeight) {
+          scrollOffset = selectedY - this->getHeight() + itemHeight;
+        }
+        updateVisibleItems();
+      }
+      break;
+    }
     case SDL_MOUSEWHEEL: {
       // check mouse position
       int x, y;
@@ -231,6 +271,12 @@ public:
       // ignore touch
       if (event.button.which == SDL_TOUCH_MOUSEID &&
           event.type == SDL_MOUSEBUTTONDOWN) {
+        return;
+      }
+
+      // ignore mouse up
+      if (event.type == SDL_MOUSEBUTTONUP &&
+          event.button.button == SDL_BUTTON_LEFT) {
         return;
       }
 

@@ -9,6 +9,8 @@
 #include <unordered_set>
 #include <vector>
 #include "../targets.h"
+#include "../audio/Jukebox.h"
+#include <atomic>
 class MainMenuScene : public Scene {
 public:
   inline explicit MainMenuScene() : Scene() {}
@@ -19,11 +21,14 @@ public:
   void cleanupScene() override;
 
 private:
+  std::atomic_bool previewLoadCancelled = false;
+  Jukebox jukebox;
+  std::thread previewThread;
   std::thread checkEntriesThread;
-  RecyclerView<std::string> *recyclerView = nullptr;
+  RecyclerView<bms_parser::ChartMeta> *recyclerView = nullptr;
   LinearLayout *rootLayout = nullptr;
 
-  void initView();
+  void initView(ApplicationContext &context);
   static void CheckEntries(ApplicationContext &context, MainMenuScene &scene);
 
   static void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,

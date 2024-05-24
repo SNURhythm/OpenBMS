@@ -21,11 +21,16 @@ TextView::TextView(const std::string &fontPath, int fontSize)
 }
 
 TextView::~TextView() {
+  if (bgfx::isValid(s_texColor)) {
+    bgfx::destroy(s_texColor);
+  }
   if (bgfx::isValid(texture)) {
     bgfx::destroy(texture);
   }
-  bgfx::destroy(s_texColor);
-  TTF_CloseFont(font);
+
+  if (font) {
+    TTF_CloseFont(font);
+  }
   TTF_Quit();
 }
 

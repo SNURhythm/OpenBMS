@@ -98,12 +98,11 @@ endif()
 
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
 add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
-
+add_library(STB_VORBIS STATIC ${SRC_DIR}/audio/stb_vorbis.c)
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.cpp)
-
 # Main executable
 add_executable(main ${SRC_FILES} ${MM_SRC_FILES})
-target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
+target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 STB_VORBIS ${EXTRA_LIBS} bgfx)
 
 # Custom target for copying assets
 add_custom_command(
