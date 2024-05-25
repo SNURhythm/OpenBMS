@@ -276,7 +276,8 @@ public:
 
       // ignore mouse up
       if (event.type == SDL_MOUSEBUTTONUP &&
-          event.button.button == SDL_BUTTON_LEFT) {
+          event.button.button == SDL_BUTTON_LEFT &&
+          event.button.which != SDL_TOUCH_MOUSEID) {
         return;
       }
 
