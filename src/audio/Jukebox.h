@@ -15,6 +15,7 @@ public:
   void loadChart(bms_parser::Chart &chart, std::atomic_bool &isCancelled);
   void schedule(bms_parser::Chart &chart, std::atomic_bool &isCancelled);
   void play();
+  void stop();
 
   long long getTimeMicros();
 
