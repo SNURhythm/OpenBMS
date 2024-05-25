@@ -1,6 +1,7 @@
 #include "Jukebox.h"
 #include <SDL2/SDL.h>
 #include <thread>
+#include "../Utils.h"
 Jukebox::Jukebox() {}
 
 Jukebox::~Jukebox() {
@@ -19,10 +20,9 @@ void Jukebox::loadChart(bms_parser::Chart &chart,
   audio.unloadSounds();
   if (isCancelled)
     return;
+
   for (auto &wav : chart.WavTable) {
-    if (isCancelled)
-      return;
-    bool loaded = false;
+    bool found = false;
     std::filesystem::path basePath = chart.Meta.Folder / wav.second;
     std::filesystem::path path;
 
@@ -37,15 +37,42 @@ void Jukebox::loadChart(bms_parser::Chart &chart,
       }
       if (audio.loadSound(path.c_str())) {
         wavTableAbs[wav.first] = path;
-        loaded = true;
+        found = true;
         break;
       }
     }
-
-    if (!loaded) {
+    if (!found) {
       SDL_Log("Failed to load sound for all extensions: %s", basePath.c_str());
     }
   }
+  std::vector<int> keys;
+  for (auto &wav : wavTableAbs) {
+    if (isCancelled)
+      return;
+    keys.push_back(wav.first);
+  }
+
+  parallel_for(keys.size(), [&](int start, int end) {
+    for (int i = start; i < end; i++) {
+      if (isCancelled)
+        return;
+      auto wav = wavTableAbs[keys[i]];
+      bool loaded = false;
+      std::filesystem::path path = wav;
+
+      if (isCancelled)
+        return;
+      if (audio.loadSound(path.c_str())) {
+        loaded = true;
+        break;
+      }
+
+      if (!loaded) {
+        SDL_Log("Failed to load sound for all extensions: %s", path.c_str());
+      }
+    }
+  });
+
   if (isCancelled)
     return;
   schedule(chart, isCancelled);
@@ -88,7 +115,8 @@ void Jukebox::play() {
     playThread.join();
   isPlaying = true;
   startPos = std::chrono::high_resolution_clock::now();
-  playThread = std::thread([this] {
+  auto hz = 8000;
+  playThread = std::thread([this, hz] {
     while (isPlaying && !scheduleQueue.empty()) {
       auto now = std::chrono::high_resolution_clock::now();
       auto position = now - startPos;
@@ -101,6 +129,16 @@ void Jukebox::play() {
         audio.playSound(wavTableAbs[scheduleQueue.front().second].c_str());
         scheduleQueue.pop();
       }
+      auto loopRunTime = std::chrono::high_resolution_clock::now() - now;
+      auto sleepTime = std::chrono::microseconds(1000000 / hz) - loopRunTime;
+      std::this_thread::sleep_for(sleepTime);
     }
   });
+}
+
+void Jukebox::stop() {
+  isPlaying = false;
+  if (playThread.joinable())
+    playThread.join();
+  audio.stopSounds();
 }

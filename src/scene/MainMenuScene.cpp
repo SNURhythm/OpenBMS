@@ -133,6 +133,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
       previewThread.join();
     }
     previewThread = std::thread([this, item]() {
+      jukebox.stop();
       previewLoadCancelled = false;
       bms_parser::Parser parser;
       bms_parser::Chart *chart;
@@ -145,6 +146,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
         SDL_Log("Error parsing %s: %s", item.BmsPath.c_str(), e.what());
         return;
       }
+
       jukebox.loadChart(*chart, previewLoadCancelled);
       jukebox.play();
       delete chart;
