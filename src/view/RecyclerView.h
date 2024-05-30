@@ -13,6 +13,7 @@
 #include <bx/math.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 template <typename T> class RecyclerView : public View {
 public:
