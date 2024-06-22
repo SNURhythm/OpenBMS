@@ -12,3 +12,7 @@
 	path = bgfx
 	url = https://github.com/bkaradzic/bgfx.cmake.git
 	shallow = true
+[submodule "libsndfile"]
+	path = libsndfile
+	url = https://github.com/libsndfile/libsndfile.git
+	shallow = true
