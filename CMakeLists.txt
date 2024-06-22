@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
+include(ExternalProject)
 project(MyProject VERSION 1.0 LANGUAGES C CXX)
+# list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/libsndfile/cmake)
+# find_package(SndFile REQUIRED)
+set(BUILD_PROGRAMS OFF)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 # Set C++ standard
@@ -17,6 +21,7 @@ include_directories(bgfx/bgfx/include)
 include_directories(bgfx/bx/include)
 include_directories(bgfx/bimg/include)
 include_directories(bgfx/bgfx/3rdparty)
+include_directories(libsndfile/include)
 
 if(MINGW)
     include_directories(bgfx/bx/include/compat/mingw)
@@ -94,6 +99,11 @@ elseif(APPLE)
     endif()
     # Add the Foundation framework to the linking process
     set(EXTRA_LIBS ${EXTRA_LIBS} ${FOUNDATION})
+elseif(IOS)
+    # TODO
+    find_library(UIKIT UIKit)
+    find_library(FOUNDATION Foundation)
+    target_link_libraries(main PRIVATE ${UIKIT} ${FOUNDATION})
 endif()
 
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
@@ -103,7 +113,8 @@ add_library(MINIAUDIO STATIC ${SRC_DIR}/audio/miniaudio.m)
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.cpp)
 # Main executable
 add_executable(main ${SRC_FILES} ${MM_SRC_FILES})
-target_link_libraries(main ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 STB_VORBIS MINIAUDIO ${EXTRA_LIBS} bgfx)
+# target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 STB_VORBIS MINIAUDIO ${EXTRA_LIBS} bgfx)
+# target_link_libraries(main PRIVATE SndFile::sndfile)
 
 # Custom target for copying assets
 add_custom_command(
@@ -141,3 +152,42 @@ install(DIRECTORY assets DESTINATION ${BUILD_DIR})
 # Additional targets for different build types like Debug, Release, etc.
 
 add_subdirectory(bgfx)
+# add_subdirectory(libsndfile)
+# # Add pre-generated Xcode projects as subprojects
+# set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# # Add bgfx.xcodeproj
+# set(BGFX_PROJECT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/bgfx/bgfx.xcodeproj")
+
+# # Ensure bgfx is built before adding the custom target
+# add_custom_command(
+#     OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/bgfx/bgfx.xcodeproj
+#     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target bgfx
+#     DEPENDS bgfx
+#     COMMENT "Waiting for bgfx.xcodeproj to be generated"
+# )
+
+# add_custom_target(bgfx_proj ALL
+#     COMMAND ${CMAKE_COMMAND} -E echo "Adding bgfx.xcodeproj"
+#     SOURCES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/bgfx/bgfx.xcodeproj
+# )
+# set_target_properties(bgfx_proj PROPERTIES FOLDER "External Projects")
+
+# # Add SDL_ttf.xcodeproj
+# set(SDL_TTF_PROJECT "${CMAKE_SOURCE_DIR}/SDL_ttf/Xcode/SDL_ttf.xcodeproj")
+# add_custom_target(SDL_ttf_proj ALL
+#     COMMAND ${CMAKE_COMMAND} -E echo "Adding SDL_ttf.xcodeproj"
+#     SOURCES ${SDL_TTF_PROJECT}
+# )
+# set_target_properties(SDL_ttf_proj PROPERTIES FOLDER "External Projects")
+
+# # Add SDL.xcodeproj
+# set(SDL_PROJECT "${CMAKE_SOURCE_DIR}/SDL/Xcode/SDL/SDL.xcodeproj")
+# add_custom_target(SDL_proj ALL
+#     COMMAND ${CMAKE_COMMAND} -E echo "Adding SDL.xcodeproj"
+#     SOURCES ${SDL_PROJECT}
+# )
+# set_target_properties(SDL_proj PROPERTIES FOLDER "External Projects")
+
+# # Ensure dependencies are built before the main target
+# add_dependencies(main bgfx_proj SDL_ttf_proj SDL_proj)
