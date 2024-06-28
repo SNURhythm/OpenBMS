@@ -1,17 +1,19 @@
-#include <sndfile.h> // Include the sndfile library for handling audio files
+
 
 #include <iostream>
 #include "decoder.h"
-
+#include <SDL2/SDL.h>
+#ifdef _WIN32
+#define sf_open sf_wchar_open
+#endif
 // Function to decode audio file to PCM
-std::vector<short> decodeAudioToPCM(const char *filePath) {
+std::vector<short> decodeAudioToPCM(const path_t& filePath, SF_INFO& fileInfo) {
   // Open the audio file
-  SF_INFO fileInfo;
 
-  SNDFILE *file = sf_open(filePath, SFM_READ, &fileInfo);
+  SNDFILE *file = sf_open(filePath.c_str(), SFM_READ, &fileInfo);
 
   if (!file) {
-    std::cerr << "Error opening file: " << filePath << std::endl;
+    SDL_Log("Failed to open audio file %ls, error: %s", filePath.c_str(), sf_strerror(file));
     return {};
   }
 
@@ -22,7 +24,7 @@ std::vector<short> decodeAudioToPCM(const char *filePath) {
   sf_count_t numFrames = sf_readf_short(file, buffer.data(), fileInfo.frames);
 
   if (numFrames < 1) {
-    std::cerr << "Failed to read audio data." << std::endl;
+    SDL_Log("Failed to read audio data from file %ls", filePath.c_str());
     sf_close(file);
     return {};
   }

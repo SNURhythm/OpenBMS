@@ -1,4 +1,5 @@
 #pragma once
+#include <sndfile.h> // Include the sndfile library for handling audio files
 #include <vector>
-
-std::vector<short> decodeAudioToPCM(const char *filePath);
+#include "../path.h"
+std::vector<short> decodeAudioToPCM(const path_t& filePath, SF_INFO& fileInfo);
