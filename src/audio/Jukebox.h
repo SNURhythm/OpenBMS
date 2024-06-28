@@ -6,7 +6,7 @@
 #include <thread>
 #include <unordered_map>
 #include <atomic>
-
+#include "../path.h"
 class Jukebox {
 public:
   Jukebox();
@@ -26,6 +26,6 @@ private:
   std::chrono::high_resolution_clock::time_point position;
   AudioWrapper audio;
   std::queue<std::pair<long long, int>> scheduleQueue;
-  std::unordered_map<int, std::string> wavTableAbs;
+  std::unordered_map<int, path_t> wavTableAbs;
   std::vector<std::string> extensions = {"flac", "wav", "ogg", "mp3"};
 };

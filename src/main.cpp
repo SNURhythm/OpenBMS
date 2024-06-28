@@ -69,10 +69,10 @@ static const uint16_t cubeTriList[] = {
 int rendering::window_width = 800;
 int rendering::window_height = 600;
 int main(int argv, char **args) {
-  std::vector<short> pcm = decodeAudioToPCM("assets/audio/sample.wav");
-  // print
-  std::cout << "PCM size: " << pcm.size() * sizeof(short) << " bytes"
-            << std::endl;
+//  std::vector<short> pcm = decodeAudioToPCM(L"assets/audio/sample.wav");
+//  // print
+//  std::cout << "PCM size: " << pcm.size() * sizeof(short) << " bytes"
+//            << std::endl;
   SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
   SDL_SetHint(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, "1");
   // print bgfx version

@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
+add_subdirectory(libsndfile)
 include(ExternalProject)
 project(MyProject VERSION 1.0 LANGUAGES C CXX)
-# list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/libsndfile/cmake)
-# find_package(SndFile REQUIRED)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+find_package(SndFile REQUIRED)
 set(BUILD_PROGRAMS OFF)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -51,7 +52,7 @@ set(BUILD_DIR ${CMAKE_BINARY_DIR}/build)
 
 # Libraries directory
 set(LIB_DIR lib)
-
+add_definitions(-DBX_CONFIG_DEBUG=1)
 # Platform-specific settings
 if(WIN32)
     set(CP_ASSETS "xcopy /s /i assets ${BUILD_DIR}\\assets /Y")
@@ -108,13 +109,13 @@ endif()
 
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
 add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
-add_library(STB_VORBIS STATIC ${SRC_DIR}/audio/stb_vorbis.c)
-add_library(MINIAUDIO STATIC ${SRC_DIR}/audio/miniaudio.m)
+
+add_library(MINIAUDIO STATIC ${SRC_DIR}/audio/miniaudio.c)
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.cpp)
 # Main executable
 add_executable(main ${SRC_FILES} ${MM_SRC_FILES})
-# target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 STB_VORBIS MINIAUDIO ${EXTRA_LIBS} bgfx)
-# target_link_libraries(main PRIVATE SndFile::sndfile)
+target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 MINIAUDIO ${EXTRA_LIBS} bgfx)
+target_link_libraries(main PRIVATE SndFile::sndfile)
 
 # Custom target for copying assets
 add_custom_command(
@@ -152,7 +153,7 @@ install(DIRECTORY assets DESTINATION ${BUILD_DIR})
 # Additional targets for different build types like Debug, Release, etc.
 
 add_subdirectory(bgfx)
-# add_subdirectory(libsndfile)
+
 # # Add pre-generated Xcode projects as subprojects
 # set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
