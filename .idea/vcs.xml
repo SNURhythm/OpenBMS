@@ -2,5 +2,15 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/SDL" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/SDL_ttf" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/SDL_ttf/external/freetype" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/SDL_ttf/external/freetype/subprojects/dlg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/SDL_ttf/external/harfbuzz" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/bgfx" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/bgfx/bgfx" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/bgfx/bimg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/bgfx/bx" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/libsndfile" vcs="Git" />
   </component>
 </project>
