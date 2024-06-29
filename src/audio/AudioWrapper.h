@@ -5,25 +5,33 @@
 #include <string>
 #include <vector>
 #include "../path.h"
-
+// Custom data structure to hold PCM data and playback state
+struct SoundData {
+  std::vector<short> pcmData;
+  size_t currentFrame;
+  int channels;
+  int originalSampleRate;
+  bool playing;
+  ma_resampler resampler;
+  std::vector<short> resampledData;
+  size_t resampledFrameCount;
+};
 class AudioWrapper {
 public:
   AudioWrapper();
   ~AudioWrapper();
-
-  bool loadSound(const path_t &path);   // Load and store a sound
-  void stopSounds();                  // Stop all sounds
-  void unloadSound(const path_t &path); // Unload a sound
-  void unloadSounds();                // Unload all sounds
-  void preloadSounds(
-      const std::vector<path_t> &paths); // Preload multiple sounds
-  bool playSound(const path_t &path);     // Play a preloaded sound
+  bool loadSound(const path_t &path);
+  void preloadSounds(const std::vector<path_t> &paths);
+  bool playSound(const path_t &path);
+  void stopSounds();
+  void unloadSound(const path_t &path);
+  void unloadSounds();
 
 private:
   ma_engine engine;
   ma_engine_config engineConfig;
-  // sound group
-  ma_sound_group soundGroup;
-  ma_sound_group_config soundGroupConfig;
-  std::map<path_t, ma_device> devices;
+  ma_device device;
+  std::vector<std::shared_ptr<SoundData>> soundDataList;
+  std::map<path_t, size_t>
+      soundDataIndexMap; // Map to store index of SoundData in soundDataList
 };
