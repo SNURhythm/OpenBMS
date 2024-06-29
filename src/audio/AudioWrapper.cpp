@@ -1,4 +1,3 @@
-
 #define MINIAUDIO_IMPLEMENTATION
 #include "AudioWrapper.h"
 #include <stdexcept>
@@ -6,83 +5,112 @@
 #include "decoder.h"
 #include "sndfile.h"
 #include <stdio.h>
-// Custom data structure to hold PCM data and playback state
-struct SoundData {
-  std::vector<short> pcmData;
-  size_t currentFrame;
-  int channels;
-};
+
 void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
                   ma_uint32 frameCount) {
-  auto *soundData = (SoundData *)pDevice->pUserData;
-  if (soundData == nullptr) {
+  auto *soundDataList =
+      (std::vector<std::shared_ptr<SoundData>> *)pDevice->pUserData;
+  if (soundDataList == nullptr) {
     return;
   }
 
-  ma_uint32 framesToRead = frameCount;
-  ma_uint32 framesAvailable =
-      (soundData->pcmData.size() / soundData->channels) -
-      soundData->currentFrame;
-  if (framesToRead > framesAvailable) {
-    framesToRead = framesAvailable;
-  }
+  memset(pOutput, 0,
+         frameCount * sizeof(ma_int16) * pDevice->playback.channels);
 
-  ma_copy_pcm_frames(
-      pOutput,
-      &soundData->pcmData[soundData->currentFrame * soundData->channels],
-      framesToRead, ma_format_s16, soundData->channels);
+  for (auto &soundData : *soundDataList) {
+    if (!soundData->playing) {
+      continue;
+    }
 
-  soundData->currentFrame += framesToRead;
+    ma_uint32 framesToRead = frameCount;
+    ma_uint32 framesAvailable =
+        soundData->resampledFrameCount - soundData->currentFrame;
+    if (framesToRead > framesAvailable) {
+      framesToRead = framesAvailable;
+    }
 
-  // If we've reached the end of the PCM data, loop back to the start
-  if (framesToRead < frameCount) {
-    ma_copy_pcm_frames((ma_int16 *)pOutput + framesToRead * soundData->channels,
-                       soundData->pcmData.data(), frameCount - framesToRead,
-                       ma_format_s16, soundData->channels);
-    soundData->currentFrame = frameCount - framesToRead;
+    for (ma_uint32 frame = 0; frame < framesToRead; ++frame) {
+      for (int channel = 0; channel < soundData->channels; ++channel) {
+        int outputChannel = channel % pDevice->playback.channels;
+        ((ma_int16 *)
+             pOutput)[frame * pDevice->playback.channels + outputChannel] +=
+            soundData->resampledData[(soundData->currentFrame + frame) *
+                                         soundData->channels +
+                                     channel];
+      }
+    }
+
+    soundData->currentFrame += framesToRead;
+    if (framesToRead < frameCount) {
+      soundData->playing = false; // Stop the sound if all frames have been read
+    }
   }
 }
+
 AudioWrapper::AudioWrapper() {
   engineConfig = ma_engine_config_init();
   auto result = ma_engine_init(&engineConfig, &engine);
   if (result != MA_SUCCESS) {
     throw std::runtime_error("Failed to initialize audio engine.");
   }
-  result = ma_sound_group_init(&engine, 0, nullptr, &soundGroup);
+
+  ma_device_config deviceConfig =
+      ma_device_config_init(ma_device_type_playback);
+  deviceConfig.playback.format = ma_format_s16;
+  deviceConfig.playback.channels = 2; // Assuming stereo output
+  deviceConfig.sampleRate = 44100;    // Assuming 44100 Hz sample rate
+  deviceConfig.dataCallback = dataCallback;
+  deviceConfig.pUserData = &soundDataList;
+
+  result = ma_device_init(nullptr, &deviceConfig, &device);
+  if (result != MA_SUCCESS) {
+    throw std::runtime_error("Failed to initialize playback device.");
+  }
+
+  ma_device_start(&device);
 }
 
 AudioWrapper::~AudioWrapper() {
   unloadSounds();
-
+  ma_device_uninit(&device);
   ma_engine_uninit(&engine);
 }
 
 bool AudioWrapper::loadSound(const path_t &path) {
-  // Uninitialize any existing sound
-  ma_device_uninit(&devices[path]);
-
-  // Read the PCM data
   SF_INFO sfInfo;
-  std::vector<short> pcmData = decodeAudioToPCM(path, sfInfo);
+  auto soundData = std::make_shared<SoundData>();
+  decodeAudioToPCM(path, soundData->pcmData, sfInfo);
 
-  // Store the PCM data in a SoundData structure
-  SoundData *soundData = new SoundData{pcmData, 0, sfInfo.channels};
+  soundData->currentFrame = 0;
+  soundData->channels = sfInfo.channels;
+  soundData->originalSampleRate = sfInfo.samplerate;
+  soundData->playing = false;
 
-  // Initialize the sound with the custom data callback
-  ma_device_config deviceConfig =
-      ma_device_config_init(ma_device_type_playback);
-  deviceConfig.playback.format = ma_format_s16;
-  deviceConfig.playback.channels = sfInfo.channels;
-  deviceConfig.sampleRate = sfInfo.samplerate;
-  deviceConfig.dataCallback = dataCallback;
-  deviceConfig.pUserData = soundData;
-  ma_device device;
-  auto result = ma_device_init(nullptr, &deviceConfig, &device);
-  if (result != MA_SUCCESS) {
-    SDL_Log("Failed to initialize device for sound %s", path.c_str());
+  // Initialize the resampler
+  ma_resampler_config resamplerConfig = ma_resampler_config_init(
+      ma_format_s16, sfInfo.channels, sfInfo.samplerate, 44100,
+      ma_resample_algorithm_linear);
+  if (ma_resampler_init(&resamplerConfig, nullptr, &soundData->resampler) !=
+      MA_SUCCESS) {
+    SDL_Log("Failed to initialize resampler.");
     return false;
   }
-  devices[path] = device;
+
+  // Resample the audio data to 44100 Hz
+
+  ma_uint64 resampledFrameCount =
+      (ma_uint64)((double)soundData->pcmData.size() / sfInfo.channels * 44100 /
+                  sfInfo.samplerate);
+  soundData->resampledData.resize(resampledFrameCount * sfInfo.channels);
+  ma_uint64 size = (ma_uint64)soundData->pcmData.size();
+  ma_resampler_process_pcm_frames(
+      &soundData->resampler, soundData->pcmData.data(), &size,
+      soundData->resampledData.data(), &resampledFrameCount);
+  soundData->resampledFrameCount = resampledFrameCount;
+
+  soundDataIndexMap[path] = soundDataList.size();
+  soundDataList.push_back(soundData);
+
   return true;
 }
 
@@ -93,34 +121,53 @@ void AudioWrapper::preloadSounds(const std::vector<path_t> &paths) {
 }
 
 bool AudioWrapper::playSound(const path_t &path) {
-  bool result = true;
-  if (devices.find(path) == devices.end()) {
-    result = loadSound(path);
+  if (!ma_device_is_started(&device)) {
+    ma_device_start(&device);
   }
-  auto playResult =
-      ma_device_start(&devices[path]); // Start playback of the sound
-  SDL_Log("Playing sound %s, result %d", path.c_str(), playResult);
-  return result;
+  if (soundDataIndexMap.find(path) == soundDataIndexMap.end()) {
+    if (!loadSound(path)) {
+      return false;
+    }
+  }
+
+  auto &soundData = soundDataList[soundDataIndexMap[path]];
+  soundData->currentFrame = 0;
+  soundData->playing = true;
+
+  return true;
 }
 
 void AudioWrapper::stopSounds() {
-  ma_sound_group_stop(&soundGroup);
-  ma_sound_group_start(&soundGroup);
+  for (auto &soundData : soundDataList) {
+    soundData->playing = false;
+  }
+  ma_device_stop(&device);
 }
 
 void AudioWrapper::unloadSound(const path_t &path) {
-  ma_device device = devices[path];
-  ma_device_uninit(&device);
-  devices.erase(path);
+  if (soundDataIndexMap.find(path) != soundDataIndexMap.end()) {
+    size_t index = soundDataIndexMap[path];
+    ma_resampler_uninit(&soundDataList[index]->resampler,
+                        nullptr); // Cleanup resampler
+    soundDataList.erase(soundDataList.begin() + index);
+    soundDataIndexMap.erase(path);
+
+    // Update indices in the map
+    for (auto &entry : soundDataIndexMap) {
+      if (entry.second > index) {
+        entry.second--;
+      }
+    }
+  }
 }
 
 void AudioWrapper::unloadSounds() {
-  for (auto &device : devices) {
-    ma_device_uninit(&device.second);
+  stopSounds();
+  for (auto &soundData : soundDataList) {
+    ma_resampler_uninit(&soundData->resampler, nullptr); // Cleanup resampler
   }
-  devices.clear();
-  ma_sound_group_uninit(&soundGroup);
+  soundDataList.clear();
+  soundDataIndexMap.clear();
   ma_engine_uninit(&engine);
   ma_engine_init(&engineConfig, &engine);
-  ma_sound_group_init(&engine, 0, nullptr, &soundGroup);
 }
