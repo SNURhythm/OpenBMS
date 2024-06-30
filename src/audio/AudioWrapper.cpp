@@ -17,6 +17,8 @@ void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
   memset(pOutput, 0,
          frameCount * sizeof(ma_int16) * pDevice->playback.channels);
 
+  float gain = 0.9f;
+
   for (auto &soundData : *soundDataList) {
     if (!soundData->playing) {
       continue;
@@ -32,11 +34,22 @@ void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
     for (ma_uint32 frame = 0; frame < framesToRead; ++frame) {
       for (int channel = 0; channel < soundData->channels; ++channel) {
         int outputChannel = channel % pDevice->playback.channels;
+        ma_int32 sample =
+            ((ma_int16 *)
+                 pOutput)[frame * pDevice->playback.channels + outputChannel] +
+            static_cast<ma_int32>(
+                gain *
+                soundData->resampledData[(soundData->currentFrame + frame) *
+                                             soundData->channels +
+                                         channel]);
+        // Clamp the sample to the range of ma_int16
+        if (sample > 32767)
+          sample = 32767;
+        if (sample < -32768)
+          sample = -32768;
         ((ma_int16 *)
-             pOutput)[frame * pDevice->playback.channels + outputChannel] +=
-            soundData->resampledData[(soundData->currentFrame + frame) *
-                                         soundData->channels +
-                                     channel];
+             pOutput)[frame * pDevice->playback.channels + outputChannel] =
+            sample;
       }
     }
 
@@ -46,7 +59,6 @@ void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
     }
   }
 }
-
 AudioWrapper::AudioWrapper() {
   engineConfig = ma_engine_config_init();
   auto result = ma_engine_init(&engineConfig, &engine);
