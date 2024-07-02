@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
-add_subdirectory(libsndfile)
 include(ExternalProject)
 project(MyProject VERSION 1.0 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(SndFile REQUIRED)
+find_package(SndFile CONFIG REQUIRED)
+#find_package(bgfx CONFIG REQUIRED)
 set(BUILD_PROGRAMS OFF)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -22,8 +22,9 @@ include_directories(bgfx/bgfx/include)
 include_directories(bgfx/bx/include)
 include_directories(bgfx/bimg/include)
 include_directories(bgfx/bgfx/3rdparty)
-include_directories(libsndfile/include)
-
+#include_directories(libsndfile/include)
+find_path(MINIAUDIO_INCLUDE_DIRS "miniaudio.h")
+include_directories(${MINIAUDIO_INCLUDE_DIRS})
 if(MINGW)
     include_directories(bgfx/bx/include/compat/mingw)
 endif()
@@ -110,11 +111,12 @@ endif()
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
 add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 
-add_library(MINIAUDIO STATIC ${SRC_DIR}/audio/miniaudio.c)
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.cpp)
 # Main executable
 add_executable(main ${SRC_FILES} ${MM_SRC_FILES})
-target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 MINIAUDIO ${EXTRA_LIBS} bgfx)
+
+target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
+
 target_link_libraries(main PRIVATE SndFile::sndfile)
 
 # Custom target for copying assets
@@ -153,7 +155,7 @@ install(DIRECTORY assets DESTINATION ${BUILD_DIR})
 # Additional targets for different build types like Debug, Release, etc.
 
 add_subdirectory(bgfx)
-
+#add_subdirectory(libsndfile)
 # # Add pre-generated Xcode projects as subprojects
 # set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
