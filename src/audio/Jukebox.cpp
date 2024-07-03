@@ -124,8 +124,8 @@ void Jukebox::play() {
           std::chrono::duration_cast<std::chrono::microseconds>(position)
               .count();
       if (positionMicro >= scheduleQueue.front().first) {
-        SDL_Log("Playing sound: %s",
-                wavTableAbs[scheduleQueue.front().second].c_str());
+//        SDL_Log("Playing sound: %s",
+//                wavTableAbs[scheduleQueue.front().second].c_str());
         audio.playSound(wavTableAbs[scheduleQueue.front().second].c_str());
         scheduleQueue.pop();
       }
