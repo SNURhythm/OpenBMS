@@ -91,7 +91,11 @@ AudioWrapper::~AudioWrapper() {
 bool AudioWrapper::loadSound(const path_t &path) {
   SF_INFO sfInfo;
   auto soundData = std::make_shared<SoundData>();
-  decodeAudioToPCM(path, soundData->pcmData, sfInfo);
+  bool result = decodeAudioToPCM(path, soundData->pcmData, sfInfo);
+  if (!result) {
+    SDL_Log("Failed to decode audio file %s", path.c_str());
+    return false;
+  }
 
   soundData->currentFrame = 0;
   soundData->channels = sfInfo.channels;
