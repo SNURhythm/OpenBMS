@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <SDL2/SDL.h>
 #include "decoder.h"
-#include "sndfile.h"
+#include <sndfile.h>
 #include <stdio.h>
 
 void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
