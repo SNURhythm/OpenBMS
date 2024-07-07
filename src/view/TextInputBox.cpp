@@ -2,6 +2,7 @@
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
 #include "SDL2/SDL_events.h"
+#include <cstring>
 TextInputBox::TextInputBox(const std::string &fontPath, int fontSize)
     : TextView(fontPath, fontSize) {
   viewRect = {getX(), getY(), getWidth(), getHeight()};
