@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 include(ExternalProject)
 project(MyProject VERSION 1.0 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(SndFile CONFIG REQUIRED)
+
 #find_package(bgfx CONFIG REQUIRED)
 set(BUILD_PROGRAMS OFF)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -54,6 +54,7 @@ set(LIB_DIR lib)
 add_definitions(-DBX_CONFIG_DEBUG=1)
 # Platform-specific settings
 if(WIN32)
+    find_package(SndFile CONFIG REQUIRED)
     set(CP_ASSETS "xcopy /s /i assets ${BUILD_DIR}\\assets /Y")
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
         add_definitions(-DAMD64)
@@ -72,6 +73,7 @@ if(WIN32)
     # glob all the dlls
     file(GLOB DLLS ${LIB_DIR}/win32/*.dll)
     set(VLC_PLUGINS_TAR libvlcplugins/win32.tar.gz)
+    set(EXTRA_LIBS SndFile::sndfile)
 elseif(UNIX AND NOT APPLE)
     set(CP_ASSETS "cp -r assets ${BUILD_DIR}")
     set(SDL2_LIB SDL2)
@@ -81,7 +83,10 @@ elseif(UNIX AND NOT APPLE)
     set(VLCCORE_LIB vlccore)
     file(GLOB DLLS ${LIB_DIR}/linux/*.so)
     set(VLC_PLUGINS_TAR "")
+    set(EXTRA_LIBS X11 sndfile)
+    add_definitions(-DSDL_VIDEO_DRIVER_X11=ON)
 elseif(APPLE)
+    find_package(SndFile CONFIG REQUIRED)
     set(CP_ASSETS "cp -r assets ${BUILD_DIR}")
     find_library(SDL2_LIB SDL2 PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(SDL2MAIN_LIB SDL2main PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
@@ -98,7 +103,7 @@ elseif(APPLE)
         message(FATAL_ERROR "Foundation framework not found")
     endif()
     # Add the Foundation framework to the linking process
-    set(EXTRA_LIBS ${EXTRA_LIBS} ${FOUNDATION})
+    set(EXTRA_LIBS ${EXTRA_LIBS} ${FOUNDATION} SndFile::sndfile)
 elseif(IOS)
     # TODO
     find_library(UIKIT UIKit)
@@ -115,7 +120,6 @@ add_executable(main ${SRC_FILES} ${MM_SRC_FILES})
 
 target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
 
-target_link_libraries(main PRIVATE SndFile::sndfile)
 
 # Custom target for copying assets
 add_custom_command(
