@@ -1,9 +1,9 @@
-
-
+#include "bgfx_helper.h"
 #include "rendering/ShaderManager.h"
 #include "./audio/decoder.h"
 #include "bx/math.h"
 #include <cstdio>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_video.h>
@@ -139,6 +139,10 @@ int main(int argv, char **args) {
 #if !BX_PLATFORM_EMSCRIPTEN
   SDL_SysWMinfo wmi;
   SDL_VERSION(&wmi.version);
+  printf("SDL_major: %d, SDL_minor: %d, SDL_patch: %d\n", wmi.version.major,
+         wmi.version.minor, wmi.version.patch);
+         wmi.version.major=2.0;
+         wmi.version.minor=0;
   if (!SDL_GetWindowWMInfo(win, &wmi)) {
     printf("SDL_SysWMinfo could not be retrieved. SDL_Error: %s\n",
            SDL_GetError());
@@ -148,23 +152,8 @@ int main(int argv, char **args) {
 #endif                 // !BX_PLATFORM_EMSCRIPTEN
 
   bgfx::PlatformData pd{};
-#if BX_PLATFORM_WINDOWS
-  pd.nwh = wmi.info.win.window;
-#elif BX_PLATFORM_OSX
-  pd.nwh = wmi.info.cocoa.window;
-#elif BX_PLATFORM_LINUX
-  pd.ndt = wmi.info.x11.display;
-  pd.nwh = (void *)(uintptr_t)wmi.info.x11.window;
-#elif BX_PLATFORM_EMSCRIPTEN
-  pd.nwh = (void *)"#canvas";
-#elif BX_PLATFORM_IOS
-  pd.ndt = nullptr;
-  pd.nwh = GetIOSWindowHandle(wmi.info.uikit.window);
-  pd.context = nullptr;
-  pd.backBuffer = nullptr;
-  pd.backBufferDS = nullptr;
-#endif // BX_PLATFORM_WINDOWS ? BX_PLATFORM_OSX ? BX_PLATFORM_LINUX ?
-       // BX_PLATFORM_EMSCRIPTEN
+  setup_bgfx_platform_data(pd, wmi);
+
   bgfx::Init bgfx_init;
   bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
   bgfx_init.resolution.width = rendering::window_width;
