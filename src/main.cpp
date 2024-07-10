@@ -23,6 +23,7 @@
 #include "rendering/ShaderManager.h"
 #include "context.h"
 #include "audio/AudioWrapper.h"
+#include <vlcpp/vlc.hpp>
 #ifdef _WIN32
 #include <windows.h>
 
@@ -106,7 +107,7 @@ int main(int argv, char **args) {
 
   // vlc instance
   std::cout << "VLC init..." << std::endl;
-  // auto instance = VLC::Instance(0, nullptr);
+   auto instance = VLC::Instance(0, nullptr);
 
   std::cout << "VLC init done" << std::endl;
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
