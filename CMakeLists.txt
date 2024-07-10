@@ -116,7 +116,9 @@ add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.cpp)
 # Main executable
-add_executable(main ${SRC_FILES} ${MM_SRC_FILES})
+add_executable(main ${SRC_FILES} ${MM_SRC_FILES}
+        src/video/VideoPlayer.h
+        src/video/VideoPlayer.cpp)
 
 target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
 
