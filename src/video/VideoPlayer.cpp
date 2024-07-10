@@ -1,0 +1,134 @@
+#include "VideoPlayer.h"
+#include <bgfx/platform.h>
+#include <iostream>
+#include <cstring>
+
+VideoPlayer::VideoPlayer()
+    : videoFrameData(nullptr), videoFrameWidth(0), videoFrameHeight(0), videoFrameUpdated(false), videoTexture(BGFX_INVALID_HANDLE) {
+}
+
+VideoPlayer::~VideoPlayer() {
+  if (mediaPlayer) {
+    mediaPlayer->stop();
+  }
+  if (bgfx::isValid(videoTexture)) {
+    bgfx::destroy(videoTexture);
+  }
+  if (videoFrameData) {
+    free(videoFrameData);
+  }
+}
+
+bool VideoPlayer::initialize(const std::string& videoPath) {
+  VLC::Media media(vlcInstance, videoPath, VLC::Media::FromPath);
+  mediaPlayer = std::make_unique<VLC::MediaPlayer>(media);
+  mediaPlayer->setVideoCallbacks(lock, unlock, display);
+
+  mediaPlayer->play();
+
+  return true;
+}
+
+void VideoPlayer::update() {
+  if (videoFrameUpdated) {
+    std::lock_guard<std::mutex> lock(videoFrameMutex);
+    videoFrameUpdated = false;
+
+    int width, height;
+    mediaPlayer->video().getSize(0, width, height);
+    updateVideoTexture(width, height);
+
+    if (bgfx::isValid(videoTexture)) {
+      const bgfx::Memory* mem = bgfx::makeRef(videoFrameData, videoFrameWidth * videoFrameHeight * 4);
+      bgfx::updateTexture2D(videoTexture, 0, 0, 0, 0, videoFrameWidth, videoFrameHeight, mem);
+    }
+  }
+}
+
+void VideoPlayer::render() {
+  // Setup view 0
+  bgfx::setViewRect(0, 0, 0, uint16_t(800), uint16_t(600));
+  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
+
+  // Submit a quad with the video texture
+  bgfx::TransientVertexBuffer tvb;
+  bgfx::TransientIndexBuffer tib;
+
+  struct PosTexCoord0Vertex {
+    float x, y, z;
+    float u, v;
+  };
+
+  bgfx::VertexLayout layout;
+  layout.begin()
+      .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+      .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+      .end();
+
+  if (bgfx::allocTransientVertexBuffer(&tvb, 4, layout) && bgfx::allocTransientIndexBuffer(&tib, 6)) {
+    PosTexCoord0Vertex* vertex = (PosTexCoord0Vertex*)tvb.data;
+
+    // Define quad vertices
+    vertex[0].x = -1.0f; vertex[0].y = -1.0f; vertex[0].z = 0.0f; vertex[0].u = 0.0f; vertex[0].v = 1.0f;
+    vertex[1].x =  1.0f; vertex[1].y = -1.0f; vertex[1].z = 0.0f; vertex[1].u = 1.0f; vertex[1].v = 1.0f;
+    vertex[2].x = -1.0f; vertex[2].y =  1.0f; vertex[2].z = 0.0f; vertex[2].u = 0.0f; vertex[2].v = 0.0f;
+    vertex[3].x =  1.0f; vertex[3].y =  1.0f; vertex[3].z = 0.0f; vertex[3].u = 1.0f; vertex[3].v = 0.0f;
+
+    // Define quad indices
+    uint16_t* indices = (uint16_t*)tib.data;
+    indices[0] = 0;
+    indices[1] = 1;
+    indices[2] = 2;
+    indices[3] = 1;
+    indices[4] = 3;
+    indices[5] = 2;
+
+    bgfx::setVertexBuffer(0, &tvb);
+    bgfx::setIndexBuffer(&tib);
+    bgfx::setTexture(0, bgfx::getTextureUniformHandle("s_texColor"), videoTexture);
+    bgfx::submit(0, bgfx::getProgramHandle("vs_quad", "fs_quad"));
+  }
+}
+
+void* VideoPlayer::lock(void* opaque, void** planes) {
+  VideoPlayer* self = static_cast<VideoPlayer*>(opaque);
+  std::lock_guard<std::mutex> lock(self->videoFrameMutex);
+  *planes = self->videoFrameData;
+  return nullptr;
+}
+
+void VideoPlayer::unlock(void* opaque, void* picture, void* const* planes) {
+  VideoPlayer* self = static_cast<VideoPlayer*>(opaque);
+  std::lock_guard<std::mutex> lock(self->videoFrameMutex);
+  self->videoFrameUpdated = true;
+}
+
+void VideoPlayer::display(void* opaque, void* picture) {
+  // No additional processing needed here
+}
+
+void VideoPlayer::updateVideoTexture(int width, int height) {
+  if (width != videoFrameWidth || height != videoFrameHeight) {
+    if (bgfx::isValid(videoTexture)) {
+      bgfx::destroy(videoTexture);
+    }
+
+    videoFrameWidth = width;
+    videoFrameHeight = height;
+
+    videoTexture = bgfx::createTexture2D(
+        uint16_t(videoFrameWidth),
+        uint16_t(videoFrameHeight),
+        false,
+        1,
+        bgfx::TextureFormat::BGRA8,
+        BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE
+    );
+
+    if (videoFrameData) {
+      free(videoFrameData);
+    }
+
+    videoFrameData = malloc(videoFrameWidth * videoFrameHeight * 4); // Assuming 32-bit RGBA
+  }
+}
