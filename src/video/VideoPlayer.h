@@ -14,9 +14,9 @@ public:
   void render();
 
 private:
-  static void* lock(void* opaque, void** planes);
-  static void unlock(void* opaque, void* picture, void* const* planes);
-  static void display(void* opaque, void* picture);
+  void* lock(void** planes);
+  void unlock(void* picture, void* const* planes);
+  void display(void* picture);
   void updateVideoTexture(int width, int height);
 
   std::mutex videoFrameMutex;
@@ -25,6 +25,7 @@ private:
   int videoFrameHeight;
   bool videoFrameUpdated;
   bgfx::TextureHandle videoTexture;
+  bgfx::UniformHandle s_texColor;
 
   VLC::Instance vlcInstance;
   std::unique_ptr<VLC::MediaPlayer> mediaPlayer;

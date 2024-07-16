@@ -1,10 +1,13 @@
 #include "VideoPlayer.h"
+#include "../rendering/common.h"
+#include "../rendering/ShaderManager.h"
 #include <bgfx/platform.h>
 #include <iostream>
 #include <cstring>
 
 VideoPlayer::VideoPlayer()
     : videoFrameData(nullptr), videoFrameWidth(0), videoFrameHeight(0), videoFrameUpdated(false), videoTexture(BGFX_INVALID_HANDLE) {
+  s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -22,7 +25,9 @@ VideoPlayer::~VideoPlayer() {
 bool VideoPlayer::initialize(const std::string& videoPath) {
   VLC::Media media(vlcInstance, videoPath, VLC::Media::FromPath);
   mediaPlayer = std::make_unique<VLC::MediaPlayer>(media);
-  mediaPlayer->setVideoCallbacks(lock, unlock, display);
+  mediaPlayer->setVideoCallbacks([this](void** planes) { return lock(planes); },
+                                 [this](void* picture, void* const* planes) { unlock(picture, planes); },
+                                 [this](void* picture) { display(picture); });
 
   mediaPlayer->play();
 
@@ -34,9 +39,8 @@ void VideoPlayer::update() {
     std::lock_guard<std::mutex> lock(videoFrameMutex);
     videoFrameUpdated = false;
 
-    int width, height;
-    mediaPlayer->video().getSize(0, width, height);
-    updateVideoTexture(width, height);
+    unsigned int width, height;
+    mediaPlayer->size(0, &width, &height);
 
     if (bgfx::isValid(videoTexture)) {
       const bgfx::Memory* mem = bgfx::makeRef(videoFrameData, videoFrameWidth * videoFrameHeight * 4);
@@ -64,46 +68,45 @@ void VideoPlayer::render() {
       .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
       .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
       .end();
+  bgfx::allocTransientVertexBuffer(&tvb, 4, layout);
+  bgfx::allocTransientIndexBuffer(&tib, 6);
+  auto* vertex = (PosTexCoord0Vertex*)tvb.data;
 
-  if (bgfx::allocTransientVertexBuffer(&tvb, 4, layout) && bgfx::allocTransientIndexBuffer(&tib, 6)) {
-    PosTexCoord0Vertex* vertex = (PosTexCoord0Vertex*)tvb.data;
+  // Define quad vertices
+  vertex[0].x = -1.0f; vertex[0].y = -1.0f; vertex[0].z = 0.0f; vertex[0].u = 0.0f; vertex[0].v = 1.0f;
+  vertex[1].x =  1.0f; vertex[1].y = -1.0f; vertex[1].z = 0.0f; vertex[1].u = 1.0f; vertex[1].v = 1.0f;
+  vertex[2].x = -1.0f; vertex[2].y =  1.0f; vertex[2].z = 0.0f; vertex[2].u = 0.0f; vertex[2].v = 0.0f;
+  vertex[3].x =  1.0f; vertex[3].y =  1.0f; vertex[3].z = 0.0f; vertex[3].u = 1.0f; vertex[3].v = 0.0f;
 
-    // Define quad vertices
-    vertex[0].x = -1.0f; vertex[0].y = -1.0f; vertex[0].z = 0.0f; vertex[0].u = 0.0f; vertex[0].v = 1.0f;
-    vertex[1].x =  1.0f; vertex[1].y = -1.0f; vertex[1].z = 0.0f; vertex[1].u = 1.0f; vertex[1].v = 1.0f;
-    vertex[2].x = -1.0f; vertex[2].y =  1.0f; vertex[2].z = 0.0f; vertex[2].u = 0.0f; vertex[2].v = 0.0f;
-    vertex[3].x =  1.0f; vertex[3].y =  1.0f; vertex[3].z = 0.0f; vertex[3].u = 1.0f; vertex[3].v = 0.0f;
+  // Define quad indices
+  auto* indices = (uint16_t*)tib.data;
+  indices[0] = 0;
+  indices[1] = 1;
+  indices[2] = 2;
+  indices[3] = 1;
+  indices[4] = 3;
+  indices[5] = 2;
 
-    // Define quad indices
-    uint16_t* indices = (uint16_t*)tib.data;
-    indices[0] = 0;
-    indices[1] = 1;
-    indices[2] = 2;
-    indices[3] = 1;
-    indices[4] = 3;
-    indices[5] = 2;
-
-    bgfx::setVertexBuffer(0, &tvb);
-    bgfx::setIndexBuffer(&tib);
-    bgfx::setTexture(0, bgfx::getTextureUniformHandle("s_texColor"), videoTexture);
-    bgfx::submit(0, bgfx::getProgramHandle("vs_quad", "fs_quad"));
-  }
+  bgfx::setVertexBuffer(0, &tvb);
+  bgfx::setIndexBuffer(&tib);
+  bgfx::setTexture(0, s_texColor, videoTexture);
+  bgfx::submit(
+      rendering::ui_view,
+      rendering::ShaderManager::getInstance().getProgram(SHADER_TEXT));
 }
 
-void* VideoPlayer::lock(void* opaque, void** planes) {
-  VideoPlayer* self = static_cast<VideoPlayer*>(opaque);
-  std::lock_guard<std::mutex> lock(self->videoFrameMutex);
-  *planes = self->videoFrameData;
+void* VideoPlayer::lock(void** planes) {
+  std::lock_guard<std::mutex> lock(videoFrameMutex);
+  *planes = videoFrameData;
   return nullptr;
 }
 
-void VideoPlayer::unlock(void* opaque, void* picture, void* const* planes) {
-  VideoPlayer* self = static_cast<VideoPlayer*>(opaque);
-  std::lock_guard<std::mutex> lock(self->videoFrameMutex);
-  self->videoFrameUpdated = true;
+void VideoPlayer::unlock(void* picture, void* const* planes) {
+  std::lock_guard<std::mutex> lock(videoFrameMutex);
+  videoFrameUpdated = true;
 }
 
-void VideoPlayer::display(void* opaque, void* picture) {
+void VideoPlayer::display(void* picture) {
   // No additional processing needed here
 }
 
