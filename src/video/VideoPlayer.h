@@ -9,15 +9,18 @@ class VideoPlayer {
 public:
   VideoPlayer();
   ~VideoPlayer();
-  bool initialize(const std::string& videoPath);
+  bool initialize(const VLC::Instance& instance, const std::string& videoPath);
   void update();
   void render();
-
+  void play();
+  void pause();
+  void stop();
+  void updateVideoTexture(int width, int height);
 private:
   void* lock(void** planes);
   void unlock(void* picture, void* const* planes);
   void display(void* picture);
-  void updateVideoTexture(int width, int height);
+
 
   std::mutex videoFrameMutex;
   void* videoFrameData;
@@ -27,7 +30,6 @@ private:
   bgfx::TextureHandle videoTexture;
   bgfx::UniformHandle s_texColor;
 
-  VLC::Instance vlcInstance;
   std::unique_ptr<VLC::MediaPlayer> mediaPlayer;
 };
 
