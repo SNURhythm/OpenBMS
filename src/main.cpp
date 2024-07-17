@@ -23,6 +23,7 @@
 #include "rendering/ShaderManager.h"
 #include "context.h"
 #include "audio/AudioWrapper.h"
+#include "video/VideoPlayer.h"
 #include <vlcpp/vlc.hpp>
 #ifdef _WIN32
 #include <windows.h>
@@ -107,7 +108,7 @@ int main(int argv, char **args) {
 
   // vlc instance
   std::cout << "VLC init..." << std::endl;
-   auto instance = VLC::Instance(0, nullptr);
+  auto instance = VLC::Instance(0, nullptr);
 
   std::cout << "VLC init done" << std::endl;
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -225,7 +226,10 @@ int main(int argv, char **args) {
                     rendering::window_height);
   auto program =
       rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
-
+  VideoPlayer videoPlayer;
+  videoPlayer.initialize(instance, "assets/video/sample.mp4");
+  videoPlayer.updateVideoTexture(800, 600);
+  videoPlayer.play();
   while (!quit) {
 
     // SDL_RenderCopy(ren, tex, nullptr, nullptr);
@@ -254,65 +258,67 @@ int main(int argv, char **args) {
                 rendering::window_height);
       }
     }
-    sceneManager.update(deltaTime);
-
-    bgfx::reset(rendering::window_width, rendering::window_height);
-    // SDL_Log("Window size: %d x %d", rendering::window_width,
-    //         rendering::window_height);
-    bgfx::touch(rendering::ui_view);
-    // ortho
-    float ortho[16];
-    bx::mtxOrtho(ortho, 0.0f, rendering::window_width, rendering::window_height,
-                 0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
-
-    bgfx::setViewTransform(rendering::ui_view, nullptr, ortho);
-    bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
-                      rendering::window_height);
-    sceneManager.render();
-
-    // shift left by 1
-    float translate[16];
-    bx::mtxTranslate(translate, 200.0f, 500.0f, 0.0f);
-    float rotate[16];
-    bx::mtxRotateZ(rotate, bx::toRad(45.0f));
-    float mtx[16];
-    bx::mtxMul(mtx, rotate, translate);
-    bgfx::setTransform(mtx);
-
-    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
-
-    bgfx::setVertexBuffer(0, triangleVbh);
-    bgfx::setIndexBuffer(triangleIbh);
-    bgfx::submit(rendering::ui_view, program);
-
-    bx::mtxTranslate(translate, 300.0f, 500.0f, 0.0f);
-    bx::mtxRotateZ(rotate, bx::toRad(45.0f));
-    bx::mtxMul(mtx, rotate, translate);
-    bgfx::setTransform(mtx);
-    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
-    bgfx::setVertexBuffer(0, rectVbh);
-    bgfx::setIndexBuffer(rectIbh);
-    bgfx::submit(rendering::ui_view, program);
-    // bgfx::frame();
-
-    // draw cube
-    // bgfx::touch(rendering::main_view);
-    bx::Vec3 at = {0.0f, 0.0f, 0.0f};
-    bx::Vec3 eye = {0.0f, 2.0f, -5.0f};
-    float viewMtx[16];
-    bx::mtxLookAt(viewMtx, eye, at);
-    float projMtx[16];
-    bx::mtxProj(projMtx, 60.0f,
-                float(rendering::window_width) /
-                    float(rendering::window_height),
-                0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-    bgfx::setViewTransform(rendering::main_view, viewMtx, projMtx);
-    bgfx::setViewRect(rendering::main_view, 0, 0, rendering::window_width,
-                      rendering::window_height);
-    bgfx::setVertexBuffer(0, vbh);
-    bgfx::setIndexBuffer(ibh);
-    bgfx::setState(BGFX_STATE_DEFAULT);
-    bgfx::submit(rendering::main_view, program);
+//    sceneManager.update(deltaTime);
+//
+//    bgfx::reset(rendering::window_width, rendering::window_height);
+//    // SDL_Log("Window size: %d x %d", rendering::window_width,
+//    //         rendering::window_height);
+//    bgfx::touch(rendering::ui_view);
+//    // ortho
+//    float ortho[16];
+//    bx::mtxOrtho(ortho, 0.0f, rendering::window_width, rendering::window_height,
+//                 0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
+//
+//    bgfx::setViewTransform(rendering::ui_view, nullptr, ortho);
+//    bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
+//                      rendering::window_height);
+//    sceneManager.render();
+//
+//    // shift left by 1
+//    float translate[16];
+//    bx::mtxTranslate(translate, 200.0f, 500.0f, 0.0f);
+//    float rotate[16];
+//    bx::mtxRotateZ(rotate, bx::toRad(45.0f));
+//    float mtx[16];
+//    bx::mtxMul(mtx, rotate, translate);
+//    bgfx::setTransform(mtx);
+//
+//    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+//
+//    bgfx::setVertexBuffer(0, triangleVbh);
+//    bgfx::setIndexBuffer(triangleIbh);
+//    bgfx::submit(rendering::ui_view, program);
+//
+//    bx::mtxTranslate(translate, 300.0f, 500.0f, 0.0f);
+//    bx::mtxRotateZ(rotate, bx::toRad(45.0f));
+//    bx::mtxMul(mtx, rotate, translate);
+//    bgfx::setTransform(mtx);
+//    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+//    bgfx::setVertexBuffer(0, rectVbh);
+//    bgfx::setIndexBuffer(rectIbh);
+//    bgfx::submit(rendering::ui_view, program);
+//    // bgfx::frame();
+//
+//    // draw cube
+//    // bgfx::touch(rendering::main_view);
+//    bx::Vec3 at = {0.0f, 0.0f, 0.0f};
+//    bx::Vec3 eye = {0.0f, 2.0f, -5.0f};
+//    float viewMtx[16];
+//    bx::mtxLookAt(viewMtx, eye, at);
+//    float projMtx[16];
+//    bx::mtxProj(projMtx, 60.0f,
+//                float(rendering::window_width) /
+//                    float(rendering::window_height),
+//                0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+//    bgfx::setViewTransform(rendering::main_view, viewMtx, projMtx);
+//    bgfx::setViewRect(rendering::main_view, 0, 0, rendering::window_width,
+//                      rendering::window_height);
+//    bgfx::setVertexBuffer(0, vbh);
+//    bgfx::setIndexBuffer(ibh);
+//    bgfx::setState(BGFX_STATE_DEFAULT);
+//    bgfx::submit(rendering::main_view, program);
+    videoPlayer.update();
+    videoPlayer.render();
 
     bgfx::frame();
   }

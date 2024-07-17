@@ -22,14 +22,12 @@ VideoPlayer::~VideoPlayer() {
   }
 }
 
-bool VideoPlayer::initialize(const std::string& videoPath) {
-  VLC::Media media(vlcInstance, videoPath, VLC::Media::FromPath);
+bool VideoPlayer::initialize(const VLC::Instance& instance, const std::string& videoPath) {
+  VLC::Media media(instance, videoPath, VLC::Media::FromPath);
   mediaPlayer = std::make_unique<VLC::MediaPlayer>(media);
   mediaPlayer->setVideoCallbacks([this](void** planes) { return lock(planes); },
                                  [this](void* picture, void* const* planes) { unlock(picture, planes); },
                                  [this](void* picture) { display(picture); });
-
-  mediaPlayer->play();
 
   return true;
 }
@@ -55,8 +53,8 @@ void VideoPlayer::render() {
   bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
 
   // Submit a quad with the video texture
-  bgfx::TransientVertexBuffer tvb;
-  bgfx::TransientIndexBuffer tib;
+  bgfx::TransientVertexBuffer tvb{};
+  bgfx::TransientIndexBuffer tib{};
 
   struct PosTexCoord0Vertex {
     float x, y, z;
@@ -93,6 +91,18 @@ void VideoPlayer::render() {
   bgfx::submit(
       rendering::ui_view,
       rendering::ShaderManager::getInstance().getProgram(SHADER_TEXT));
+}
+
+void VideoPlayer::play() {
+  mediaPlayer->play();
+}
+
+void VideoPlayer::pause() {
+  mediaPlayer->pause();
+}
+
+void VideoPlayer::stop() {
+  mediaPlayer->stop();
 }
 
 void* VideoPlayer::lock(void** planes) {
