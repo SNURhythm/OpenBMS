@@ -219,11 +219,15 @@ int main(int argv, char **args) {
   // frame
   bgfx::setViewClear(rendering::ui_view, BGFX_CLEAR_DEPTH,
                      0x30303000); // Clear to dark gray
+  bgfx::setViewClear(rendering::bga_view, BGFX_CLEAR_COLOR,
+                     0x30303000); // Clear to dark gray
   bgfx::setViewClear(rendering::main_view, BGFX_CLEAR_DEPTH | BGFX_CLEAR_COLOR,
                      0x20202000, 1.0f, 0);
   // This is set to determine the size of the drawable surface
   bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
                     rendering::window_height);
+  bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
+                        rendering::window_height);
   auto program =
       rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
   VideoPlayer videoPlayer;
@@ -258,65 +262,70 @@ int main(int argv, char **args) {
                 rendering::window_height);
       }
     }
-//    sceneManager.update(deltaTime);
-//
+    sceneManager.update(deltaTime);
+
 //    bgfx::reset(rendering::window_width, rendering::window_height);
-//    // SDL_Log("Window size: %d x %d", rendering::window_width,
-//    //         rendering::window_height);
-//    bgfx::touch(rendering::ui_view);
-//    // ortho
-//    float ortho[16];
-//    bx::mtxOrtho(ortho, 0.0f, rendering::window_width, rendering::window_height,
-//                 0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
-//
-//    bgfx::setViewTransform(rendering::ui_view, nullptr, ortho);
-//    bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
+    // SDL_Log("Window size: %d x %d", rendering::window_width,
+    //         rendering::window_height);
+    bgfx::touch(rendering::ui_view);
+    bgfx::touch(rendering::bga_view);
+    // ortho
+    float ortho[16];
+    bx::mtxOrtho(ortho, 0.0f, rendering::window_width, rendering::window_height,
+                 0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
+
+
+    bgfx::setViewTransform(rendering::ui_view, nullptr, ortho);
+    bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
+                      rendering::window_height);
+//    bgfx::setViewTransform(rendering::bga_view, nullptr, ortho2);
+//    bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
 //                      rendering::window_height);
-//    sceneManager.render();
-//
-//    // shift left by 1
-//    float translate[16];
-//    bx::mtxTranslate(translate, 200.0f, 500.0f, 0.0f);
-//    float rotate[16];
-//    bx::mtxRotateZ(rotate, bx::toRad(45.0f));
-//    float mtx[16];
-//    bx::mtxMul(mtx, rotate, translate);
-//    bgfx::setTransform(mtx);
-//
-//    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
-//
-//    bgfx::setVertexBuffer(0, triangleVbh);
-//    bgfx::setIndexBuffer(triangleIbh);
-//    bgfx::submit(rendering::ui_view, program);
-//
-//    bx::mtxTranslate(translate, 300.0f, 500.0f, 0.0f);
-//    bx::mtxRotateZ(rotate, bx::toRad(45.0f));
-//    bx::mtxMul(mtx, rotate, translate);
-//    bgfx::setTransform(mtx);
-//    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
-//    bgfx::setVertexBuffer(0, rectVbh);
-//    bgfx::setIndexBuffer(rectIbh);
-//    bgfx::submit(rendering::ui_view, program);
-//    // bgfx::frame();
-//
-//    // draw cube
-//    // bgfx::touch(rendering::main_view);
-//    bx::Vec3 at = {0.0f, 0.0f, 0.0f};
-//    bx::Vec3 eye = {0.0f, 2.0f, -5.0f};
-//    float viewMtx[16];
-//    bx::mtxLookAt(viewMtx, eye, at);
-//    float projMtx[16];
-//    bx::mtxProj(projMtx, 60.0f,
-//                float(rendering::window_width) /
-//                    float(rendering::window_height),
-//                0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-//    bgfx::setViewTransform(rendering::main_view, viewMtx, projMtx);
-//    bgfx::setViewRect(rendering::main_view, 0, 0, rendering::window_width,
-//                      rendering::window_height);
-//    bgfx::setVertexBuffer(0, vbh);
-//    bgfx::setIndexBuffer(ibh);
-//    bgfx::setState(BGFX_STATE_DEFAULT);
-//    bgfx::submit(rendering::main_view, program);
+    sceneManager.render();
+
+    // shift left by 1
+    float translate[16];
+    bx::mtxTranslate(translate, 200.0f, 500.0f, 0.0f);
+    float rotate[16];
+    bx::mtxRotateZ(rotate, bx::toRad(45.0f));
+    float mtx[16];
+    bx::mtxMul(mtx, rotate, translate);
+    bgfx::setTransform(mtx);
+
+    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+
+    bgfx::setVertexBuffer(0, triangleVbh);
+    bgfx::setIndexBuffer(triangleIbh);
+    bgfx::submit(rendering::ui_view, program);
+
+    bx::mtxTranslate(translate, 300.0f, 500.0f, 0.0f);
+    bx::mtxRotateZ(rotate, bx::toRad(45.0f));
+    bx::mtxMul(mtx, rotate, translate);
+    bgfx::setTransform(mtx);
+    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+    bgfx::setVertexBuffer(0, rectVbh);
+    bgfx::setIndexBuffer(rectIbh);
+    bgfx::submit(rendering::ui_view, program);
+    // bgfx::frame();
+
+    // draw cube
+    // bgfx::touch(rendering::main_view);
+    bx::Vec3 at = {0.0f, 0.0f, 0.0f};
+    bx::Vec3 eye = {0.0f, 2.0f, -5.0f};
+    float viewMtx[16];
+    bx::mtxLookAt(viewMtx, eye, at);
+    float projMtx[16];
+    bx::mtxProj(projMtx, 60.0f,
+                float(rendering::window_width) /
+                    float(rendering::window_height),
+                0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+    bgfx::setViewTransform(rendering::main_view, viewMtx, projMtx);
+    bgfx::setViewRect(rendering::main_view, 0, 0, rendering::window_width,
+                      rendering::window_height);
+    bgfx::setVertexBuffer(0, vbh);
+    bgfx::setIndexBuffer(ibh);
+    bgfx::setState(BGFX_STATE_DEFAULT);
+    bgfx::submit(rendering::main_view, program);
     videoPlayer.update();
     videoPlayer.render();
 
