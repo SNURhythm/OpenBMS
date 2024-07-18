@@ -84,12 +84,14 @@ void VideoPlayer::render() {
   indices[3] = 1;
   indices[4] = 3;
   indices[5] = 2;
-
+  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
+                 BGFX_STATE_BLEND_ALPHA);
   bgfx::setVertexBuffer(0, &tvb);
   bgfx::setIndexBuffer(&tib);
   bgfx::setTexture(0, s_texColor, videoTexture);
+
   bgfx::submit(
-      rendering::ui_view,
+      rendering::bga_view,
       rendering::ShaderManager::getInstance().getProgram(SHADER_TEXT));
 }
 
