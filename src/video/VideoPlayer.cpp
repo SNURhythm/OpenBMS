@@ -39,6 +39,7 @@ void VideoPlayer::update() {
 
     unsigned int width, height;
     mediaPlayer->size(0, &width, &height);
+    SDL_Log("VideoPlayer::update: %d x %d", width, height);
 
     if (bgfx::isValid(videoTexture)) {
       const bgfx::Memory* mem = bgfx::makeRef(videoFrameData, videoFrameWidth * videoFrameHeight * 4);
@@ -48,10 +49,6 @@ void VideoPlayer::update() {
 }
 
 void VideoPlayer::render() {
-  // Setup view 0
-  bgfx::setViewRect(0, 0, 0, uint16_t(800), uint16_t(600));
-  bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
-
   // Submit a quad with the video texture
   bgfx::TransientVertexBuffer tvb{};
   bgfx::TransientIndexBuffer tib{};
@@ -127,7 +124,6 @@ void VideoPlayer::updateVideoTexture(int width, int height) {
     if (bgfx::isValid(videoTexture)) {
       bgfx::destroy(videoTexture);
     }
-
     videoFrameWidth = width;
     videoFrameHeight = height;
 
@@ -143,6 +139,8 @@ void VideoPlayer::updateVideoTexture(int width, int height) {
     if (videoFrameData) {
       free(videoFrameData);
     }
+
+    mediaPlayer->setVideoFormat("RV32", videoFrameWidth, videoFrameHeight, videoFrameWidth * 4);
 
     videoFrameData = malloc(videoFrameWidth * videoFrameHeight * 4); // Assuming 32-bit RGBA
   }
