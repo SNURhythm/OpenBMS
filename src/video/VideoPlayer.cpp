@@ -1,6 +1,7 @@
 #include "VideoPlayer.h"
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
+#include "VLCInstance.h"
 #include <bgfx/platform.h>
 #include <iostream>
 #include <cstring>
@@ -13,6 +14,7 @@ VideoPlayer::VideoPlayer()
 VideoPlayer::~VideoPlayer() {
   if (mediaPlayer) {
     mediaPlayer->stop();
+    delete mediaPlayer;
   }
   if (bgfx::isValid(videoTexture)) {
     bgfx::destroy(videoTexture);
@@ -22,9 +24,9 @@ VideoPlayer::~VideoPlayer() {
   }
 }
 
-bool VideoPlayer::initialize(const VLC::Instance& instance, const std::string& videoPath) {
-  VLC::Media media(instance, videoPath, VLC::Media::FromPath);
-  mediaPlayer = std::make_unique<VLC::MediaPlayer>(media);
+bool VideoPlayer::initialize(const std::string& videoPath) {
+  VLC::Media media(*VLCInstance::getInstance().getVLCInstance(), videoPath, VLC::Media::FromPath);
+  mediaPlayer = new VLC::MediaPlayer(media);
   mediaPlayer->setVideoCallbacks([this](void** planes) { return lock(planes); },
                                  [this](void* picture, void* const* planes) { unlock(picture, planes); },
                                  [this](void* picture) { display(picture); });
@@ -39,7 +41,6 @@ void VideoPlayer::update() {
 
     unsigned int width, height;
     mediaPlayer->size(0, &width, &height);
-    SDL_Log("VideoPlayer::update: %d x %d", width, height);
 
     if (bgfx::isValid(videoTexture)) {
       const bgfx::Memory* mem = bgfx::makeRef(videoFrameData, videoFrameWidth * videoFrameHeight * 4);
@@ -57,6 +58,8 @@ void VideoPlayer::render() {
     float x, y, z;
     float u, v;
   };
+
+  SDL_Log("Rendering video texture frame %d; time: %f", currentFrame, currentFrame / 30.0f);
 
   bgfx::VertexLayout layout;
   layout.begin()
@@ -117,6 +120,7 @@ void VideoPlayer::unlock(void* picture, void* const* planes) {
 
 void VideoPlayer::display(void* picture) {
   // No additional processing needed here
+  currentFrame++;
 }
 
 void VideoPlayer::updateVideoTexture(int width, int height) {

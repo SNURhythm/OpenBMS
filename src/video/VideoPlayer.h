@@ -9,7 +9,7 @@ class VideoPlayer {
 public:
   VideoPlayer();
   ~VideoPlayer();
-  bool initialize(const VLC::Instance& instance, const std::string& videoPath);
+  bool initialize(const std::string& videoPath);
   void update();
   void render();
   void play();
@@ -26,10 +26,11 @@ private:
   void* videoFrameData;
   int videoFrameWidth;
   int videoFrameHeight;
+  int currentFrame = 0;
   bool videoFrameUpdated;
   bgfx::TextureHandle videoTexture;
   bgfx::UniformHandle s_texColor;
 
-  std::unique_ptr<VLC::MediaPlayer> mediaPlayer;
+  VLC::MediaPlayer* mediaPlayer;
 };
 
