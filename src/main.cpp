@@ -24,6 +24,7 @@
 #include "context.h"
 #include "audio/AudioWrapper.h"
 #include "video/VideoPlayer.h"
+#include "video/VLCInstance.h"
 #include <vlcpp/vlc.hpp>
 #ifdef _WIN32
 #include <windows.h>
@@ -108,7 +109,7 @@ int main(int argv, char **args) {
 
   // vlc instance
   std::cout << "VLC init..." << std::endl;
-  auto instance = VLC::Instance(0, nullptr);
+  VLCInstance::getInstance();
 
   std::cout << "VLC init done" << std::endl;
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -116,11 +117,11 @@ int main(int argv, char **args) {
     return EXIT_FAILURE;
   }
 
-  SceneManager sceneManager(context);
+
   rendering::window_width = 800;
   rendering::window_height = 600;
   SDL_Window *win = SDL_CreateWindow(
-      "Hello World!", 100, 100, rendering::window_width,
+      "OpenBMS", 100, 100, rendering::window_width,
       rendering::window_height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
   // this is intended to get actual window size on mobile devices
   SDL_GetWindowSize(win, &rendering::window_width, &rendering::window_height);
@@ -167,8 +168,22 @@ int main(int argv, char **args) {
 
   // bgfx::setPlatformData(pd);
 
-  bgfx::setViewMode(0, bgfx::ViewMode::Sequential);
 
+  run(context);
+  bgfx::shutdown();
+  if (ren != nullptr) {
+    SDL_DestroyRenderer(ren);
+  }
+  SDL_DestroyWindow(win);
+  SDL_Quit();
+  std::cout << "SDL quit" << std::endl;
+
+  return EXIT_SUCCESS;
+}
+
+void run(ApplicationContext& context){
+  bgfx::setViewMode(0, bgfx::ViewMode::Sequential);
+  SceneManager sceneManager(context);
   sceneManager.changeScene(new MainMenuScene());
 
   // SDL_RenderClear(ren);
@@ -227,11 +242,12 @@ int main(int argv, char **args) {
   bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
                     rendering::window_height);
   bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
-                        rendering::window_height);
+                    rendering::window_height);
   auto program =
       rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
+
   VideoPlayer videoPlayer;
-  videoPlayer.initialize(instance, "assets/video/sample.mp4");
+  videoPlayer.initialize("assets/video/sample.mp4");
   videoPlayer.updateVideoTexture(800, 600);
   videoPlayer.play();
   while (!quit) {
@@ -264,23 +280,23 @@ int main(int argv, char **args) {
     }
     sceneManager.update(deltaTime);
 
-//    bgfx::reset(rendering::window_width, rendering::window_height);
+    //    bgfx::reset(rendering::window_width, rendering::window_height);
     // SDL_Log("Window size: %d x %d", rendering::window_width,
     //         rendering::window_height);
     bgfx::touch(rendering::ui_view);
     bgfx::touch(rendering::bga_view);
     // ortho
     float ortho[16];
-    bx::mtxOrtho(ortho, 0.0f, rendering::window_width, rendering::window_height,
-                 0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
-
+    bx::mtxOrtho(ortho, 0.0f, rendering::window_width,
+                 rendering::window_height, 0.0f, 0.0f, 100.0f, 0.0f,
+                 bgfx::getCaps()->homogeneousDepth);
 
     bgfx::setViewTransform(rendering::ui_view, nullptr, ortho);
     bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
                       rendering::window_height);
-//    bgfx::setViewTransform(rendering::bga_view, nullptr, ortho2);
-//    bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
-//                      rendering::window_height);
+    //    bgfx::setViewTransform(rendering::bga_view, nullptr, ortho2);
+    //    bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
+    //                      rendering::window_height);
     sceneManager.render();
 
     // shift left by 1
@@ -334,13 +350,4 @@ int main(int argv, char **args) {
   sceneManager.cleanup();
   bgfx::destroy(vbh);
   bgfx::destroy(ibh);
-  bgfx::shutdown();
-  if (ren != nullptr) {
-    SDL_DestroyRenderer(ren);
-  }
-  SDL_DestroyWindow(win);
-  SDL_Quit();
-  std::cout << "SDL quit" << std::endl;
-
-  return EXIT_SUCCESS;
 }
