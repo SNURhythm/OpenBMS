@@ -119,7 +119,7 @@ void VideoPlayer::render() {
 }
 
 void VideoPlayer::play() {
-//  mediaPlayer->play();
+  mediaPlayer->play();
 }
 
 void VideoPlayer::pause() {
