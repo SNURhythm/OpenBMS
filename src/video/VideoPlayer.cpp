@@ -30,13 +30,32 @@ bool VideoPlayer::initialize(const std::string& videoPath) {
   mediaPlayer->setVideoCallbacks([this](void** planes) { return lock(planes); },
                                  [this](void* picture, void* const* planes) { unlock(picture, planes); },
                                  [this](void* picture) { display(picture); });
-  unsigned int width, height;
-  bool result = mediaPlayer->size(0, &width, &height);
-  if(result) {
-    updateVideoTexture(width, height);
-  } else {
-    updateVideoTexture(1920, 1080);
+  media.parseWithOptions(VLC::Media::ParseFlags::Local, 10000);
+  while (media.parsedStatus() != VLC::Media::ParsedStatus::Done) {
+    SDL_Delay(10);
   }
+
+  unsigned int width = media.tracks().at(0).width();
+  unsigned int height = media.tracks().at(0).height();
+  SDL_Log("Video dimensions: %dx%d", width, height);
+
+  updateVideoTexture(width, height);
+  mediaPlayer->setPosition(0.0f);
+
+  bool ready = false;
+  mediaPlayer->eventManager().onPlaying([&ready]() {
+    ready = true;
+  });
+
+  mediaPlayer->play();
+  mediaPlayer->setPause(true);
+  mediaPlayer->setTime(0.0f);
+
+
+  while (!ready) {
+    SDL_Delay(10);
+  }
+  SDL_Log("Video ready");
   return true;
 }
 
@@ -100,7 +119,7 @@ void VideoPlayer::render() {
 }
 
 void VideoPlayer::play() {
-  mediaPlayer->play();
+//  mediaPlayer->play();
 }
 
 void VideoPlayer::pause() {
