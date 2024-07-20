@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "../path.h"
+#include <mutex>
 // Custom data structure to hold PCM data and playback state
 struct SoundData {
   std::vector<short> pcmData;
@@ -15,6 +16,10 @@ struct SoundData {
   ma_resampler resampler;
   std::vector<short> resampledData;
   size_t resampledFrameCount;
+};
+struct UserData {
+  std::mutex* mutex;
+  std::vector<std::shared_ptr<SoundData>>* soundDataList;
 };
 class AudioWrapper {
 public:
@@ -34,4 +39,6 @@ private:
   std::vector<std::shared_ptr<SoundData>> soundDataList;
   std::map<path_t, size_t>
       soundDataIndexMap; // Map to store index of SoundData in soundDataList
+  std::mutex soundDataListMutex;
+  UserData userData;
 };

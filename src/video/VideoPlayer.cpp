@@ -59,7 +59,7 @@ void VideoPlayer::render() {
     float u, v;
   };
 
-  SDL_Log("Rendering video texture frame %d; time: %f", currentFrame, currentFrame / 30.0f);
+//  SDL_Log("Rendering video texture frame %d; time: %f", currentFrame, currentFrame / 30.0f);
 
   bgfx::VertexLayout layout;
   layout.begin()
