@@ -5,11 +5,16 @@
 #include "decoder.h"
 #include <sndfile.h>
 #include <stdio.h>
+#include <mutex>
 
 void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
                   ma_uint32 frameCount) {
-  auto *soundDataList =
-      (std::vector<std::shared_ptr<SoundData>> *)pDevice->pUserData;
+  auto *userData = (UserData *)pDevice->pUserData;
+  if (userData == nullptr) {
+    return;
+  }
+  std::lock_guard<std::mutex> lock(*userData->mutex);
+  auto *soundDataList = userData->soundDataList;
   if (soundDataList == nullptr) {
     return;
   }
@@ -65,14 +70,15 @@ AudioWrapper::AudioWrapper() {
   if (result != MA_SUCCESS) {
     throw std::runtime_error("Failed to initialize audio engine.");
   }
-
+  userData.mutex = &soundDataListMutex;
+  userData.soundDataList = &soundDataList;
   ma_device_config deviceConfig =
       ma_device_config_init(ma_device_type_playback);
   deviceConfig.playback.format = ma_format_s16;
   deviceConfig.playback.channels = 2; // Assuming stereo output
   deviceConfig.sampleRate = 44100;    // Assuming 44100 Hz sample rate
   deviceConfig.dataCallback = dataCallback;
-  deviceConfig.pUserData = &soundDataList;
+  deviceConfig.pUserData = &userData;
 
   result = ma_device_init(nullptr, &deviceConfig, &device);
   if (result != MA_SUCCESS) {
@@ -123,10 +129,11 @@ bool AudioWrapper::loadSound(const path_t &path) {
       &soundData->resampler, soundData->pcmData.data(), &size,
       soundData->resampledData.data(), &resampledFrameCount);
   soundData->resampledFrameCount = resampledFrameCount;
-
-  soundDataIndexMap[path] = soundDataList.size();
-  soundDataList.push_back(soundData);
-
+  {
+    std::lock_guard<std::mutex> lock(soundDataListMutex);
+    soundDataIndexMap[path] = soundDataList.size();
+    soundDataList.push_back(soundData);
+  }
   return true;
 }
 
@@ -137,6 +144,7 @@ void AudioWrapper::preloadSounds(const std::vector<path_t> &paths) {
 }
 
 bool AudioWrapper::playSound(const path_t &path) {
+  std::lock_guard<std::mutex> lock(soundDataListMutex);
   if (!ma_device_is_started(&device)) {
     ma_device_start(&device);
   }
@@ -154,6 +162,7 @@ bool AudioWrapper::playSound(const path_t &path) {
 }
 
 void AudioWrapper::stopSounds() {
+  std::lock_guard<std::mutex> lock(soundDataListMutex);
   for (auto &soundData : soundDataList) {
     soundData->playing = false;
   }
@@ -161,6 +170,7 @@ void AudioWrapper::stopSounds() {
 }
 
 void AudioWrapper::unloadSound(const path_t &path) {
+  std::lock_guard<std::mutex> lock(soundDataListMutex);
   if (soundDataIndexMap.find(path) != soundDataIndexMap.end()) {
     size_t index = soundDataIndexMap[path];
     ma_resampler_uninit(&soundDataList[index]->resampler,
@@ -179,11 +189,14 @@ void AudioWrapper::unloadSound(const path_t &path) {
 
 void AudioWrapper::unloadSounds() {
   stopSounds();
-  for (auto &soundData : soundDataList) {
-    ma_resampler_uninit(&soundData->resampler, nullptr); // Cleanup resampler
+  {
+    std::lock_guard<std::mutex> lock(soundDataListMutex);
+    for (auto &soundData : soundDataList) {
+      ma_resampler_uninit(&soundData->resampler, nullptr); // Cleanup resampler
+    }
+    soundDataList.clear();
+    soundDataIndexMap.clear();
+    ma_engine_uninit(&engine);
+    ma_engine_init(&engineConfig, &engine);
   }
-  soundDataList.clear();
-  soundDataIndexMap.clear();
-  ma_engine_uninit(&engine);
-  ma_engine_init(&engineConfig, &engine);
 }

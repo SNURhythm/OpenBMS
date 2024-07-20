@@ -20,31 +20,36 @@ void Jukebox::loadChart(bms_parser::Chart &chart,
   audio.unloadSounds();
   if (isCancelled)
     return;
-
-  for (auto &wav : chart.WavTable) {
-    bool found = false;
-    std::filesystem::path basePath = chart.Meta.Folder / wav.second;
-    std::filesystem::path path;
-
-    // Try each extension until one succeeds
-    for (const auto &ext : extensions) {
+  parallel_for(chart.WavTable.size(), [&](int start, int end) {
+    for (int i = start; i < end; i++) {
       if (isCancelled)
         return;
-      path = basePath;
-      path.replace_extension(ext);
-      if (!std::filesystem::exists(path)) {
-        continue;
+      auto wav = chart.WavTable.begin();
+      std::advance(wav, i);
+      bool found = false;
+      std::filesystem::path basePath = chart.Meta.Folder / wav->second;
+      std::filesystem::path path;
+
+      // Try each extension until one succeeds
+      for (const auto &ext : extensions) {
+        if (isCancelled)
+          return;
+        path = basePath;
+        path.replace_extension(ext);
+        if (!std::filesystem::exists(path)) {
+          continue;
+        }
+        if (audio.loadSound(path.c_str())) {
+          wavTableAbs[wav->first] = path;
+          found = true;
+          break;
+        }
       }
-      if (audio.loadSound(path.c_str())) {
-        wavTableAbs[wav.first] = path;
-        found = true;
-        break;
+      if (!found) {
+        SDL_Log("Failed to load sound for all extensions: %s", basePath.c_str());
       }
     }
-    if (!found) {
-      SDL_Log("Failed to load sound for all extensions: %s", basePath.c_str());
-    }
-  }
+  });
   std::vector<int> keys;
   for (auto &wav : wavTableAbs) {
     if (isCancelled)
