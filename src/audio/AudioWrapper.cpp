@@ -166,7 +166,6 @@ void AudioWrapper::stopSounds() {
   for (auto &soundData : soundDataList) {
     soundData->playing = false;
   }
-  ma_device_stop(&device);
 }
 
 void AudioWrapper::unloadSound(const path_t &path) {
