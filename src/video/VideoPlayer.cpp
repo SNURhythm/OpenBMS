@@ -30,7 +30,13 @@ bool VideoPlayer::initialize(const std::string& videoPath) {
   mediaPlayer->setVideoCallbacks([this](void** planes) { return lock(planes); },
                                  [this](void* picture, void* const* planes) { unlock(picture, planes); },
                                  [this](void* picture) { display(picture); });
-
+  unsigned int width, height;
+  bool result = mediaPlayer->size(0, &width, &height);
+  if(result) {
+    updateVideoTexture(width, height);
+  } else {
+    updateVideoTexture(1920, 1080);
+  }
   return true;
 }
 
@@ -39,8 +45,6 @@ void VideoPlayer::update() {
     std::lock_guard<std::mutex> lock(videoFrameMutex);
     videoFrameUpdated = false;
 
-    unsigned int width, height;
-    mediaPlayer->size(0, &width, &height);
 
     if (bgfx::isValid(videoTexture)) {
       const bgfx::Memory* mem = bgfx::makeRef(videoFrameData, videoFrameWidth * videoFrameHeight * 4);
@@ -71,10 +75,10 @@ void VideoPlayer::render() {
   auto* vertex = (PosTexCoord0Vertex*)tvb.data;
 
   // Define quad vertices
-  vertex[0].x = -1.0f; vertex[0].y = -1.0f; vertex[0].z = 0.0f; vertex[0].u = 0.0f; vertex[0].v = 1.0f;
-  vertex[1].x =  1.0f; vertex[1].y = -1.0f; vertex[1].z = 0.0f; vertex[1].u = 1.0f; vertex[1].v = 1.0f;
-  vertex[2].x = -1.0f; vertex[2].y =  1.0f; vertex[2].z = 0.0f; vertex[2].u = 0.0f; vertex[2].v = 0.0f;
-  vertex[3].x =  1.0f; vertex[3].y =  1.0f; vertex[3].z = 0.0f; vertex[3].u = 1.0f; vertex[3].v = 0.0f;
+  vertex[0].x = 0.0f; vertex[0].y = viewHeight; vertex[0].z = 0.0f; vertex[0].u = 0.0f; vertex[0].v = 1.0f;
+  vertex[1].x = viewWidth; vertex[1].y = viewHeight; vertex[1].z = 0.0f; vertex[1].u = 1.0f; vertex[1].v = 1.0f;
+  vertex[2].x = 0.0f; vertex[2].y =  0.0f; vertex[2].z = 0.0f; vertex[2].u = 0.0f; vertex[2].v = 0.0f;
+  vertex[3].x = viewWidth; vertex[3].y = 0.0f; vertex[3].z = 0.0f; vertex[3].u = 1.0f; vertex[3].v = 0.0f;
 
   // Define quad indices
   auto* indices = (uint16_t*)tib.data;
@@ -123,7 +127,7 @@ void VideoPlayer::display(void* picture) {
   currentFrame++;
 }
 
-void VideoPlayer::updateVideoTexture(int width, int height) {
+void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
   if (width != videoFrameWidth || height != videoFrameHeight) {
     if (bgfx::isValid(videoTexture)) {
       bgfx::destroy(videoTexture);
