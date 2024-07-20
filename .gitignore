@@ -2,7 +2,7 @@ assets/video/sample.mp4
 .DS_Store
 /build*
 .metals/
-cmake-build-debug/
+cmake-build-*/
 /.cache
 # Prerequisites
 *.d

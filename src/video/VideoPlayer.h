@@ -15,17 +15,21 @@ public:
   void play();
   void pause();
   void stop();
-  void updateVideoTexture(int width, int height);
+  float viewWidth = 1920;
+  float viewHeight = 1080;
+  float viewX = 0;
+  float viewY = 0;
+
 private:
   void* lock(void** planes);
   void unlock(void* picture, void* const* planes);
   void display(void* picture);
 
-
+  void updateVideoTexture(unsigned int width, unsigned int height);
   std::mutex videoFrameMutex;
   void* videoFrameData;
-  int videoFrameWidth;
-  int videoFrameHeight;
+  unsigned int videoFrameWidth;
+  unsigned int videoFrameHeight;
   int currentFrame = 0;
   bool videoFrameUpdated;
   bgfx::TextureHandle videoTexture;
