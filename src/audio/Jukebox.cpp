@@ -21,11 +21,10 @@ void Jukebox::loadChart(bms_parser::Chart &chart,
   if (isCancelled)
     return;
   parallel_for(chart.WavTable.size(), [&](int start, int end) {
-    for (int i = start; i < end; i++) {
+    auto wav = std::next(chart.WavTable.begin(), start);
+    for (int i = start; i < end; i++, ++wav) {
       if (isCancelled)
         return;
-      auto wav = chart.WavTable.begin();
-      std::advance(wav, i);
       bool found = false;
       std::filesystem::path basePath = chart.Meta.Folder / wav->second;
       std::filesystem::path path;
@@ -129,8 +128,8 @@ void Jukebox::play() {
           std::chrono::duration_cast<std::chrono::microseconds>(position)
               .count();
       if (positionMicro >= scheduleQueue.front().first) {
-//        SDL_Log("Playing sound: %s",
-//                wavTableAbs[scheduleQueue.front().second].c_str());
+        SDL_Log("Playing sound at %lld; id: %d; actual time: %lld", scheduleQueue.front().first,
+                scheduleQueue.front().second, positionMicro);
         audio.playSound(wavTableAbs[scheduleQueue.front().second].c_str());
         scheduleQueue.pop();
       }
