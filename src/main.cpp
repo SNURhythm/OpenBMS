@@ -248,7 +248,8 @@ void run(ApplicationContext& context){
 
   VideoPlayer videoPlayer;
   videoPlayer.initialize("assets/video/sample.mp4");
-  videoPlayer.updateVideoTexture(800, 600);
+  videoPlayer.viewWidth = rendering::window_width;
+  videoPlayer.viewHeight = rendering::window_height;
   videoPlayer.play();
   while (!quit) {
 
@@ -274,6 +275,10 @@ void run(ApplicationContext& context){
           e.window.event == SDL_WINDOWEVENT_RESIZED) {
         rendering::window_width = e.window.data1;
         rendering::window_height = e.window.data2;
+        videoPlayer.viewWidth = rendering::window_width;
+        videoPlayer.viewHeight = rendering::window_height;
+        // set bgfx resolution
+        bgfx::reset(rendering::window_width, rendering::window_height);
         SDL_Log("Window size: %d x %d", rendering::window_width,
                 rendering::window_height);
       }
@@ -294,9 +299,9 @@ void run(ApplicationContext& context){
     bgfx::setViewTransform(rendering::ui_view, nullptr, ortho);
     bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
                       rendering::window_height);
-    //    bgfx::setViewTransform(rendering::bga_view, nullptr, ortho2);
-    //    bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
-    //                      rendering::window_height);
+    bgfx::setViewTransform(rendering::bga_view, nullptr, ortho);
+    bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
+                      rendering::window_height);
     sceneManager.render();
 
     // shift left by 1
