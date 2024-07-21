@@ -52,6 +52,17 @@ set(BUILD_DIR ${CMAKE_BINARY_DIR}/build)
 # Libraries directory
 set(LIB_DIR lib)
 add_definitions(-DBX_CONFIG_DEBUG=1)
+set(FFMPEG_LIBS
+        avcodec
+        avfilter
+        avformat
+        avutil
+        avdevice
+        swresample
+        swscale
+        postproc
+        x264
+)
 # Platform-specific settings
 if(WIN32)
     find_package(SndFile CONFIG REQUIRED)
@@ -66,6 +77,7 @@ if(WIN32)
     find_library(SDL2_LIB SDL2 PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
     find_library(SDL2MAIN_LIB SDL2main PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
     find_library(SDL2_TFF_LIB SDL2_ttf PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
+
     set(MINGW32_LIB mingw32)
     
     find_library(VLC_LIB vlc PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
@@ -79,6 +91,7 @@ elseif(UNIX AND NOT APPLE)
     set(SDL2_LIB SDL2)
     set(SDL2MAIN_LIB SDL2main)
     set(SDL2_TFF_LIB SDL2_ttf)
+    find_library(FFMPEG_LIB avcodec avfilter avformat avutil avdevice swresample swscale postproc vpx x264 x265 PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     set(VLC_LIB vlc)
     set(VLCCORE_LIB vlccore)
     file(GLOB DLLS ${LIB_DIR}/linux/*.so)
@@ -116,10 +129,10 @@ add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.cpp)
 # Main executable
-add_executable(main ${SRC_FILES} ${MM_SRC_FILES})
+add_executable(main ${SRC_FILES} ${MM_SRC_FILES}
+        src/video/transcode.c)
 
-target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
-
+target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} ${FFMPEG_LIBS} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
 
 # Custom target for copying assets
 add_custom_command(

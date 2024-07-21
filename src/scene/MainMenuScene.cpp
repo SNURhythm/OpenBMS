@@ -6,6 +6,7 @@
 #include "../view/TextInputBox.h"
 #include "../Utils.h"
 #include "../targets.h"
+#include "../video/transcode.h"
 #ifdef _WIN32
 #include <windows.h>
 
@@ -146,9 +147,18 @@ void MainMenuScene::initView(ApplicationContext &context) {
         SDL_Log("Error parsing %s: %s", item.BmsPath.c_str(), e.what());
         return;
       }
+      auto videoPath = (std::filesystem::path(chart->Meta.Folder) / chart->BmpTable[1]).string();
+      auto transcodedPath = (Utils::GetDocumentsPath("temp")/"transcoded.mp4").string();
+      // mkdir
+      std::filesystem::create_directories(Utils::GetDocumentsPath("temp"));
+      transcode(videoPath.c_str(), transcodedPath.c_str(), &previewLoadCancelled);
 
+      videoPlayer.loadVideo(transcodedPath);
+      videoPlayer.viewWidth = rendering::window_width;
+      videoPlayer.viewHeight = rendering::window_height;
       jukebox.loadChart(*chart, previewLoadCancelled);
       jukebox.play();
+      videoPlayer.play();
       delete chart;
     });
   };
@@ -181,6 +191,8 @@ void MainMenuScene::renderScene() {
   // Render the scene
   // SDL_Log("Rendering Main Menu Scene");
   rootLayout->setSize(rendering::window_width, rendering::window_height);
+  videoPlayer.update();
+  videoPlayer.render();
 }
 
 void MainMenuScene::cleanupScene() {

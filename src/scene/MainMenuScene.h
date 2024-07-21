@@ -10,6 +10,7 @@
 #include <vector>
 #include "../targets.h"
 #include "../audio/Jukebox.h"
+#include "../video/VideoPlayer.h"
 #include <atomic>
 class MainMenuScene : public Scene {
 public:
@@ -23,6 +24,7 @@ public:
 private:
   std::atomic_bool previewLoadCancelled = false;
   Jukebox jukebox;
+  VideoPlayer videoPlayer;
   std::thread previewThread;
   std::thread checkEntriesThread;
   RecyclerView<bms_parser::ChartMeta> *recyclerView = nullptr;

@@ -246,11 +246,11 @@ void run(ApplicationContext& context){
   auto program =
       rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
 
-  VideoPlayer videoPlayer;
-  videoPlayer.initialize("assets/video/sample.mp4");
-  videoPlayer.viewWidth = rendering::window_width;
-  videoPlayer.viewHeight = rendering::window_height;
-  videoPlayer.play();
+//  VideoPlayer videoPlayer;
+//  videoPlayer.loadVideo("assets/video/sample.mp4");
+//  videoPlayer.viewWidth = rendering::window_width;
+//  videoPlayer.viewHeight = rendering::window_height;
+//  videoPlayer.play();
   while (!quit) {
 
     // SDL_RenderCopy(ren, tex, nullptr, nullptr);
@@ -275,8 +275,7 @@ void run(ApplicationContext& context){
           e.window.event == SDL_WINDOWEVENT_RESIZED) {
         rendering::window_width = e.window.data1;
         rendering::window_height = e.window.data2;
-        videoPlayer.viewWidth = rendering::window_width;
-        videoPlayer.viewHeight = rendering::window_height;
+
         // set bgfx resolution
         bgfx::reset(rendering::window_width, rendering::window_height);
         SDL_Log("Window size: %d x %d", rendering::window_width,
@@ -347,8 +346,7 @@ void run(ApplicationContext& context){
     bgfx::setIndexBuffer(ibh);
     bgfx::setState(BGFX_STATE_DEFAULT);
     bgfx::submit(rendering::main_view, program);
-    videoPlayer.update();
-    videoPlayer.render();
+
 
     bgfx::frame();
   }
