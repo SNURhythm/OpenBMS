@@ -24,37 +24,56 @@ VideoPlayer::~VideoPlayer() {
   }
 }
 
-bool VideoPlayer::initialize(const std::string& videoPath) {
+bool VideoPlayer::loadVideo(const std::string& videoPath) {
+  SDL_Log("Loading video: %s", videoPath.c_str());
   VLC::Media media(*VLCInstance::getInstance().getVLCInstance(), videoPath, VLC::Media::FromPath);
+  if(mediaPlayer){
+      mediaPlayer->stop();
+      delete mediaPlayer;
+  }
+
+  currentFrame = 0;
   mediaPlayer = new VLC::MediaPlayer(media);
   mediaPlayer->setVideoCallbacks([this](void** planes) { return lock(planes); },
                                  [this](void* picture, void* const* planes) { unlock(picture, planes); },
                                  [this](void* picture) { display(picture); });
-  media.parseWithOptions(VLC::Media::ParseFlags::Local, 10000);
+  media.parseWithOptions(VLC::Media::ParseFlags::Local|VLC::Media::ParseFlags::FetchLocal, 10000);
   while (media.parsedStatus() != VLC::Media::ParsedStatus::Done) {
+    if (media.parsedStatus() == VLC::Media::ParsedStatus::Failed) {
+      SDL_Log("Failed to parse video");
+      return false;
+    }
     SDL_Delay(10);
   }
+  bool hasVideo = false;
+  for(auto& track : media.tracks()){
+    if(track.type() == VLC::MediaTrack::Type::Video){
+      unsigned int width = track.width();
+      unsigned int height = track.height();
+      fps = track.fpsNum() / static_cast<float>(track.fpsDen());
+      SDL_Log("Video FPS: %f; fpsNum: %d, fpsDen: %d", fps, track.fpsNum(), track.fpsDen());
+      if(width == 0 || height == 0) continue;
+      SDL_Log("Video dimensions: %dx%d", width, height);
+      updateVideoTexture(width, height);
+      hasVideo = true;
+      break;
+    }
+  }
+  if (!hasVideo) {
+    updateVideoTexture(1920, 1080);
+  }
 
-  unsigned int width = media.tracks().at(0).width();
-  unsigned int height = media.tracks().at(0).height();
-  SDL_Log("Video dimensions: %dx%d", width, height);
-
-  updateVideoTexture(width, height);
+  mediaPlayer->setVideoFormat("RV32", videoFrameWidth, videoFrameHeight, videoFrameWidth * 4);
   mediaPlayer->setPosition(0.0f);
 
-  bool ready = false;
-  mediaPlayer->eventManager().onPlaying([&ready]() {
-    ready = true;
-  });
+
 
   mediaPlayer->play();
   mediaPlayer->setPause(true);
   mediaPlayer->setTime(0.0f);
+//
 
 
-  while (!ready) {
-    SDL_Delay(10);
-  }
   SDL_Log("Video ready");
   return true;
 }
@@ -70,6 +89,10 @@ void VideoPlayer::update() {
       bgfx::updateTexture2D(videoTexture, 0, 0, 0, 0, videoFrameWidth, videoFrameHeight, mem);
     }
   }
+}
+
+unsigned int VideoPlayer::getPrecisePosition() {
+  return currentFrame * 1000 / fps;
 }
 
 void VideoPlayer::render() {
@@ -167,7 +190,7 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
       free(videoFrameData);
     }
 
-    mediaPlayer->setVideoFormat("RV32", videoFrameWidth, videoFrameHeight, videoFrameWidth * 4);
+
 
     videoFrameData = malloc(videoFrameWidth * videoFrameHeight * 4); // Assuming 32-bit RGBA
   }

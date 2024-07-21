@@ -9,7 +9,7 @@ class VideoPlayer {
 public:
   VideoPlayer();
   ~VideoPlayer();
-  bool initialize(const std::string& videoPath);
+  bool loadVideo(const std::string& videoPath);
   void update();
   void render();
   void play();
@@ -19,7 +19,7 @@ public:
   float viewHeight = 1080;
   float viewX = 0;
   float viewY = 0;
-
+  float fps = 60;
 private:
   void* lock(void** planes);
   void unlock(void* picture, void* const* planes);
@@ -35,6 +35,7 @@ private:
   bgfx::TextureHandle videoTexture;
   bgfx::UniformHandle s_texColor;
 
-  VLC::MediaPlayer* mediaPlayer;
+  VLC::MediaPlayer* mediaPlayer = nullptr;
+  unsigned int getPrecisePosition();
 };
 
