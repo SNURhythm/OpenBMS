@@ -147,19 +147,12 @@ void MainMenuScene::initView(ApplicationContext &context) {
         SDL_Log("Error parsing %ls: %s", item.BmsPath.c_str(), e.what());
         return;
       }
-      auto videoPath = (std::filesystem::path(chart->Meta.Folder) / chart->BmpTable[1]).string();
-      auto fileName = item.MD5 + ".mp4";
-      auto transcodedPath = (Utils::GetDocumentsPath("temp")/fileName).string();
-      // mkdir
-      std::filesystem::create_directories(Utils::GetDocumentsPath("temp"));
-      transcode(videoPath.c_str(), transcodedPath.c_str(), &previewLoadCancelled);
 
-      videoPlayer.loadVideo(transcodedPath);
-      videoPlayer.viewWidth = rendering::window_width;
-      videoPlayer.viewHeight = rendering::window_height;
+
+
       jukebox.loadChart(*chart, previewLoadCancelled);
       jukebox.play();
-      videoPlayer.play();
+
       delete chart;
     });
   };
@@ -192,6 +185,7 @@ void MainMenuScene::renderScene() {
   // Render the scene
   // SDL_Log("Rendering Main Menu Scene");
   rootLayout->setSize(rendering::window_width, rendering::window_height);
+  jukebox.render();
   videoPlayer.update();
   videoPlayer.render();
 }
