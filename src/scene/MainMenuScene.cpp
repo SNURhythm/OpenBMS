@@ -140,15 +140,16 @@ void MainMenuScene::initView(ApplicationContext &context) {
       bms_parser::Chart *chart;
 
       try {
-        SDL_Log("Parsing %s", item.BmsPath.c_str());
+        SDL_Log("Parsing %ls", item.BmsPath.c_str());
         parser.Parse(item.BmsPath, &chart, false, false, previewLoadCancelled);
       } catch (std::exception &e) {
         delete chart;
-        SDL_Log("Error parsing %s: %s", item.BmsPath.c_str(), e.what());
+        SDL_Log("Error parsing %ls: %s", item.BmsPath.c_str(), e.what());
         return;
       }
       auto videoPath = (std::filesystem::path(chart->Meta.Folder) / chart->BmpTable[1]).string();
-      auto transcodedPath = (Utils::GetDocumentsPath("temp")/"transcoded.mp4").string();
+      auto fileName = item.MD5 + ".mp4";
+      auto transcodedPath = (Utils::GetDocumentsPath("temp")/fileName).string();
       // mkdir
       std::filesystem::create_directories(Utils::GetDocumentsPath("temp"));
       transcode(videoPath.c_str(), transcodedPath.c_str(), &previewLoadCancelled);

@@ -99,7 +99,7 @@ bool AudioWrapper::loadSound(const path_t &path) {
   auto soundData = std::make_shared<SoundData>();
   bool result = decodeAudioToPCM(path, soundData->pcmData, sfInfo);
   if (!result) {
-    SDL_Log("Failed to decode audio file %s", path.c_str());
+    SDL_Log("Failed to decode audio file %ls", path.c_str());
     return false;
   }
 
@@ -139,7 +139,7 @@ bool AudioWrapper::loadSound(const path_t &path) {
 
 void AudioWrapper::preloadSounds(const std::vector<path_t> &paths) {
   for (const auto &path : paths) {
-    loadSound(path.c_str());
+    loadSound(path);
   }
 }
 
