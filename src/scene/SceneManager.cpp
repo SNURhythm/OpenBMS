@@ -1,6 +1,8 @@
 #include "SceneManager.h"
 #include "Scene.h"
-
+SceneManager::SceneManager(ApplicationContext &context) : context(context) {
+  context.sceneManager = this;
+}
 void SceneManager::changeScene(Scene *newScene) {
   if (currentScene) {
     currentScene->cleanup();
@@ -34,4 +36,7 @@ void SceneManager::cleanup() {
     currentScene->cleanup();
     currentScene.reset();
   }
+}
+SceneManager::~SceneManager() {
+  cleanup();
 }

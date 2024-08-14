@@ -8,14 +8,14 @@ struct EventHandleResult {
 };
 class Scene {
 public:
-  Scene() {}
+  Scene() = default;
   std::vector<View *> views;
   virtual void init(ApplicationContext &context) = 0; // Initialize the scene
   EventHandleResult handleEvents(SDL_Event &event) {
     for (auto view : views) {
       view->handleEvents(event);
     }
-    return handleEventsScene(event);
+    return {};
   }
   virtual void update(float dt) = 0; // Update the scene logic
   // Render the scene (non-virtual public method)
@@ -46,7 +46,4 @@ protected:
 
   virtual void cleanupScene() = 0;
 
-  virtual EventHandleResult handleEventsScene(SDL_Event &event) {
-    return EventHandleResult();
-  }
 };

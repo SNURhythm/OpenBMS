@@ -4,10 +4,12 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "scene/SceneManager.h"
 class ApplicationContext {
 
 public:
   std::atomic<bool> quitFlag;
+  SceneManager *sceneManager = nullptr;
 
   // string: annotation, thread: thread
   std::vector<std::pair<std::string, std::thread>> threads;
