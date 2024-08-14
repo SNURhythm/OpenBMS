@@ -8,8 +8,11 @@ void LinearLayout::layout() {
     if (config.weight > 0) {
       totalWeight += config.weight;
     } else {
+      auto preferredWidth = config.width > 0 ? config.width : view->getWidth();
+        auto preferredHeight =
+            config.height > 0 ? config.height : view->getHeight();
       totalFixed +=
-          orientation == Orientation::HORIZONTAL ? config.width : config.height;
+          orientation == Orientation::HORIZONTAL ? preferredWidth : preferredHeight;
     }
   }
 
@@ -43,5 +46,6 @@ void LinearLayout::layout() {
         currentY += config.height;
       }
     }
+    view->onLayout();
   }
 }

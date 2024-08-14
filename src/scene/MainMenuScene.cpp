@@ -7,6 +7,8 @@
 #include "../Utils.h"
 #include "../targets.h"
 #include "../video/transcode.h"
+#include "../view/Button.h"
+#include "GamePlayScene.h"
 #ifdef _WIN32
 #include <windows.h>
 
@@ -129,6 +131,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
     if (selectedView) {
       selectedView->onSelected();
     }
+    selectedChartMeta = item;
     previewLoadCancelled = true;
     if (previewThread.joinable()) {
       previewThread.join();
@@ -166,13 +169,34 @@ void MainMenuScene::initView(ApplicationContext &context) {
 
   rootLayout =
       new LinearLayout(0, 0, rendering::window_width, rendering::window_height,
-                       Orientation::VERTICAL);
+                       Orientation::HORIZONTAL);
+  auto left = new LinearLayout(0, 0, 0,0,
+                               Orientation::VERTICAL);
+  left->addView(recyclerView, {0, 0, 1});
 
-  rootLayout->addView(recyclerView, {0, 0, 1});
-  TextInputBox *inputBox =
+  auto *inputBox =
       new TextInputBox("assets/fonts/notosanscjkjp.ttf", 32);
   inputBox->setText("");
-  rootLayout->addView(inputBox, {0, 50, 0});
+  left->addView(inputBox, {0, 50, 0});
+  rootLayout->addView(left, {0, 0, 1});
+
+  auto right = new LinearLayout(0, 0, 0,0,
+                                Orientation::VERTICAL);
+
+  auto startButton = new Button(0,0,100,100);
+  auto buttonText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
+  buttonText->setText("Start");
+  startButton->setContentView(buttonText);
+  startButton->setOnClickListener([this, &context]() {
+    SDL_Log("Start button clicked");
+    auto selected = recyclerView->selectedIndex;
+    SDL_Log("Selected: %d", selected);
+    if (selected > 0) {
+      context.sceneManager->changeScene(new GamePlayScene(selectedChartMeta));
+    }
+  });
+  right->addView(startButton, {0, 0, 1});
+  rootLayout->addView(right, {100, 0, 0});
   addView(rootLayout);
 }
 

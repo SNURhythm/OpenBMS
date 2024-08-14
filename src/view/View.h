@@ -15,7 +15,7 @@ public:
   virtual ~View() = default;
 
   virtual void render(RenderContext &context) = 0;
-
+  virtual inline void onLayout() {};
   virtual inline void handleEvents(SDL_Event &event) {}
 
   inline void setSize(int newWidth, int newHeight) {

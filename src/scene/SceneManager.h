@@ -1,8 +1,10 @@
 #pragma once
-#include "Scene.h"
+
 #include <SDL2/SDL.h>
 #include <memory>
-#include "../context.h"
+class Scene;
+class EventHandleResult;
+class ApplicationContext;
 class SceneManager {
 private:
   std::unique_ptr<Scene> currentScene;
@@ -10,8 +12,8 @@ private:
 
 public:
   SceneManager() = delete;
-  ~SceneManager() { cleanup(); }
-  explicit SceneManager(ApplicationContext &context) : context(context) {}
+  ~SceneManager();
+  explicit SceneManager(ApplicationContext &context);
   void changeScene(Scene *newScene);
   EventHandleResult handleEvents(SDL_Event &event);
   void cleanup();
