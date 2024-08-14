@@ -21,8 +21,10 @@ public:
   void renderScene() override;
   void cleanupScene() override;
 
+
 private:
   std::atomic_bool previewLoadCancelled = false;
+  bms_parser::ChartMeta selectedChartMeta;
   Jukebox jukebox;
   VideoPlayer videoPlayer;
   std::thread previewThread;
