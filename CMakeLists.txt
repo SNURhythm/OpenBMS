@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
 include(ExternalProject)
 project(MyProject VERSION 1.0 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -111,7 +111,6 @@ elseif(APPLE)
     file(GLOB DLLS ${LIB_DIR}/darwin/*.dylib)
     set(VLC_PLUGINS_TAR libvlcplugins/darwin.tar.gz)
     find_library(FOUNDATION Foundation)
-    file(GLOB_RECURSE MM_SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.mm)
     if(NOT FOUNDATION)
         message(FATAL_ERROR "Foundation framework not found")
     endif()
@@ -127,10 +126,8 @@ endif()
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
 add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS ${SRC_DIR}/*.cpp)
 # Main executable
-add_executable(main ${SRC_FILES} ${MM_SRC_FILES}
-        src/video/transcode.c)
+add_executable(main)
 
 target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} ${FFMPEG_LIBS} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
 
@@ -170,6 +167,7 @@ install(DIRECTORY assets DESTINATION ${BUILD_DIR})
 # Additional targets for different build types like Debug, Release, etc.
 
 add_subdirectory(bgfx)
+add_subdirectory(src)
 #add_subdirectory(libsndfile)
 # # Add pre-generated Xcode projects as subprojects
 # set_property(GLOBAL PROPERTY USE_FOLDERS ON)
