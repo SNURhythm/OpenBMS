@@ -1,5 +1,6 @@
 #include "bgfx_helper.h"
 #include <bgfx/platform.h>
+#include <cstdlib>
 void setup_bgfx_platform_data(bgfx::PlatformData &pd,
                                      const SDL_SysWMinfo &wmi) {
 
@@ -13,7 +14,7 @@ void setup_bgfx_platform_data(bgfx::PlatformData &pd,
   pd.backBufferDS = nullptr;
 #else
     switch (wmi.subsystem) {
-            case SDL_SYSWM_UNKNOWN: abort();
+      case SDL_SYSWM_UNKNOWN: std::abort();
 
     #if defined(SDL_VIDEO_DRIVER_X11)
             case SDL_SYSWM_X11:
