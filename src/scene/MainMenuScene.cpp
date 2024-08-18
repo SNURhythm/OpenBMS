@@ -127,27 +127,29 @@ void MainMenuScene::initView(ApplicationContext &context) {
   recyclerView->onSelected = [this, &context](const bms_parser::ChartMeta &item,
                                               int idx) {
     auto selectedView = recyclerView->getViewByIndex(idx);
-    std::cout << "Selected: " << (item.Title) << std::endl;
+    SDL_Log("Selected: %s", item.Title.c_str());
     if (selectedView) {
       selectedView->onSelected();
     }
     selectedChartMeta = item;
     previewLoadCancelled = true;
     if (previewThread.joinable()) {
+        SDL_Log("Joining preview thread");
       previewThread.join();
     }
     previewThread = std::thread([this, item]() {
+        SDL_Log("Previewing %s", item.BmsPath.c_str());
       jukebox.stop();
       previewLoadCancelled = false;
       bms_parser::Parser parser;
       bms_parser::Chart *chart;
 
       try {
-        SDL_Log("Parsing %ls", item.BmsPath.c_str());
+        SDL_Log("Parsing %s", item.BmsPath.c_str());
         parser.Parse(item.BmsPath, &chart, false, false, previewLoadCancelled);
       } catch (std::exception &e) {
         delete chart;
-        SDL_Log("Error parsing %ls: %s", item.BmsPath.c_str(), e.what());
+        SDL_Log("Error parsing %s: %s", item.BmsPath.c_str(), e.what());
         return;
       }
 
