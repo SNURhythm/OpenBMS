@@ -18,6 +18,7 @@ void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
   if (soundDataList == nullptr) {
     return;
   }
+  if (soundDataList->empty()) return;
 
   memset(pOutput, 0,
          frameCount * sizeof(ma_int16) * pDevice->playback.channels);
@@ -65,11 +66,11 @@ void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
   }
 }
 AudioWrapper::AudioWrapper() {
-  engineConfig = ma_engine_config_init();
-  auto result = ma_engine_init(&engineConfig, &engine);
-  if (result != MA_SUCCESS) {
-    throw std::runtime_error("Failed to initialize audio engine.");
-  }
+  // engineConfig = ma_engine_config_init();
+  // auto result = ma_engine_init(&engineConfig, &engine);
+  // if (result != MA_SUCCESS) {
+    // throw std::runtime_error("Failed to initialize audio engine.");
+  // }
   userData.mutex = &soundDataListMutex;
   userData.soundDataList = &soundDataList;
   ma_device_config deviceConfig =
@@ -80,7 +81,7 @@ AudioWrapper::AudioWrapper() {
   deviceConfig.dataCallback = dataCallback;
   deviceConfig.pUserData = &userData;
 
-  result = ma_device_init(nullptr, &deviceConfig, &device);
+  auto result = ma_device_init(nullptr, &deviceConfig, &device);
   if (result != MA_SUCCESS) {
     throw std::runtime_error("Failed to initialize playback device.");
   }
@@ -90,8 +91,8 @@ AudioWrapper::AudioWrapper() {
 
 AudioWrapper::~AudioWrapper() {
   unloadSounds();
-  ma_device_uninit(&device);
-  ma_engine_uninit(&engine);
+  // ma_device_uninit(&device);
+  // ma_engine_uninit(&engine);
 }
 
 bool AudioWrapper::loadSound(const path_t &path) {
@@ -163,6 +164,7 @@ bool AudioWrapper::playSound(const path_t &path) {
 
 void AudioWrapper::stopSounds() {
   std::lock_guard<std::mutex> lock(soundDataListMutex);
+  ma_device_stop(&device);
   for (auto &soundData : soundDataList) {
     soundData->playing = false;
   }
@@ -195,7 +197,8 @@ void AudioWrapper::unloadSounds() {
     }
     soundDataList.clear();
     soundDataIndexMap.clear();
-    ma_engine_uninit(&engine);
-    ma_engine_init(&engineConfig, &engine);
+
+    // ma_engine_uninit(&engine);
+    // ma_engine_init(&engineConfig, &engine);
   }
 }
