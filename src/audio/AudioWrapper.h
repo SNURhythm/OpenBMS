@@ -33,8 +33,6 @@ public:
   void unloadSounds();
 
 private:
-  ma_engine engine;
-  ma_engine_config engineConfig;
   ma_device device;
   std::vector<std::shared_ptr<SoundData>> soundDataList;
   std::map<path_t, size_t>
