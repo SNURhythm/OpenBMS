@@ -212,8 +212,6 @@ void MainMenuScene::renderScene() {
   // SDL_Log("Rendering Main Menu Scene");
   rootLayout->setSize(rendering::window_width, rendering::window_height);
   jukebox.render();
-  videoPlayer.update();
-  videoPlayer.render();
 }
 
 void MainMenuScene::cleanupScene() {

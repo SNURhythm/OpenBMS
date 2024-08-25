@@ -121,8 +121,9 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart, std::atomic_bool &isCancelled) 
         auto videoPlayer = new VideoPlayer();
         if (videoPlayer->loadVideo(transcodedPath)) {
           videoPlayerTable[bmp->first] = videoPlayer;
-          videoPlayer->viewWidth = rendering::window_width;
-          videoPlayer->viewHeight = rendering::window_height;
+
+          SDL_Log("video width: %f, video height: %f", videoPlayer->viewWidth, videoPlayer->viewHeight);
+
           found = true;
           SDL_Log("Loaded video to id: %d", bmp->first);
           break;
@@ -255,6 +256,8 @@ void Jukebox::play() {
           if(videoPlayerTable.find(bmpQueue.front().second) != videoPlayerTable.end()){
             auto videoPlayer = videoPlayerTable[bmpQueue.front().second];
             videoPlayer->play();
+            videoPlayer->viewWidth = rendering::window_width;
+            videoPlayer->viewHeight = rendering::window_height;
             currentBga = bmpQueue.front().second;
           } else {
             SDL_Log("Video player not found for id: %d", bmpQueue.front().second);

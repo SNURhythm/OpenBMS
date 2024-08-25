@@ -15,11 +15,11 @@ public:
   void play();
   void pause();
   void stop();
-  float viewWidth = 1920;
-  float viewHeight = 1080;
-  float viewX = 0;
-  float viewY = 0;
-  float fps = 60;
+  float viewWidth = 1920.0f;
+  float viewHeight = 1080.0f;
+  float viewX = 0.0f;
+  float viewY = 0.0f;
+  float fps = 60.0f;
 private:
   void* lock(void** planes);
   void unlock(void* picture, void* const* planes);

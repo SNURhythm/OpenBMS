@@ -115,7 +115,7 @@ void VideoPlayer::render() {
   bgfx::allocTransientVertexBuffer(&tvb, 4, layout);
   bgfx::allocTransientIndexBuffer(&tib, 6);
   auto* vertex = (PosTexCoord0Vertex*)tvb.data;
-
+  SDL_Log("Draw width: %f, height: %f", viewWidth, viewHeight);
   // Define quad vertices
   vertex[0].x = 0.0f; vertex[0].y = viewHeight; vertex[0].z = 0.0f; vertex[0].u = 0.0f; vertex[0].v = 1.0f;
   vertex[1].x = viewWidth; vertex[1].y = viewHeight; vertex[1].z = 0.0f; vertex[1].u = 1.0f; vertex[1].v = 1.0f;
