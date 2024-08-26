@@ -9,7 +9,6 @@ void setup_bgfx_platform_data(bgfx::PlatformData &pd,
 #if BX_PLATFORM_IOS
   pd.ndt = nullptr;
   pd.nwh = GetIOSWindowHandle(wmi.info.uikit.window);
-  std::cout<<"Got IOS Window handle"<<std::endl;
   pd.context = nullptr;
   pd.backBuffer = nullptr;
   pd.backBufferDS = nullptr;
