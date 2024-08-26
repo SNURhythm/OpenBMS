@@ -13,7 +13,7 @@ VideoPlayer::VideoPlayer()
 
 VideoPlayer::~VideoPlayer() {
   if (mediaPlayer) {
-    mediaPlayer->stop();
+    mediaPlayer->stopAsync();
     delete mediaPlayer;
   }
   if (bgfx::isValid(videoTexture)) {
@@ -26,27 +26,28 @@ VideoPlayer::~VideoPlayer() {
 
 bool VideoPlayer::loadVideo(const std::string& videoPath) {
   SDL_Log("Loading video: %s", videoPath.c_str());
-  VLC::Media media(*VLCInstance::getInstance().getVLCInstance(), videoPath, VLC::Media::FromPath);
+  VLC::Media media(videoPath, VLC::Media::FromPath);
   if(mediaPlayer){
-      mediaPlayer->stop();
+      mediaPlayer->stopAsync();
       delete mediaPlayer;
   }
 
   currentFrame = 0;
-  mediaPlayer = new VLC::MediaPlayer(media);
+  auto & instance = *VLCInstance::getInstance().getVLCInstance();
+  mediaPlayer = new VLC::MediaPlayer(instance, media);
   mediaPlayer->setVideoCallbacks([this](void** planes) { return lock(planes); },
                                  [this](void* picture, void* const* planes) { unlock(picture, planes); },
                                  [this](void* picture) { display(picture); });
-  media.parseWithOptions(VLC::Media::ParseFlags::Local|VLC::Media::ParseFlags::FetchLocal, 10000);
-  while (media.parsedStatus() != VLC::Media::ParsedStatus::Done) {
-    if (media.parsedStatus() == VLC::Media::ParsedStatus::Failed) {
+  media.parseRequest(instance, VLC::Media::ParseFlags::Local|VLC::Media::ParseFlags::FetchLocal, 10000);
+  while (media.parsedStatus(instance) != VLC::Media::ParsedStatus::Done) {
+    if (media.parsedStatus(instance) == VLC::Media::ParsedStatus::Failed) {
       SDL_Log("Failed to parse video");
       return false;
     }
     SDL_Delay(10);
   }
   bool hasVideo = false;
-  for(auto& track : media.tracks()){
+  for(auto& track : media.tracks(VLC::MediaTrack::Type::Video)){
     if(track.type() == VLC::MediaTrack::Type::Video){
       unsigned int width = track.width();
       unsigned int height = track.height();
@@ -64,13 +65,13 @@ bool VideoPlayer::loadVideo(const std::string& videoPath) {
   }
 
   mediaPlayer->setVideoFormat("RV32", videoFrameWidth, videoFrameHeight, videoFrameWidth * 4);
-  mediaPlayer->setPosition(0.0f);
+  mediaPlayer->setPosition(0.0f, true);
 
 
 
   mediaPlayer->play();
   mediaPlayer->setPause(true);
-  mediaPlayer->setTime(0.0f);
+  mediaPlayer->setTime(0.0f, true);
 //
 
 
@@ -150,7 +151,7 @@ void VideoPlayer::pause() {
 }
 
 void VideoPlayer::stop() {
-  mediaPlayer->stop();
+  mediaPlayer->stopAsync();
 }
 
 void* VideoPlayer::lock(void** planes) {

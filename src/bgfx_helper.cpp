@@ -1,17 +1,20 @@
 #include "bgfx_helper.h"
-#include <bgfx/platform.h>
+#include <bx/platform.h>
 #include <cstdlib>
+#include <iostream>
+#include "iOSNatives.hpp"
 void setup_bgfx_platform_data(bgfx::PlatformData &pd,
                                      const SDL_SysWMinfo &wmi) {
 
-#if BX_PLATFORM_EMSCRIPTEN
-  pd.nwh = (void *)"#canvas";
-#elif BX_PLATFORM_IOS
+#if BX_PLATFORM_IOS
   pd.ndt = nullptr;
   pd.nwh = GetIOSWindowHandle(wmi.info.uikit.window);
+  std::cout<<"Got IOS Window handle"<<std::endl;
   pd.context = nullptr;
   pd.backBuffer = nullptr;
   pd.backBufferDS = nullptr;
+#elif BX_PLATFORM_EMSCRIPTEN
+  pd.nwh = (void *)"#canvas";
 #else
     switch (wmi.subsystem) {
       case SDL_SYSWM_UNKNOWN: std::abort();
