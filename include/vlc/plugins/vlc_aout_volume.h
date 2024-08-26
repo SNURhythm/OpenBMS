@@ -1,13 +1,10 @@
 /*****************************************************************************
- * vlc.h: global header for libvlc
+ * vlc_aout_volume.h: audio volume module
  *****************************************************************************
- * Copyright (C) 1998-2008 VLC authors and VideoLAN
+ * Copyright (C) 2002-2009 VLC authors and VideoLAN
  *
- * Authors: Vincent Seguin <seguin@via.ecp.fr>
- *          Samuel Hocevar <sam@zoy.org>
- *          Gildas Bazin <gbazin@netcourrier.com>
- *          Derk-Jan Hartman <hartman at videolan dot org>
- *          Pierre d'Herbemont <pdherbemont@videolan.org>
+ * Authors: Christophe Massiot <massiot@via.ecp.fr>
+ *          Laurent Aimar <fenrir _AT_ videolan _DOT_ org>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -24,32 +21,38 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#ifndef VLC_VLC_H
-#define VLC_VLC_H 1
+#ifndef VLC_AOUT_MIXER_H
+#define VLC_AOUT_MIXER_H 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
+ * \defgroup audio_volume Audio output volume
+ * \ingroup audio_output
+ * @{
  * \file
- * This file defines libvlc new external API
+ * This file defines functions, structures and macros for audio output mixer object
  */
 
-# ifdef __cplusplus
-extern "C" {
-# endif
+typedef struct audio_volume audio_volume_t;
 
-#include "libvlc.h"
-#include "libvlc_renderer_discoverer.h"
-#include "libvlc_picture.h"
-#include "libvlc_media.h"
-#include "libvlc_media_player.h"
-#include "libvlc_media_list.h"
-#include "libvlc_media_list_player.h"
-#include "libvlc_media_discoverer.h"
-#include "libvlc_events.h"
-#include "libvlc_dialog.h"
-#include "libvlc_version.h"
+/**
+ * Audio volume
+ */
+struct audio_volume
+{
+    struct vlc_object_t obj;
 
-# ifdef __cplusplus
+    vlc_fourcc_t format; /**< Audio samples format */
+    void (*amplify)(audio_volume_t *, block_t *, float); /**< Amplifier */
+};
+
+/** @} */
+
+#ifdef __cplusplus
 }
-# endif
+#endif
 
-#endif /* _VLC_VLC_H */
+#endif
