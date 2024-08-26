@@ -64,7 +64,7 @@ bool VideoPlayer::loadVideo(const std::string& videoPath) {
     updateVideoTexture(1920, 1080);
   }
 
-  mediaPlayer->setVideoFormat("RV32", videoFrameWidth, videoFrameHeight, videoFrameWidth * 4);
+  mediaPlayer->setVideoFormat("RV24", videoFrameWidth, videoFrameHeight, videoFrameWidth * 3);
   mediaPlayer->setPosition(0.0f, true);
 
 
@@ -86,7 +86,7 @@ void VideoPlayer::update() {
 
 
     if (bgfx::isValid(videoTexture)) {
-      const bgfx::Memory* mem = bgfx::makeRef(videoFrameData, videoFrameWidth * videoFrameHeight * 4);
+      const bgfx::Memory* mem = bgfx::makeRef(videoFrameData, videoFrameWidth * videoFrameHeight * 3);
       bgfx::updateTexture2D(videoTexture, 0, 0, 0, 0, videoFrameWidth, videoFrameHeight, mem);
     }
   }
@@ -183,7 +183,7 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
         uint16_t(videoFrameHeight),
         false,
         1,
-        bgfx::TextureFormat::BGRA8,
+        bgfx::TextureFormat::RGB8,
         BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE
     );
 
@@ -193,6 +193,6 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
 
 
 
-    videoFrameData = malloc(videoFrameWidth * videoFrameHeight * 4); // Assuming 32-bit RGBA
+    videoFrameData = malloc(videoFrameWidth * videoFrameHeight * 3); // Assuming 32-bit RGBA
   }
 }
