@@ -1,13 +1,7 @@
 /*****************************************************************************
- * vlc.h: global header for libvlc
+ * vlc_meta_fetcher.h
  *****************************************************************************
- * Copyright (C) 1998-2008 VLC authors and VideoLAN
- *
- * Authors: Vincent Seguin <seguin@via.ecp.fr>
- *          Samuel Hocevar <sam@zoy.org>
- *          Gildas Bazin <gbazin@netcourrier.com>
- *          Derk-Jan Hartman <hartman at videolan dot org>
- *          Pierre d'Herbemont <pdherbemont@videolan.org>
+ * Copyright (C) 2009 Rémi Denis-Courmont
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -24,32 +18,21 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#ifndef VLC_VLC_H
-#define VLC_VLC_H 1
+#ifndef VLC_META_FETCHER_H
+#define VLC_META_FETCHER_H 1
 
-/**
- * \file
- * This file defines libvlc new external API
- */
+typedef enum meta_fetcher_scope_t
+{
+    FETCHER_SCOPE_LOCAL   = 0x01,
+    FETCHER_SCOPE_NETWORK = 0x02,
+    FETCHER_SCOPE_ANY     = 0x03
+} meta_fetcher_scope_t;
 
-# ifdef __cplusplus
-extern "C" {
-# endif
+typedef struct meta_fetcher_t
+{
+    struct vlc_object_t obj;
+    input_item_t *p_item;
+    meta_fetcher_scope_t e_scope;
+} meta_fetcher_t;
 
-#include "libvlc.h"
-#include "libvlc_renderer_discoverer.h"
-#include "libvlc_picture.h"
-#include "libvlc_media.h"
-#include "libvlc_media_player.h"
-#include "libvlc_media_list.h"
-#include "libvlc_media_list_player.h"
-#include "libvlc_media_discoverer.h"
-#include "libvlc_events.h"
-#include "libvlc_dialog.h"
-#include "libvlc_version.h"
-
-# ifdef __cplusplus
-}
-# endif
-
-#endif /* _VLC_VLC_H */
+#endif

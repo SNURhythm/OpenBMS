@@ -40,8 +40,6 @@ std::string ws2s_utf8(const std::wstring &wstr) {
 std::filesystem::path
 Utils::GetDocumentsPath(const std::filesystem::path &SubPath) {
 #if TARGET_OS_IOS
-  std::cout << "GetIOSDocumentsPath() / SubPath: "
-            << GetIOSDocumentsPath() / SubPath << std::endl;
   return GetIOSDocumentsPath() / SubPath;
 #elif PLATFORM_ANDROID
   return GetAndroidExternalFilesDir() / SubPath;

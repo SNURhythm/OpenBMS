@@ -1,13 +1,7 @@
 /*****************************************************************************
- * vlc.h: global header for libvlc
+ * vlc_probe.h: service probing interface
  *****************************************************************************
- * Copyright (C) 1998-2008 VLC authors and VideoLAN
- *
- * Authors: Vincent Seguin <seguin@via.ecp.fr>
- *          Samuel Hocevar <sam@zoy.org>
- *          Gildas Bazin <gbazin@netcourrier.com>
- *          Derk-Jan Hartman <hartman at videolan dot org>
- *          Pierre d'Herbemont <pdherbemont@videolan.org>
+ * Copyright (C) 2009 Rémi Denis-Courmont
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -24,32 +18,52 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#ifndef VLC_VLC_H
-#define VLC_VLC_H 1
+#ifndef VLC_PROBE_H
+# define VLC_PROBE_H 1
+
+# include <stdlib.h>
 
 /**
  * \file
- * This file defines libvlc new external API
+ * This file defines functions and structures to run-time probe VLC extensions
  */
 
 # ifdef __cplusplus
 extern "C" {
 # endif
 
-#include "libvlc.h"
-#include "libvlc_renderer_discoverer.h"
-#include "libvlc_picture.h"
-#include "libvlc_media.h"
-#include "libvlc_media_player.h"
-#include "libvlc_media_list.h"
-#include "libvlc_media_list_player.h"
-#include "libvlc_media_discoverer.h"
-#include "libvlc_events.h"
-#include "libvlc_dialog.h"
-#include "libvlc_version.h"
+void *vlc_probe (vlc_object_t *, const char *, size_t *);
+#define vlc_probe(obj, cap, pcount) \
+        vlc_probe(VLC_OBJECT(obj), cap, pcount)
+
+struct vlc_probe_t
+{
+    struct vlc_object_t obj;
+
+    void  *list;
+    size_t count;
+};
+
+typedef struct vlc_probe_t vlc_probe_t;
+
+static inline int vlc_probe_add(vlc_probe_t *obj, const void *data,
+                                size_t len)
+{
+    char *tab = (char *)realloc (obj->list, (obj->count + 1) * len);
+
+    if (unlikely(tab == NULL))
+        return VLC_ENOMEM;
+    memcpy(tab + (obj->count * len), data, len);
+    obj->list = tab;
+    obj->count++;
+    return VLC_SUCCESS;
+}
+
+# define VLC_PROBE_CONTINUE VLC_EGENERIC
+# define VLC_PROBE_STOP     VLC_SUCCESS
 
 # ifdef __cplusplus
 }
 # endif
 
-#endif /* _VLC_VLC_H */
+#endif

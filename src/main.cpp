@@ -107,6 +107,8 @@ int main(int argv, char **args) {
   using std::cerr;
   using std::endl;
 
+// print libvlc version
+  std::cout << libvlc_get_version();
   // vlc instance
   std::cout << "VLC init..." << std::endl;
   VLCInstance::getInstance();

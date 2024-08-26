@@ -1,13 +1,7 @@
 /*****************************************************************************
- * vlc.h: global header for libvlc
+ * vlc_clock.h: clock API
  *****************************************************************************
- * Copyright (C) 1998-2008 VLC authors and VideoLAN
- *
- * Authors: Vincent Seguin <seguin@via.ecp.fr>
- *          Samuel Hocevar <sam@zoy.org>
- *          Gildas Bazin <gbazin@netcourrier.com>
- *          Derk-Jan Hartman <hartman at videolan dot org>
- *          Pierre d'Herbemont <pdherbemont@videolan.org>
+ * Copyright (C) 2023 VLC authors and VideoLAN
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -24,32 +18,23 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-#ifndef VLC_VLC_H
-#define VLC_VLC_H 1
+#ifndef VLC_CLOCK_H
+#define VLC_CLOCK_H 1
 
 /**
- * \file
- * This file defines libvlc new external API
+ * The VLC clock API.
+ *
+ * The publicly exposed clock API is for now very restraint. For now, only a
+ * subset of the clock is exposed and simplified for stream output modules.
+ *
+ * The actual clock implementation is mostly private for now as no other use
+ * case is found.
  */
 
-# ifdef __cplusplus
-extern "C" {
-# endif
+/**
+ * Opaques VLC Clock types.
+ */
+typedef struct vlc_clock_main_t vlc_clock_main_t;
+typedef struct vlc_clock_t vlc_clock_t;
 
-#include "libvlc.h"
-#include "libvlc_renderer_discoverer.h"
-#include "libvlc_picture.h"
-#include "libvlc_media.h"
-#include "libvlc_media_player.h"
-#include "libvlc_media_list.h"
-#include "libvlc_media_list_player.h"
-#include "libvlc_media_discoverer.h"
-#include "libvlc_events.h"
-#include "libvlc_dialog.h"
-#include "libvlc_version.h"
-
-# ifdef __cplusplus
-}
-# endif
-
-#endif /* _VLC_VLC_H */
+#endif
