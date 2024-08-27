@@ -25,6 +25,6 @@ std::string path_t_to_utf8(const path_t& input)
   return result;
 #else
   // On non-Windows systems, just return the input string
-  return path_t;
+  return input;
 #endif
 }
