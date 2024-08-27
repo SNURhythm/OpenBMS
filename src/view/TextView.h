@@ -27,8 +27,8 @@ protected:
   SDL_Color color{};
   SDL_Rect rect{};
   std::string text;
-  bgfx::TextureHandle texture;
+  bgfx::TextureHandle texture = BGFX_INVALID_HANDLE;
 
-  bgfx::UniformHandle s_texColor;
+  bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
   void createTexture();
 };

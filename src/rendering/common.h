@@ -5,6 +5,11 @@
 #define SHADER_SIMPLE "simple"
 #define SHADER_TEXT "text"
 namespace rendering {
+struct PosTexCoord0Vertex
+{
+  float x, y, z;
+  float u, v;
+};
 struct PosColorVertex {
   static bgfx::VertexLayout ms_decl;
   float x;
@@ -46,4 +51,13 @@ bgfx::TextureHandle sdlSurfaceToBgfxTexture(SDL_Surface *surface);
 void createRect(bgfx::TransientVertexBuffer &tvb,
                 bgfx::TransientIndexBuffer &tib, int x, int y, int width,
                 int height, uint32_t color);
+
+static PosTexCoord0Vertex s_quadVertices[] =
+    {
+        { -1.0f,  1.0f, 0.0f,  0.0f, 0.0f },
+        {  1.0f,  1.0f, 0.0f,  1.0f, 0.0f },
+        { -1.0f, -1.0f, 0.0f,  0.0f, 1.0f },
+        {  1.0f, -1.0f, 0.0f,  1.0f, 1.0f },
+};
+static const uint16_t s_quadIndices[] = { 0, 1, 2, 1, 3, 2 };
 } // namespace rendering

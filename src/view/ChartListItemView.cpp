@@ -7,6 +7,7 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
     : View(x, y, width, height) {
   rootLayout = new LinearLayout(x, y, width, height, Orientation::HORIZONTAL);
   textLayout = new LinearLayout(x, y, width, height, Orientation::VERTICAL);
+  bannerImage = new ImageView(x, y, width, height);
   titleView = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   titleView->setVAlign(TextView::TextVAlign::BOTTOM);
   artistView = new TextView("assets/fonts/notosanscjkjp.ttf", 16);
@@ -15,7 +16,7 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
 
   titleConfig.width = 0;
   titleConfig.height = 0;
-  titleConfig.weight = 2;
+  titleConfig.weight = 1.5;
   LinearLayoutConfig artistConfig{};
 
   artistConfig.width = 0;
@@ -29,9 +30,10 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
   levelView->setText(level);
   levelView->setAlign(TextView::TextAlign::RIGHT);
   levelView->setVAlign(TextView::TextVAlign::MIDDLE);
+  rootLayout->addView(bannerImage, {static_cast<int>(height/80.0*300.0), height, 0, 0, 8});
   rootLayout->addView(textLayout, {0, 0, 1});
   rootLayout->addView(levelView, {100, 20, 0});
-  rootLayout->setPadding({10, 10, 10, 10});
+  rootLayout->setPadding({0, 0, 0, 0});
 }
 
 void ChartListItemView::setTitle(const std::string &title) {
@@ -44,6 +46,14 @@ void ChartListItemView::setArtist(const std::string &artist) {
 
 void ChartListItemView::setLevel(const std::string &level) {
   levelView->setText(level);
+}
+
+void ChartListItemView::setBanner(const path_t &path) {
+  bannerImage->setImage(path);
+}
+
+void ChartListItemView::unsetBanner() {
+  bannerImage->freeImage();
 }
 
 void ChartListItemView::render(RenderContext &context) {
