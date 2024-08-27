@@ -32,8 +32,8 @@ private:
   unsigned int videoFrameHeight;
   int currentFrame = 0;
   bool videoFrameUpdated;
-  bgfx::TextureHandle videoTexture;
-  bgfx::UniformHandle s_texColor;
+  bgfx::TextureHandle videoTexture = BGFX_INVALID_HANDLE;
+  bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
 
   VLC::MediaPlayer* mediaPlayer = nullptr;
   unsigned int getPrecisePosition();

@@ -5,7 +5,7 @@
 #include <bgfx/platform.h>
 #include <iostream>
 #include <cstring>
-
+#include "../rendering/common.h"
 VideoPlayer::VideoPlayer()
     : videoFrameData(nullptr), videoFrameWidth(0), videoFrameHeight(0), videoFrameUpdated(false), videoTexture(BGFX_INVALID_HANDLE) {
   s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
@@ -22,6 +22,7 @@ VideoPlayer::~VideoPlayer() {
   if (videoFrameData) {
     free(videoFrameData);
   }
+  bgfx::destroy(s_texColor);
 }
 
 bool VideoPlayer::loadVideo(const std::string& videoPath) {
@@ -101,10 +102,6 @@ void VideoPlayer::render() {
   bgfx::TransientVertexBuffer tvb{};
   bgfx::TransientIndexBuffer tib{};
 
-  struct PosTexCoord0Vertex {
-    float x, y, z;
-    float u, v;
-  };
 
 //  SDL_Log("Rendering video texture frame %d; time: %f", currentFrame, currentFrame / 30.0f);
 
@@ -115,7 +112,7 @@ void VideoPlayer::render() {
       .end();
   bgfx::allocTransientVertexBuffer(&tvb, 4, layout);
   bgfx::allocTransientIndexBuffer(&tib, 6);
-  auto* vertex = (PosTexCoord0Vertex*)tvb.data;
+  auto* vertex = (rendering::PosTexCoord0Vertex*)tvb.data;
 
   // Define quad vertices
   vertex[0].x = 0.0f; vertex[0].y = viewHeight; vertex[0].z = 0.0f; vertex[0].u = 0.0f; vertex[0].v = 1.0f;
