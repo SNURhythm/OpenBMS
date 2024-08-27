@@ -118,6 +118,8 @@ void MainMenuScene::initView(ApplicationContext &context) {
     chartListItemView->setTitle(item.Title);
     chartListItemView->setArtist(item.Artist);
     chartListItemView->setLevel(std::to_string(item.PlayLevel));
+    if(!item.Banner.empty()) chartListItemView->setBanner(item.Folder / item.Banner);
+    else chartListItemView->unsetBanner();
     if (isSelected) {
       chartListItemView->onSelected();
     } else {
@@ -194,6 +196,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
     auto selected = recyclerView->selectedIndex;
     SDL_Log("Selected: %d", selected);
     if (selected > 0) {
+      ImageView::dropAllCache();
       context.sceneManager->changeScene(new GamePlayScene(selectedChartMeta));
     }
   });

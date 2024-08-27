@@ -4,6 +4,7 @@ enum class Orientation { HORIZONTAL, VERTICAL };
 struct LinearLayoutConfig {
   int width, height;
   float weight;
+  int marginStart, marginEnd;
 };
 class LinearLayout : public Layout {
 public:

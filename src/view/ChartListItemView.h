@@ -2,6 +2,7 @@
 #include "LinearLayout.h"
 #include "TextView.h"
 #include "View.h"
+#include "ImageView.h"
 #include <SDL2/SDL.h>
 #include <string>
 
@@ -14,6 +15,8 @@ public:
   void setTitle(const std::string &title);
   void setArtist(const std::string &artist);
   void setLevel(const std::string &level);
+  void setBanner(const path_t& path);
+  void unsetBanner();
   void onSelected() override;
   void onUnselected() override;
 
@@ -23,6 +26,7 @@ private:
   TextView *titleView;
   TextView *artistView;
   TextView *levelView;
+  ImageView *bannerImage;
 
 protected:
   inline void onMove(int newX, int newY) override {

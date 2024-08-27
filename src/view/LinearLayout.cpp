@@ -27,23 +27,27 @@ void LinearLayout::layout() {
     if (config.weight > 0) {
       int size = (int)((float)remainingSpace * config.weight / totalWeight);
       if (orientation == Orientation::HORIZONTAL) {
+        currentX += config.marginStart;
         view->setPosition(currentX, currentY);
         view->setSize(size, getHeight());
-        currentX += size;
+        currentX += size + config.marginEnd;
       } else {
+        currentY += config.marginStart;
         view->setPosition(currentX, currentY);
         view->setSize(getWidth(), size);
-        currentY += size;
+        currentY += size + config.marginEnd;
       }
     } else {
       if (orientation == Orientation::HORIZONTAL) {
+        currentX += config.marginStart;
         view->setPosition(currentX, currentY);
         view->setSize(config.width, getHeight());
-        currentX += config.width;
+        currentX += config.width + config.marginEnd;
       } else {
+        currentY += config.marginStart;
         view->setPosition(currentX, currentY);
         view->setSize(getWidth(), config.height);
-        currentY += config.height;
+        currentY += config.height + config.marginEnd;
       }
     }
     view->onLayout();
