@@ -24,32 +24,73 @@ void LinearLayout::layout() {
   int currentY = getY() + padding.top;
   for (auto &view : views) {
     auto config = layoutConfigs[view];
+    auto preferredWidth = std::min(config.width > 0 ? config.width : getWidth(), getWidth() - padding.left - padding.right);
+    auto preferredHeight = std::min(config.height > 0 ? config.height : getHeight(), getHeight() - padding.top - padding.bottom);
     if (config.weight > 0) {
       int size = (int)((float)remainingSpace * config.weight / totalWeight);
       if (orientation == Orientation::HORIZONTAL) {
         currentX += config.marginStart;
-        view->setPosition(currentX, currentY);
-        view->setSize(size, getHeight());
-        currentX += size + config.marginEnd;
+        auto alignedY = currentY;
+        if (align == LinearLayoutAlign::CENTER) {
+          alignedY += (getHeight() - preferredHeight) / 2 - padding.top;
+        } else if (align == LinearLayoutAlign::END) {
+          alignedY += getHeight() - preferredHeight - padding.top;
+        }
+        view->setPosition(currentX, alignedY);
+        view->setSize(size, preferredHeight);
+        currentX += size + config.marginEnd + gap;
       } else {
+        auto alignedX = currentX;
+        if (align == LinearLayoutAlign::CENTER) {
+          alignedX += (getWidth() - preferredWidth) / 2 - padding.left;
+        } else if (align == LinearLayoutAlign::END) {
+          alignedX += getWidth() - preferredWidth - padding.left;
+        }
         currentY += config.marginStart;
-        view->setPosition(currentX, currentY);
-        view->setSize(getWidth(), size);
-        currentY += size + config.marginEnd;
+        view->setPosition(alignedX, currentY);
+        view->setSize(preferredWidth, size);
+        currentY += size + config.marginEnd + gap;
       }
     } else {
       if (orientation == Orientation::HORIZONTAL) {
+        auto alignedY = currentY;
+        if (align == LinearLayoutAlign::CENTER) {
+          alignedY += (getHeight() - preferredHeight) / 2 - padding.top;
+        } else if (align == LinearLayoutAlign::END) {
+          alignedY += getHeight() - preferredHeight - padding.top;
+        }
         currentX += config.marginStart;
-        view->setPosition(currentX, currentY);
-        view->setSize(config.width, getHeight());
-        currentX += config.width + config.marginEnd;
+        view->setPosition(currentX, alignedY);
+        view->setSize(config.width, preferredHeight);
+        currentX += config.width + config.marginEnd + gap;
       } else {
+        auto alignedX = currentX;
+        if (align == LinearLayoutAlign::CENTER) {
+          alignedX += (getWidth() - preferredWidth) / 2 - padding.left;
+        } else if (align == LinearLayoutAlign::END) {
+          alignedX += getWidth() - preferredWidth - padding.left;
+        }
         currentY += config.marginStart;
-        view->setPosition(currentX, currentY);
-        view->setSize(getWidth(), config.height);
-        currentY += config.height + config.marginEnd;
+        view->setPosition(alignedX, currentY);
+        view->setSize(preferredWidth, config.height);
+        currentY += config.height + config.marginEnd + gap;
       }
     }
     view->onLayout();
   }
+}
+
+void LinearLayout::setAlign(LinearLayoutAlign align) {
+  this->align = align;
+  layout();
+}
+
+void LinearLayout::setJustify(LinearLayoutJustify justify) {
+  this->justify = justify;
+  layout();
+}
+
+void LinearLayout::setGap(int gap) {
+  this->gap = gap;
+  layout();
 }

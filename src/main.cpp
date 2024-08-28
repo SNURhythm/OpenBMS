@@ -120,8 +120,8 @@ int main(int argv, char **args) {
   }
 
 
-  rendering::window_width = 800;
-  rendering::window_height = 600;
+  rendering::window_width = 1280;
+  rendering::window_height = 720;
   SDL_Window *win = SDL_CreateWindow(
       "OpenBMS", 100, 100, rendering::window_width,
       rendering::window_height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);

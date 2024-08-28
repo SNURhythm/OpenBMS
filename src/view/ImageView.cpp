@@ -39,6 +39,8 @@ bool ImageView::loadTexture(const path_t &path) {
       SDL_Log("Failed to load image: %s", utf8Path.c_str());
       return false;
     }
+    SDL_Log("Loaded image: %s; width: %d; height: %d", utf8Path.c_str(), width,
+            height);
   }
   texture =
       bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,

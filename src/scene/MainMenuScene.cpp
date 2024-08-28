@@ -127,7 +127,9 @@ void MainMenuScene::initView(ApplicationContext &context) {
       chartListItemView->onUnselected();
     }
   };
-  recyclerView->onSelected = [this, &context](const bms_parser::ChartMeta &item,
+
+  auto jacketView = new ImageView(0, 0, 0, 0);
+  recyclerView->onSelected = [this, &context, jacketView](const bms_parser::ChartMeta &item,
                                               int idx) {
     if(willStart) return;
     auto selectedView = recyclerView->getViewByIndex(idx);
@@ -135,6 +137,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
     if (selectedView) {
       selectedView->onSelected();
     }
+    jacketView->setImage(item.Folder / item.StageFile);
     previewLoadCancelled = true;
     if (loadThread.joinable()) {
         SDL_Log("Joining preview thread");
@@ -193,6 +196,12 @@ void MainMenuScene::initView(ApplicationContext &context) {
 
   auto right = new LinearLayout(0, 0, 0,0,
                                 Orientation::VERTICAL);
+  right->setAlign(LinearLayout::CENTER);
+  right->setPadding({12, 12, 12, 12});
+  right->setGap(12);
+
+
+
 
   auto startButton = new Button(0,0,200,100);
   auto buttonText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
@@ -207,7 +216,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
       willStart = true;
       buttonText->setText("Loading...");
 
-      defer([this, &context, buttonText]() {
+      defer([this, &context]() {
         SDL_Log("Starting game play scene");
         ImageView::dropAllCache();
         if(loadThread.joinable()) {
@@ -219,12 +228,9 @@ void MainMenuScene::initView(ApplicationContext &context) {
 
     }
   });
-  right->addView(startButton, {0, 0, 1});
+  right->addView(jacketView, {150, 150, 0});
+  right->addView(startButton, {0, 100, 0});
   rootLayout->addView(right, {200, 0, 0});
-  SDL_Log("right_width: %d", right->getWidth());
-  SDL_Log("left_width: %d", left->getWidth());
-  SDL_Log("start_width: %d", startButton->getWidth());
-  SDL_Log("start_text_width: %d", buttonText->getWidth());
   addView(rootLayout);
 }
 
