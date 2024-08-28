@@ -3,14 +3,19 @@
 #include "../context.h"
 #include <SDL2/SDL.h>
 #include <vector>
+#include <set>
 struct EventHandleResult {
   bool quit = false;
 };
 class Scene {
+
 public:
-  Scene() = default;
+  Scene() = delete;
+  Scene(ApplicationContext &context) : context(context) {}
   std::vector<View *> views;
-  virtual void init(ApplicationContext &context) = 0; // Initialize the scene
+  std::map<Uint64, std::pair<Uint64,std::vector< std::function<void()>>>>
+      deferred;
+  virtual void init() = 0; // Initialize the scene
   EventHandleResult handleEvents(SDL_Event &event) {
     for (auto view : views) {
       view->handleEvents(event);
@@ -18,6 +23,37 @@ public:
     return {};
   }
   virtual void update(float dt) = 0; // Update the scene logic
+  void defer(const std::function<void()> &func, Uint64 delay, bool shouldWaitFrame = false) {
+    Uint64 time = SDL_GetTicks64() + delay;
+    if (deferred.find(time) == deferred.end()) {
+      deferred[time] = {};
+    }
+    deferred[time].first = shouldWaitFrame?context.currentFrame+1:context.currentFrame;
+    deferred[time].second.push_back(func);
+  }
+  void handleDeferred() {
+
+    Uint64 time = SDL_GetTicks64();
+    auto it = deferred.begin();
+    while (it != deferred.end()) {
+      if (it->first <= time) {
+        if(it->second.first<=context.currentFrame) {
+          SDL_Log("Handling deferred");
+          for (const auto &func : it->second.second) {
+            func();
+            if (isDead) {
+              return;
+            }
+          }
+          it = deferred.erase(it);
+        } else {
+          ++it;
+        }
+      } else {
+        ++it;
+      }
+    }
+  }
   // Render the scene (non-virtual public method)
   void render() {
     RenderContext context;
@@ -29,7 +65,7 @@ public:
 
   // Cleanup resources when exiting the scene (non-virtual public method)
   inline void cleanup() {
-
+    isDead = true;
     cleanupScene(); // Additional custom cleanup
     for (auto view : views) {
       delete view;
@@ -46,4 +82,8 @@ protected:
 
   virtual void cleanupScene() = 0;
 
+  ApplicationContext &context;
+
+private:
+  bool isDead = false;
 };
