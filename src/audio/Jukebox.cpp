@@ -20,6 +20,8 @@ void Jukebox::render(){
   if(currentBga != -1){
     if(videoPlayerTable.find(currentBga) != videoPlayerTable.end()){
       auto videoPlayer = videoPlayerTable[currentBga];
+      videoPlayer->viewWidth = rendering::window_width;
+      videoPlayer->viewHeight = rendering::window_height;
       videoPlayer->update();
       videoPlayer->render();
     }

@@ -8,6 +8,8 @@ struct LinearLayoutConfig {
 };
 class LinearLayout : public Layout {
 public:
+  enum LinearLayoutAlign { START, CENTER, END };
+  enum LinearLayoutJustify { J_START, J_CENTER, J_END, J_SPACE_BETWEEN, J_SPACE_AROUND }; // TODO: implement
   inline LinearLayout(int x, int y, int width, int height,
                       Orientation orientation)
       : Layout(x, y, width, height), orientation(orientation) {}
@@ -23,7 +25,13 @@ public:
     layout();
   }
 
+  void setAlign(LinearLayoutAlign align);
+  void setJustify(LinearLayoutJustify justify);
+  void setGap(int gap);
 private:
+  int gap = 0;
   Orientation orientation;
   std::map<View *, LinearLayoutConfig> layoutConfigs;
+  LinearLayoutAlign align = LinearLayoutAlign::START;
+  LinearLayoutJustify justify = LinearLayoutJustify::J_START;
 };
