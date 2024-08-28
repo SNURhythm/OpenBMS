@@ -39,8 +39,9 @@
 #endif
 #include <iostream>
 
-void MainMenuScene::init(ApplicationContext &context) {
+void MainMenuScene::init() {
   // Initialize the scene
+
   initView(context);
   SDL_Log("Main Menu Scene Initialized");
   checkEntriesThread =
@@ -128,39 +129,45 @@ void MainMenuScene::initView(ApplicationContext &context) {
   };
   recyclerView->onSelected = [this, &context](const bms_parser::ChartMeta &item,
                                               int idx) {
+    if(willStart) return;
     auto selectedView = recyclerView->getViewByIndex(idx);
     SDL_Log("Selected: %s", item.Title.c_str());
     if (selectedView) {
       selectedView->onSelected();
     }
-    selectedChartMeta = item;
     previewLoadCancelled = true;
-    if (previewThread.joinable()) {
+    if (loadThread.joinable()) {
         SDL_Log("Joining preview thread");
-      previewThread.join();
+        loadThread.join();
     }
-    previewThread = std::thread([this, item]() {
-        SDL_Log("Previewing %s", item.BmsPath.c_str());
-      jukebox.stop();
+    if(selectedChart) {
+      delete selectedChart;
+      selectedChart = nullptr;
+    }
+    loadThread = std::thread([this, item, &context]() {
+        SDL_Log("Previewing %s", path_t_to_utf8(item.BmsPath).c_str());
+      context.jukebox.stop();
       previewLoadCancelled = false;
       bms_parser::Parser parser;
       bms_parser::Chart *chart;
 
       try {
-        SDL_Log("Parsing %s", item.BmsPath.c_str());
+        SDL_Log("Parsing %s", path_t_to_utf8(item.BmsPath).c_str());
         parser.Parse(item.BmsPath, &chart, false, false, previewLoadCancelled);
+        SDL_Log("Parsed %s", path_t_to_utf8(item.BmsPath).c_str());
       } catch (std::exception &e) {
         delete chart;
-        SDL_Log("Error parsing %s: %s", item.BmsPath.c_str(), e.what());
+        SDL_Log("Error parsing %s: %s", path_t_to_utf8(item.BmsPath).c_str(), e.what());
         return;
+      }
+      selectedChart = chart;
+
+      context.jukebox.loadChart(*chart, previewLoadCancelled);
+      if(!willStart) {
+        context.jukebox.play();
       }
 
 
-
-      jukebox.loadChart(*chart, previewLoadCancelled);
-      jukebox.play();
-
-      delete chart;
     });
   };
   recyclerView->onUnselected = [this](const bms_parser::ChartMeta &item,
@@ -187,21 +194,37 @@ void MainMenuScene::initView(ApplicationContext &context) {
   auto right = new LinearLayout(0, 0, 0,0,
                                 Orientation::VERTICAL);
 
-  auto startButton = new Button(0,0,100,100);
+  auto startButton = new Button(0,0,200,100);
   auto buttonText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   buttonText->setText("Start");
+  buttonText->setAlign(TextView::CENTER);
   startButton->setContentView(buttonText);
-  startButton->setOnClickListener([this, &context]() {
+  startButton->setOnClickListener([this, &context, buttonText]() {
     SDL_Log("Start button clicked");
     auto selected = recyclerView->selectedIndex;
     SDL_Log("Selected: %d", selected);
-    if (selected > 0) {
-      ImageView::dropAllCache();
-      context.sceneManager->changeScene(new GamePlayScene(selectedChartMeta));
+    if (selected >= 0) {
+      willStart = true;
+      buttonText->setText("Loading...");
+
+      defer([this, &context, buttonText]() {
+        SDL_Log("Starting game play scene");
+        ImageView::dropAllCache();
+        if(loadThread.joinable()) {
+          loadThread.join();
+        }
+        context.jukebox.stop();
+        context.sceneManager->changeScene(new GamePlayScene(context, selectedChart));
+      }, 0, true);
+
     }
   });
   right->addView(startButton, {0, 0, 1});
-  rootLayout->addView(right, {100, 0, 0});
+  rootLayout->addView(right, {200, 0, 0});
+  SDL_Log("right_width: %d", right->getWidth());
+  SDL_Log("left_width: %d", left->getWidth());
+  SDL_Log("start_width: %d", startButton->getWidth());
+  SDL_Log("start_text_width: %d", buttonText->getWidth());
   addView(rootLayout);
 }
 
@@ -214,7 +237,7 @@ void MainMenuScene::renderScene() {
   // Render the scene
   // SDL_Log("Rendering Main Menu Scene");
   rootLayout->setSize(rendering::window_width, rendering::window_height);
-  jukebox.render();
+  context.jukebox.render();
 }
 
 void MainMenuScene::cleanupScene() {
@@ -222,9 +245,9 @@ void MainMenuScene::cleanupScene() {
   if (checkEntriesThread.joinable()) {
     checkEntriesThread.join();
   }
-  previewLoadCancelled = true;
-  if (previewThread.joinable()) {
-    previewThread.join();
+
+  if (loadThread.joinable()) {
+    loadThread.join();
   }
 }
 

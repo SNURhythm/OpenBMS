@@ -5,11 +5,14 @@
 #include <vector>
 #include <string>
 #include "scene/SceneManager.h"
+#include "audio/Jukebox.h"
 class ApplicationContext {
 
 public:
   std::atomic<bool> quitFlag;
   SceneManager *sceneManager = nullptr;
+  Uint64 currentFrame = 0;
+  Jukebox jukebox{};
 
   // string: annotation, thread: thread
   std::vector<std::pair<std::string, std::thread>> threads;

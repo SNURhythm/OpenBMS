@@ -189,6 +189,7 @@ void Jukebox::loadChart(bms_parser::Chart &chart,
   if (isCancelled)
     return;
   schedule(chart, isCancelled);
+  SDL_Log("Chart loaded");
 }
 
 void Jukebox::schedule(bms_parser::Chart &chart,

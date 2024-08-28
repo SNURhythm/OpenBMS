@@ -7,10 +7,11 @@ class EventHandleResult;
 class ApplicationContext;
 class SceneManager {
 private:
-  std::unique_ptr<Scene> currentScene;
+
   ApplicationContext &context;
 
 public:
+  std::unique_ptr<Scene> currentScene;
   SceneManager() = delete;
   ~SceneManager();
   explicit SceneManager(ApplicationContext &context);
@@ -18,6 +19,7 @@ public:
   EventHandleResult handleEvents(SDL_Event &event);
   void cleanup();
   void update(float dt);
+  void handleDeferred();
 
   void render();
 };

@@ -26,6 +26,7 @@ void Button::setOnClickListener(std::function<void()> listener) {
 void Button::setContentView(View *view) {
   this->contentView = view;
   view->setPosition(getX(), getY());
+  view->setSize(getWidth(), getHeight());
 }
 Button::~Button() {
   delete contentView;
@@ -33,6 +34,7 @@ Button::~Button() {
 void Button::onLayout() {
   if (contentView) {
     contentView->setPosition(getX(), getY());
+    contentView->setSize(getWidth(), getHeight());
   }
 }
 
