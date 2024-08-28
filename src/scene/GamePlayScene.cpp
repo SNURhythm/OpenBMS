@@ -4,9 +4,9 @@
 
 #include "GamePlayScene.h"
 #include "../view/TextView.h"
-void GamePlayScene::init(ApplicationContext &context) {
+void GamePlayScene::init() {
   auto chartNameText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
-  chartNameText->setText("Selected: "+chartMeta.Title);
+  chartNameText->setText("Selected: "+chart->Meta.Title);
   chartNameText->setPosition(10, 10);
   addView(chartNameText);
 }

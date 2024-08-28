@@ -7,13 +7,13 @@
 #include "../bms_parser.hpp"
 class GamePlayScene : public Scene {
 private:
-  bms_parser::ChartMeta chartMeta;
+  bms_parser::Chart* chart;
 public:
   GamePlayScene() = delete;
-  explicit GamePlayScene(const bms_parser::ChartMeta& chartMeta){
-      this->chartMeta = chartMeta;
+  explicit GamePlayScene(ApplicationContext& context, bms_parser::Chart* chart) : Scene(context) {
+      this->chart = chart;
   };
-  void init(ApplicationContext &context) override;
+  void init() override;
   void update(float dt) override;
   void renderScene() override;
   void cleanupScene() override;

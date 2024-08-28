@@ -8,7 +8,7 @@ void SceneManager::changeScene(Scene *newScene) {
     currentScene->cleanup();
   }
   currentScene.reset(newScene);
-  currentScene->init(context);
+  currentScene->init();
 }
 
 EventHandleResult SceneManager::handleEvents(SDL_Event &event) {
@@ -22,6 +22,12 @@ EventHandleResult SceneManager::handleEvents(SDL_Event &event) {
 void SceneManager::update(float dt) {
   if (currentScene) {
     currentScene->update(dt);
+  }
+}
+
+void SceneManager::handleDeferred() {
+  if (currentScene) {
+    currentScene->handleDeferred();
   }
 }
 

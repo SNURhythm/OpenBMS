@@ -93,7 +93,7 @@ int main(int argv, char **args) {
   std::cout << "SDL link version: " << static_cast<int>(linked.major) << "."
             << static_cast<int>(linked.minor) << "."
             << static_cast<int>(linked.patch) << std::endl;
-  ApplicationContext context;
+
 
 #if TARGET_OS_OSX
   setSmoothScrolling(true);
@@ -171,7 +171,7 @@ int main(int argv, char **args) {
   // bgfx::setPlatformData(pd);
 
 
-  run(context);
+  run();
   bgfx::shutdown();
   if (ren != nullptr) {
     SDL_DestroyRenderer(ren);
@@ -183,10 +183,11 @@ int main(int argv, char **args) {
   return EXIT_SUCCESS;
 }
 
-void run(ApplicationContext& context){
+void run(){
+  ApplicationContext context;
   bgfx::setViewMode(0, bgfx::ViewMode::Sequential);
   SceneManager sceneManager(context);
-  sceneManager.changeScene(new MainMenuScene());
+  sceneManager.changeScene(new MainMenuScene(context));
 
   // SDL_RenderClear(ren);
   // SDL_RenderCopy(ren, tex, nullptr, nullptr);
@@ -351,6 +352,8 @@ void run(ApplicationContext& context){
 
 
     bgfx::frame();
+    sceneManager.handleDeferred();
+    context.currentFrame++;
   }
   sceneManager.cleanup();
   bgfx::destroy(vbh);

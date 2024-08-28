@@ -14,8 +14,8 @@
 #include <atomic>
 class MainMenuScene : public Scene {
 public:
-  inline explicit MainMenuScene() : Scene() {}
-  void init(ApplicationContext &context) override;
+  inline explicit MainMenuScene(ApplicationContext& context) : Scene(context) {}
+  void init() override;
 
   void update(float dt) override;
   void renderScene() override;
@@ -23,10 +23,12 @@ public:
 
 
 private:
+
   std::atomic_bool previewLoadCancelled = false;
-  bms_parser::ChartMeta selectedChartMeta;
-  Jukebox jukebox;
-  std::thread previewThread;
+  bool willStart = false;
+  bms_parser::Chart* selectedChart = nullptr;
+
+  std::thread loadThread;
   std::thread checkEntriesThread;
   RecyclerView<bms_parser::ChartMeta> *recyclerView = nullptr;
   LinearLayout *rootLayout = nullptr;
