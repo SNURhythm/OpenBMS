@@ -39,5 +39,5 @@ public:
   void setAngle(float angle) { transform.rotation = Quaternion::axisAngle(transform.rotation.getAxis(), angle); }
   void setAxisAngle(Vector3 axis, float angle) { transform.rotation = Quaternion::axisAngle(axis, angle); }
   void lookAt(Vector3 target) { transform.rotation = Quaternion::lookRotation(target - transform.position, transform.rotation.getUp()); }
-  void lookAt(Vector3 target, Vector3 up) { transform.rotation = Quaternion::lookRotation(target - transform.position,
+  void lookAt(Vector3 target, Vector3 up) { transform.rotation = Quaternion::lookRotation(target - transform.position, up); }
 };
