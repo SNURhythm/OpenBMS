@@ -1,0 +1,1 @@
+target_sources(main PRIVATE GameObject.cpp)
