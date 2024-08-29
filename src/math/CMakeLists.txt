@@ -1,0 +1,1 @@
+target_sources(main PRIVATE Vector3.cpp Quaternion.cpp)
