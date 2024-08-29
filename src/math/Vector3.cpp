@@ -100,3 +100,9 @@ Vector3 Vector3::rotate(const Vector3 &axis, float angle) const {
   Quaternion w = rotation * (*this) * conjugate;
   return {w.x, w.y, w.z};
 }
+Vector3 &Vector3::operator*=(Vector3 &other) {
+  x = y * other.z - z * other.y;
+  y = z * other.x - x * other.z;
+  z = x * other.y - y * other.x;
+  return *this;
+}

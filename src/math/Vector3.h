@@ -17,6 +17,7 @@ public:
   Vector3 &operator-=(Vector3 &other);
   Vector3 &operator*=(float scalar);
   Vector3 &operator/=(float scalar);
+  Vector3 &operator*=(Vector3 &other);
   bool operator==(Vector3 &other) const;
   bool operator!=(Vector3 &other) const;
   [[nodiscard]] float dot(const Vector3 &other) const;
