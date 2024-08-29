@@ -9,11 +9,13 @@ class Vector3;
 class Quaternion {
 public:
   float x, y, z, w;
+  Quaternion() : x(0), y(0), z(0), w(1) {}
   Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
   Quaternion operator+(Quaternion other) const;
   Quaternion operator-(Quaternion other) const;
   Quaternion operator*(Quaternion other) const;
   Quaternion operator*(float scalar) const;
+  Quaternion operator*(Vector3 other) const;
   Quaternion operator/(float scalar) const;
   Quaternion &operator+=(Quaternion &other);
   Quaternion &operator-=(Quaternion &other);
@@ -37,5 +39,8 @@ public:
   [[nodiscard]] Vector3 getAxis() const;
   [[nodiscard]] float getAngle() const;
   [[nodiscard]] Vector3 getAxisAngle() const;
+
+  static Quaternion lookRotation(const Vector3& forward, const Vector3& up);
+  static Quaternion axisAngle(const Vector3& axis, float angle);
 
 };
