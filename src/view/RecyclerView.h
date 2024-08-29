@@ -117,6 +117,9 @@ public:
     context.scissor = scissors;
     // flush rendering
     bgfx::setScissor();
+    if(items.size() * itemHeight < this->getHeight()) {
+      return;
+    }
     rendering::PosColorVertex vertices[] = {
         {-0.5f, -0.5f, 0.0f, 0xffffffff}, // Bottom-left
         {0.5f, -0.5f, 0.0f, 0xffffffff},  // Bottom-right
@@ -416,6 +419,12 @@ private:
     // Determine the range of visible items
     int startIndex = getStartIndex();
     int endIndex = getEndIndex();
+    // if all items are visible
+    if(items.size() * itemHeight < this->getHeight()) {
+      startIndex = 0;
+      endIndex = items.size() - 1;
+      scrollOffset = 0;
+    }
 
     // Temporary container for newly visible items
     std::deque<std::pair<View *, T>> newVisibleItems;
