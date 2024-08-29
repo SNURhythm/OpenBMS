@@ -223,7 +223,7 @@ void ChartDBHelper::SelectAllChartMeta(
                "total_long_notes,"
                "total_scratch_notes,"
                "total_backspin_notes"
-               " FROM chart_meta";
+               " FROM chart_meta ORDER BY title";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
   if (rc != SQLITE_OK) {
@@ -241,7 +241,7 @@ void ChartDBHelper::SelectAllChartMeta(
 }
 
 void ChartDBHelper::SearchChartMeta(
-    sqlite3 *db, std::string &text,
+    sqlite3 *db, const std::string &text,
     std::vector<bms_parser::ChartMeta> &chartMetas) {
   auto query =
       "SELECT "
@@ -273,7 +273,7 @@ void ChartDBHelper::SearchChartMeta(
       "total_scratch_notes,"
       "total_backspin_notes"
       " FROM chart_meta WHERE rtrim(title || ' ' || subtitle || ' ' || artist "
-      "|| ' ' || sub_artist || ' ' || genre) LIKE @text GROUP BY sha256";
+      "|| ' ' || sub_artist || ' ' || genre) LIKE @text GROUP BY sha256 ORDER BY title";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
   if (rc != SQLITE_OK) {

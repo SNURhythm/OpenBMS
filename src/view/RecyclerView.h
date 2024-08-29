@@ -40,6 +40,10 @@ public:
 
   inline void setItems(std::vector<T> items) {
     this->items = items;
+    // reset selected index
+    selectedIndex = -1;
+    // reset scroll offset
+    scrollOffset = 0;
     updateVisibleItems();
   }
 

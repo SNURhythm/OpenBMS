@@ -41,7 +41,7 @@
 
 void MainMenuScene::init() {
   // Initialize the scene
-
+  db = ChartDBHelper::GetInstance().Connect();
   initView(context);
   SDL_Log("Main Menu Scene Initialized");
   checkEntriesThread =
@@ -102,7 +102,7 @@ void MainMenuScene::CheckEntries(ApplicationContext &context,
 
 void MainMenuScene::initView(ApplicationContext &context) {
   // Initialize the view
-  // get screen width
+
   recyclerView = new RecyclerView<bms_parser::ChartMeta>(
       0, 0, rendering::window_width, rendering::window_height,
       [](const bms_parser::ChartMeta &a, const bms_parser::ChartMeta &b) {
@@ -119,8 +119,10 @@ void MainMenuScene::initView(ApplicationContext &context) {
     chartListItemView->setTitle(item.Title);
     chartListItemView->setArtist(item.Artist);
     chartListItemView->setLevel(std::to_string(item.PlayLevel));
-    if(!item.Banner.empty()) chartListItemView->setBanner(item.Folder / item.Banner);
-    else chartListItemView->unsetBanner();
+    if (!item.Banner.empty())
+      chartListItemView->setBanner(item.Folder / item.Banner);
+    else
+      chartListItemView->unsetBanner();
     if (isSelected) {
       chartListItemView->onSelected();
     } else {
@@ -129,9 +131,10 @@ void MainMenuScene::initView(ApplicationContext &context) {
   };
 
   auto jacketView = new ImageView(0, 0, 0, 0);
-  recyclerView->onSelected = [this, &context, jacketView](const bms_parser::ChartMeta &item,
-                                              int idx) {
-    if(willStart) return;
+  recyclerView->onSelected = [this, &context, jacketView](
+                                 const bms_parser::ChartMeta &item, int idx) {
+    if (willStart)
+      return;
     auto selectedView = recyclerView->getViewByIndex(idx);
     SDL_Log("Selected: %s", item.Title.c_str());
     if (selectedView) {
@@ -140,15 +143,15 @@ void MainMenuScene::initView(ApplicationContext &context) {
     jacketView->setImage(item.Folder / item.StageFile);
     previewLoadCancelled = true;
     if (loadThread.joinable()) {
-        SDL_Log("Joining preview thread");
-        loadThread.join();
+      SDL_Log("Joining preview thread");
+      loadThread.join();
     }
-    if(selectedChart) {
+    if (selectedChart) {
       delete selectedChart;
       selectedChart = nullptr;
     }
     loadThread = std::thread([this, item, &context]() {
-        SDL_Log("Previewing %s", path_t_to_utf8(item.BmsPath).c_str());
+      SDL_Log("Previewing %s", path_t_to_utf8(item.BmsPath).c_str());
       context.jukebox.stop();
       previewLoadCancelled = false;
       bms_parser::Parser parser;
@@ -160,17 +163,16 @@ void MainMenuScene::initView(ApplicationContext &context) {
         SDL_Log("Parsed %s", path_t_to_utf8(item.BmsPath).c_str());
       } catch (std::exception &e) {
         delete chart;
-        SDL_Log("Error parsing %s: %s", path_t_to_utf8(item.BmsPath).c_str(), e.what());
+        SDL_Log("Error parsing %s: %s", path_t_to_utf8(item.BmsPath).c_str(),
+                e.what());
         return;
       }
       selectedChart = chart;
 
       context.jukebox.loadChart(*chart, previewLoadCancelled);
-      if(!willStart) {
+      if (!willStart) {
         context.jukebox.play();
       }
-
-
     });
   };
   recyclerView->onUnselected = [this](const bms_parser::ChartMeta &item,
@@ -184,26 +186,32 @@ void MainMenuScene::initView(ApplicationContext &context) {
   rootLayout =
       new LinearLayout(0, 0, rendering::window_width, rendering::window_height,
                        Orientation::HORIZONTAL);
-  auto left = new LinearLayout(0, 0, 0,0,
-                               Orientation::VERTICAL);
+  auto left = new LinearLayout(0, 0, 0, 0, Orientation::VERTICAL);
   left->addView(recyclerView, {0, 0, 1});
 
-  auto *inputBox =
-      new TextInputBox("assets/fonts/notosanscjkjp.ttf", 32);
-  inputBox->setText("");
-  left->addView(inputBox, {0, 50, 0});
+  auto *searchBox = new TextInputBox("assets/fonts/notosanscjkjp.ttf", 32);
+  searchBox->setText("");
+  searchBox->onSubmit([this, &context, searchBox](const std::string &text) {
+    auto dbHelper = ChartDBHelper::GetInstance();
+    if (text.empty()) {
+      std::vector<bms_parser::ChartMeta> chartMetas;
+      dbHelper.SelectAllChartMeta(db, chartMetas);
+      recyclerView->setItems(chartMetas);
+    } else {
+      std::vector<bms_parser::ChartMeta> chartMetas;
+      dbHelper.SearchChartMeta(db, text, chartMetas);
+      recyclerView->setItems(chartMetas);
+    }
+  });
+  left->addView(searchBox, {0, 50, 0});
   rootLayout->addView(left, {0, 0, 1});
 
-  auto right = new LinearLayout(0, 0, 0,0,
-                                Orientation::VERTICAL);
+  auto right = new LinearLayout(0, 0, 0, 0, Orientation::VERTICAL);
   right->setAlign(LinearLayout::CENTER);
   right->setPadding({12, 12, 12, 12});
   right->setGap(12);
 
-
-
-
-  auto startButton = new Button(0,0,200,100);
+  auto startButton = new Button(0, 0, 200, 100);
   auto buttonText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   buttonText->setText("Start");
   buttonText->setAlign(TextView::CENTER);
@@ -216,16 +224,18 @@ void MainMenuScene::initView(ApplicationContext &context) {
       willStart = true;
       buttonText->setText("Loading...");
 
-      defer([this, &context]() {
-        SDL_Log("Starting game play scene");
-        ImageView::dropAllCache();
-        if(loadThread.joinable()) {
-          loadThread.join();
-        }
-        context.jukebox.stop();
-        context.sceneManager->changeScene(new GamePlayScene(context, selectedChart));
-      }, 0, true);
-
+      defer(
+          [this, &context]() {
+            SDL_Log("Starting game play scene");
+            ImageView::dropAllCache();
+            if (loadThread.joinable()) {
+              loadThread.join();
+            }
+            context.jukebox.stop();
+            context.sceneManager->changeScene(
+                new GamePlayScene(context, selectedChart));
+          },
+          0, true);
     }
   });
   right->addView(jacketView, {150, 150, 0});
@@ -248,6 +258,7 @@ void MainMenuScene::renderScene() {
 
 void MainMenuScene::cleanupScene() {
   // Cleanup resources when exiting the scene
+  ChartDBHelper::GetInstance().Close(db);
   if (checkEntriesThread.joinable()) {
     checkEntriesThread.join();
   }
