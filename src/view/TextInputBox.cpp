@@ -29,7 +29,7 @@ size_t TextInputBox::getPrevUnicodePos(size_t pos) {
 }
 void TextInputBox::handleEvents(SDL_Event &event) {
   bool shouldUpdate = false;
-
+  bool isSubmit = false;
   switch (event.type) {
   case SDL_TEXTINPUT:
     if (!isSelected)
@@ -80,6 +80,8 @@ void TextInputBox::handleEvents(SDL_Event &event) {
       std::string clipboard = SDL_GetClipboardText();
       text.insert(cursorPos, clipboard);
       cursorPos += clipboard.size();
+    } else if (event.key.keysym.sym == SDLK_RETURN) {
+      isSubmit = true;
     }
 
     break;
@@ -144,6 +146,14 @@ void TextInputBox::handleEvents(SDL_Event &event) {
               compositionY, compositionWidth, compositionHeight);
     }
     setText(composited);
+    for (auto &callback : onTextChangedCallbacks) {
+      callback(text);
+    }
+    if (isSubmit) {
+      for (auto &callback : onSubmitCallbacks) {
+        callback(text);
+      }
+    }
     text = backup;
     int cursorX, cursorY;
     cursorToPos(cursorPos, text, cursorX, cursorY);
@@ -283,3 +293,29 @@ size_t TextInputBox::posToCursor(int x, int y) {
 void TextInputBox::onSelected() { isSelected = true; }
 
 void TextInputBox::onUnselected() { isSelected = false; }
+
+size_t TextInputBox::onTextChanged(std::function<void(const std::string &)> callback) {
+  onTextChangedCallbacks.push_back(callback);
+  return onTextChangedCallbacks.size() - 1;
+}
+
+void TextInputBox::removeOnTextChanged(std::function<void(const std::string &)> callback) {
+  for (size_t i = 0; i < onTextChangedCallbacks.size(); i++) {
+    if (onTextChangedCallbacks[i].target<void(const std::string &)>() == callback.target<void(const std::string &)>()) {
+      onTextChangedCallbacks.erase(onTextChangedCallbacks.begin() + i);
+    }
+  }
+}
+
+size_t TextInputBox::onSubmit(std::function<void(const std::string &)> callback) {
+  onSubmitCallbacks.push_back(callback);
+  return onSubmitCallbacks.size() - 1;
+}
+
+void TextInputBox::removeOnSubmit(std::function<void(const std::string &)> callback) {
+  for (size_t i = 0; i < onSubmitCallbacks.size(); i++) {
+    if (onSubmitCallbacks[i].target<void(const std::string &)>() == callback.target<void(const std::string &)>()) {
+      onSubmitCallbacks.erase(onSubmitCallbacks.begin() + i);
+    }
+  }
+}

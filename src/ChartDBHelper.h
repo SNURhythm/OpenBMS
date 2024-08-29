@@ -35,7 +35,7 @@ public:
   bool InsertChartMeta(sqlite3 *db, bms_parser::ChartMeta &chartMeta);
   void SelectAllChartMeta(sqlite3 *db,
                           std::vector<bms_parser::ChartMeta> &chartMetas);
-  void SearchChartMeta(sqlite3 *db, std::string &keyword,
+  void SearchChartMeta(sqlite3 *db, const std::string &keyword,
                        std::vector<bms_parser::ChartMeta> &chartMetas);
   bool DeleteChartMeta(sqlite3 *db, std::filesystem::path &path);
   bool ClearChartMeta(sqlite3 *db);
