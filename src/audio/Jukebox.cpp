@@ -183,6 +183,7 @@ void Jukebox::loadChart(bms_parser::Chart &chart,
     delete videoPlayer.second;
   }
   videoPlayerTable.clear();
+  bmpQueue = std::queue<std::pair<long long, int>>();
   if (isCancelled)
     return;
   loadSounds(chart, isCancelled);
