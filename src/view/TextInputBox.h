@@ -6,6 +6,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string>
+#include <functional>
+#include <vector>
 
 class TextInputBox : public TextView {
 public:
@@ -18,6 +20,12 @@ public:
   void onMove(int newX, int newY) override;
   void onResize(int newWidth, int newHeight) override;
   void render(RenderContext &context) override;
+  size_t onTextChanged(std::function<void(const std::string &)> callback);
+  void removeOnTextChanged(std::function<void(const std::string &)> callback);
+  size_t onSubmit(std::function<void(const std::string &)> callback);
+  void removeOnSubmit(std::function<void(const std::string &)> callback);
+
+  [[nodiscard]] inline std::string getText() const { return text; }
 
   [[nodiscard]] inline bool getSelected() const { return isSelected; }
 
@@ -32,6 +40,8 @@ private:
   Uint32 lastBlink = 0;
   SDL_Rect viewRect;
   size_t cursorPos = 0;
+  std::vector<std::function<void(const std::string &)>> onTextChangedCallbacks;
+  std::vector<std::function<void(const std::string &)>> onSubmitCallbacks;
 
   // convert cursor position to x, y position
   void cursorToPos(size_t cursorPos, const std::string &text, int &x, int &y);

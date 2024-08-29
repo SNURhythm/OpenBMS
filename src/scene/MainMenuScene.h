@@ -14,19 +14,18 @@
 #include <atomic>
 class MainMenuScene : public Scene {
 public:
-  inline explicit MainMenuScene(ApplicationContext& context) : Scene(context) {}
+  inline explicit MainMenuScene(ApplicationContext &context) : Scene(context) {}
   void init() override;
 
   void update(float dt) override;
   void renderScene() override;
   void cleanupScene() override;
 
-
 private:
-
+  sqlite3 *db;
   std::atomic_bool previewLoadCancelled = false;
   bool willStart = false;
-  bms_parser::Chart* selectedChart = nullptr;
+  bms_parser::Chart *selectedChart = nullptr;
 
   std::thread loadThread;
   std::thread checkEntriesThread;
