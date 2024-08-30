@@ -9,7 +9,27 @@ void GamePlayScene::init() {
   chartNameText->setText("Selected: " + chart->Meta.Title);
   chartNameText->setPosition(10, 10);
   addView(chartNameText);
+  testNote.transform.position = {0.0f, 0.0f, 0.0f};
+  testNote.transform.rotation =
+      Quaternion::fromEuler(0.0f, 0.0f, 0.0f / 180.0f * 3.14159265359f);
 }
-void GamePlayScene::update(float dt) {}
-void GamePlayScene::renderScene() {}
+void GamePlayScene::update(float dt) {
+
+  Quaternion targetRotation =
+      testNote.transform.rotation *
+      Quaternion::fromEuler(1.0f / 180.0f * 3.14159265359f,
+                            1.0f / 180.0f * 3.14159265359f,
+                            1.0f / 180.0f * 3.14159265359f);
+
+  float interpolationFactor = dt * 30;
+  testNote.transform.rotation =
+      testNote.transform.rotation.slerp(targetRotation, interpolationFactor);
+
+  testNote.transform.position.x += 0.1f * dt;
+}
+
+void GamePlayScene::renderScene() {
+  RenderContext context;
+  testNote.render(context);
+}
 void GamePlayScene::cleanupScene() {}

@@ -2,6 +2,7 @@
 // Created by XF on 8/30/2024.
 //
 
+#include <cmath>
 #include "Quaternion.h"
 #include "Vector3.h"
 Quaternion Quaternion::operator+(Quaternion other) const {
@@ -113,7 +114,14 @@ Vector3 Quaternion::getRight() const {
 }
 Vector3 Quaternion::getAxis() const { return {x, y, z}; }
 float Quaternion::getAngle() const { return 2 * acosf(w); }
-Vector3 Quaternion::getAxisAngle() const { float s = sqrtf(1 - w * w); }
+Vector3 Quaternion::getAxisAngle() const {
+
+  float angle = getAngle();
+  if (angle == 0) {
+    return {0, 0, 0};
+  }
+  return {x / sinf(angle / 2), y / sinf(angle / 2), z / sinf(angle / 2)};
+}
 Quaternion Quaternion::operator*(Vector3 other) const {
   Quaternion q = {other.x, other.y, other.z, 0};
   Quaternion result = *this * q;
@@ -177,4 +185,65 @@ Quaternion Quaternion::axisAngle(const Vector3 &axis, float angle) {
   quaternion.z = axis.z * s;
 
   return quaternion;
+}
+Quaternion Quaternion::fromEuler(float x, float y, float z) {
+  float halfX = x * 0.5f;
+  float halfY = y * 0.5f;
+  float halfZ = z * 0.5f;
+
+  float cosX = cosf(halfX);
+  float sinX = sinf(halfX);
+  float cosY = cosf(halfY);
+  float sinY = sinf(halfY);
+  float cosZ = cosf(halfZ);
+  float sinZ = sinf(halfZ);
+
+  Quaternion quaternion;
+  quaternion.w = cosY * cosX * cosZ + sinY * sinX * sinZ;
+  quaternion.x = cosY * sinX * cosZ + sinY * cosX * sinZ;
+  quaternion.y = sinY * cosX * cosZ - cosY * sinX * sinZ;
+  quaternion.z = cosY * cosX * sinZ - sinY * sinX * cosZ;
+
+  return quaternion;
+}
+Vector3 Quaternion::toEuler() const {
+  float sinr_cosp = 2 * (w * x + y * z);
+  float cosr_cosp = 1 - 2 * (x * x + y * y);
+  float roll = std::atan2(sinr_cosp, cosr_cosp);
+
+  float sinp = 2 * (w * y - z * x);
+  float pitch;
+  if (std::fabs(sinp) >= 1) {
+    pitch = std::copysign(3.141592653589793238f / 2, sinp);
+  } else {
+    pitch = std::asin(sinp);
+  }
+
+  float siny_cosp = 2 * (w * z + x * y);
+  float cosy_cosp = 1 - 2 * (y * y + z * z);
+  float yaw = std::atan2(siny_cosp, cosy_cosp);
+
+  return {roll, pitch, yaw};
+}
+void Quaternion::toMatrix(float *matrix) const {
+  // Assuming matrix is a 4x4 matrix in row-major order
+  matrix[0] = 1 - 2 * (y * y + z * z);
+  matrix[1] = 2 * (x * y - z * w);
+  matrix[2] = 2 * (x * z + y * w);
+  matrix[3] = 0;
+
+  matrix[4] = 2 * (x * y + z * w);
+  matrix[5] = 1 - 2 * (x * x + z * z);
+  matrix[6] = 2 * (y * z - x * w);
+  matrix[7] = 0;
+
+  matrix[8] = 2 * (x * z - y * w);
+  matrix[9] = 2 * (y * z + x * w);
+  matrix[10] = 1 - 2 * (x * x + y * y);
+  matrix[11] = 0;
+
+  matrix[12] = 0;
+  matrix[13] = 0;
+  matrix[14] = 0;
+  matrix[15] = 1;
 }

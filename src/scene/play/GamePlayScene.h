@@ -5,11 +5,13 @@
 #pragma once
 #include "../Scene.h"
 #include "../../bms_parser.hpp"
+#include "NoteObject.h"
 class GamePlayScene : public Scene {
 private:
   bms_parser::Chart *chart;
 
 public:
+  NoteObject testNote;
   GamePlayScene() = delete;
   explicit GamePlayScene(ApplicationContext &context, bms_parser::Chart *chart)
       : Scene(context) {
