@@ -1,1 +1,2 @@
-target_sources(main PRIVATE GamePlayScene.cpp MainMenuScene.cpp SceneManager.cpp)
+target_sources(main PRIVATE MainMenuScene.cpp SceneManager.cpp)
+add_subdirectory(play)

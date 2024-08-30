@@ -8,7 +8,7 @@
 #include "../targets.h"
 #include "../video/transcode.h"
 #include "../view/Button.h"
-#include "GamePlayScene.h"
+#include "play/GamePlayScene.h"
 #ifdef _WIN32
 #include <windows.h>
 
