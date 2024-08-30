@@ -71,6 +71,7 @@ void MainMenuScene::CheckEntries(ApplicationContext &context,
                 << std::endl;
       // get input from stdin
       std::cout << "Failed to open folder select dialog.\n";
+
       while (folder.empty()) {
         std::cout << "Enter bms folder path: ";
         std::cin >> folder;
@@ -89,12 +90,17 @@ void MainMenuScene::CheckEntries(ApplicationContext &context,
         if (!test)
           folder = "";
       }
+
+      if (folder.empty()) {
+        return;
+      }
     } else {
       folder = folder_c;
     }
     std::filesystem::path path(folder);
     dbHelper.InsertEntry(db, path);
 #endif
+    entries = dbHelper.SelectAllEntries(db);
   }
   LoadCharts(dbHelper, db, entries, scene, context.quitFlag);
   dbHelper.Close(db);

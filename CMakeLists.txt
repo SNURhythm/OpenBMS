@@ -86,6 +86,8 @@ if(WIN32)
     file(GLOB DLLS ${LIB_DIR}/win32/*.dll)
     set(VLC_PLUGINS_TAR libvlcplugins/win32.tar.gz)
     set(EXTRA_LIBS SndFile::sndfile)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
+
 elseif(UNIX AND NOT APPLE)
     set(CP_ASSETS "cp -r assets ${BUILD_DIR}")
     set(SDL2_LIB SDL2)
