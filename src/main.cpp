@@ -72,10 +72,6 @@ static const uint16_t cubeTriList[] = {
 int rendering::window_width = 800;
 int rendering::window_height = 600;
 int main(int argv, char **args) {
-//  std::vector<short> pcm = decodeAudioToPCM(L"assets/audio/sample.wav");
-//  // print
-//  std::cout << "PCM size: " << pcm.size() * sizeof(short) << " bytes"
-//            << std::endl;
   SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
   SDL_SetHint(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, "1");
   // print bgfx version
@@ -94,7 +90,6 @@ int main(int argv, char **args) {
             << static_cast<int>(linked.minor) << "."
             << static_cast<int>(linked.patch) << std::endl;
 
-
 #if TARGET_OS_OSX
   setSmoothScrolling(true);
   const char *runpath = args[0];
@@ -107,7 +102,7 @@ int main(int argv, char **args) {
   using std::cerr;
   using std::endl;
 
-// print libvlc version
+  // print libvlc version
   std::cout << libvlc_get_version();
   // vlc instance
   std::cout << "VLC init..." << std::endl;
@@ -119,12 +114,11 @@ int main(int argv, char **args) {
     return EXIT_FAILURE;
   }
 
-
   rendering::window_width = 1280;
   rendering::window_height = 720;
   SDL_Window *win = SDL_CreateWindow(
-      "OpenBMS", 100, 100, rendering::window_width,
-      rendering::window_height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+      "OpenBMS", 100, 100, rendering::window_width, rendering::window_height,
+      SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
   // this is intended to get actual window size on mobile devices
   SDL_GetWindowSize(win, &rendering::window_width, &rendering::window_height);
   SDL_Log("Window size: %d x %d", rendering::window_width,
@@ -146,8 +140,8 @@ int main(int argv, char **args) {
   SDL_VERSION(&wmi.version);
   printf("SDL_major: %d, SDL_minor: %d, SDL_patch: %d\n", wmi.version.major,
          wmi.version.minor, wmi.version.patch);
-         wmi.version.major=2.0;
-         wmi.version.minor=0;
+  wmi.version.major = 2.0;
+  wmi.version.minor = 0;
   if (!SDL_GetWindowWMInfo(win, &wmi)) {
     printf("SDL_SysWMinfo could not be retrieved. SDL_Error: %s\n",
            SDL_GetError());
@@ -170,7 +164,6 @@ int main(int argv, char **args) {
 
   // bgfx::setPlatformData(pd);
 
-
   run();
   bgfx::shutdown();
   if (ren != nullptr) {
@@ -183,7 +176,7 @@ int main(int argv, char **args) {
   return EXIT_SUCCESS;
 }
 
-void run(){
+void run() {
   ApplicationContext context;
   bgfx::setViewMode(0, bgfx::ViewMode::Sequential);
   SceneManager sceneManager(context);
@@ -220,7 +213,7 @@ void run(){
   bgfx::IndexBufferHandle triangleIbh =
       bgfx::createIndexBuffer(bgfx::makeRef(triangleInd, sizeof(triangleInd)));
   rendering::PosColorVertex rectVert[] = {
-      {-100.0f, -100.0f, 0.0f, 0x339933FF},
+      {-100.0f, -100.0f, 100.0f, 0x339933FF},
       {100.0f, -100.0f, 0.0f, 0x993333FF},
       {100.0f, 100.0f, 0.0f, 0x333399FF},
       {-100.0f, 100.0f, 0.0f, 0x993399FF},
@@ -235,12 +228,12 @@ void run(){
   // We will use this to reference where we're drawing
   // This is set once to determine the clear color to use on starting a new
   // frame
-  bgfx::setViewClear(rendering::ui_view, BGFX_CLEAR_DEPTH,
-                     0x30303000); // Clear to dark gray
-  bgfx::setViewClear(rendering::bga_view, BGFX_CLEAR_COLOR,
-                     0x30303000); // Clear to dark gray
-  bgfx::setViewClear(rendering::main_view, BGFX_CLEAR_DEPTH | BGFX_CLEAR_COLOR,
-                     0x20202000, 1.0f, 0);
+  bgfx::setViewClear(rendering::clear_view, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
+                     0x00000000);
+  bgfx::setViewClear(rendering::ui_view, BGFX_CLEAR_DEPTH, 0x00000000);
+  bgfx::setViewClear(rendering::bga_view, BGFX_CLEAR_DEPTH, 0x00000000);
+  bgfx::setViewClear(rendering::main_view, BGFX_CLEAR_DEPTH, 0x00000000, 1.0f,
+                     0);
   // This is set to determine the size of the drawable surface
   bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
                     rendering::window_height);
@@ -249,11 +242,13 @@ void run(){
   auto program =
       rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
 
-//  VideoPlayer videoPlayer;
-//  videoPlayer.loadVideo("assets/video/sample.mp4");
-//  videoPlayer.viewWidth = rendering::window_width;
-//  videoPlayer.viewHeight = rendering::window_height;
-//  videoPlayer.play();
+  //  VideoPlayer videoPlayer;
+  //  videoPlayer.loadVideo("assets/video/sample.mp4");
+  //  videoPlayer.viewWidth = rendering::window_width;
+  //  videoPlayer.viewHeight = rendering::window_height;
+  //  videoPlayer.play();
+  resetViewTransform();
+
   while (!quit) {
 
     // SDL_RenderCopy(ren, tex, nullptr, nullptr);
@@ -283,6 +278,7 @@ void run(){
         bgfx::reset(rendering::window_width, rendering::window_height);
         SDL_Log("Window size: %d x %d", rendering::window_width,
                 rendering::window_height);
+        resetViewTransform();
       }
     }
     sceneManager.update(deltaTime);
@@ -290,20 +286,13 @@ void run(){
     //    bgfx::reset(rendering::window_width, rendering::window_height);
     // SDL_Log("Window size: %d x %d", rendering::window_width,
     //         rendering::window_height);
+    // clear color
+    bgfx::touch(rendering::clear_view);
+    bgfx::submit(rendering::clear_view, program);
     bgfx::touch(rendering::ui_view);
     bgfx::touch(rendering::bga_view);
-    // ortho
-    float ortho[16];
-    bx::mtxOrtho(ortho, 0.0f, rendering::window_width,
-                 rendering::window_height, 0.0f, 0.0f, 100.0f, 0.0f,
-                 bgfx::getCaps()->homogeneousDepth);
 
-    bgfx::setViewTransform(rendering::ui_view, nullptr, ortho);
-    bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
-                      rendering::window_height);
-    bgfx::setViewTransform(rendering::bga_view, nullptr, ortho);
-    bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
-                      rendering::window_height);
+    bgfx::submit(rendering::clear_view, program);
     sceneManager.render();
 
     // shift left by 1
@@ -329,27 +318,14 @@ void run(){
     bgfx::setVertexBuffer(0, rectVbh);
     bgfx::setIndexBuffer(rectIbh);
     bgfx::submit(rendering::ui_view, program);
-    // bgfx::frame();
 
     // draw cube
-    // bgfx::touch(rendering::main_view);
-    bx::Vec3 at = {0.0f, 0.0f, 0.0f};
-    bx::Vec3 eye = {0.0f, 2.0f, -5.0f};
-    float viewMtx[16];
-    bx::mtxLookAt(viewMtx, eye, at);
-    float projMtx[16];
-    bx::mtxProj(projMtx, 60.0f,
-                float(rendering::window_width) /
-                    float(rendering::window_height),
-                0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-    bgfx::setViewTransform(rendering::main_view, viewMtx, projMtx);
-    bgfx::setViewRect(rendering::main_view, 0, 0, rendering::window_width,
-                      rendering::window_height);
+    bgfx::touch(rendering::main_view);
+
     bgfx::setVertexBuffer(0, vbh);
     bgfx::setIndexBuffer(ibh);
     bgfx::setState(BGFX_STATE_DEFAULT);
     bgfx::submit(rendering::main_view, program);
-
 
     bgfx::frame();
     sceneManager.handleDeferred();
@@ -358,4 +334,32 @@ void run(){
   sceneManager.cleanup();
   bgfx::destroy(vbh);
   bgfx::destroy(ibh);
+}
+
+void resetViewTransform() {
+  float ortho[16];
+  bx::mtxOrtho(ortho, 0.0f, rendering::window_width, rendering::window_height,
+               0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
+
+  bgfx::setViewTransform(rendering::ui_view, nullptr, ortho);
+  bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
+                    rendering::window_height);
+  bgfx::setViewTransform(rendering::bga_view, nullptr, ortho);
+  bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
+                    rendering::window_height);
+  bgfx::setViewTransform(rendering::clear_view, nullptr, ortho);
+  bgfx::setViewRect(rendering::clear_view, 0, 0, rendering::window_width,
+                    rendering::window_height);
+
+  bx::Vec3 at = {0.0f, 0.0f, 0.0f};
+  bx::Vec3 eye = {0.0f, 2.0f, -5.0f};
+  float viewMtx[16];
+  bx::mtxLookAt(viewMtx, eye, at);
+  float projMtx[16];
+  bx::mtxProj(projMtx, 60.0f,
+              float(rendering::window_width) / float(rendering::window_height),
+              0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+  bgfx::setViewTransform(rendering::main_view, viewMtx, projMtx);
+  bgfx::setViewRect(rendering::main_view, 0, 0, rendering::window_width,
+                    rendering::window_height);
 }

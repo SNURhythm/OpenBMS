@@ -3,14 +3,13 @@
 //
 
 #include "GamePlayScene.h"
-#include "../view/TextView.h"
+#include "../../view/TextView.h"
 void GamePlayScene::init() {
   auto chartNameText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
-  chartNameText->setText("Selected: "+chart->Meta.Title);
+  chartNameText->setText("Selected: " + chart->Meta.Title);
   chartNameText->setPosition(10, 10);
   addView(chartNameText);
 }
 void GamePlayScene::update(float dt) {}
 void GamePlayScene::renderScene() {}
 void GamePlayScene::cleanupScene() {}
-
