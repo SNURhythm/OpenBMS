@@ -4,33 +4,55 @@
 
 #include "NoteObject.h"
 #include "bgfx/bgfx.h"
+#include "bx/math.h"
+#include "../../rendering/common.h"
+#include "../../rendering/ShaderManager.h"
 void NoteObject::render(RenderContext &context) {
-  // draw 2D rectangle in 3D space
+  // Draw a 2D rectangle in 3D space
   bgfx::TransientVertexBuffer tvb{};
   bgfx::TransientIndexBuffer tib{};
 
-  bgfx::VertexLayout layout{};
-  layout.begin().add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float).end();
+  // Define the vertex layout
+  bgfx::VertexLayout layout = rendering::PosColorVertex::ms_decl;
 
   bgfx::allocTransientVertexBuffer(&tvb, 4, layout);
   bgfx::allocTransientIndexBuffer(&tib, 6);
 
-  auto *vertex = (float *)tvb.data;
+  auto *vertices = (rendering::PosColorVertex *)tvb.data;
   auto *index = (uint16_t *)tib.data;
 
-  // 2D rectangle
-  auto &position = this->transform.position;
-  vertex[0] = position.x;
-  vertex[1] = position.y;
-  vertex[2] = position.z;
-  vertex[3] = position.x + 1;
-  vertex[4] = position.y;
-  vertex[5] = position.z;
-  vertex[6] = position.x + 1;
-  vertex[7] = position.y + 1;
-  vertex[8] = position.z;
-  vertex[9] = position.x;
-  vertex[10] = position.y + 1;
-  vertex[11] = position.z;
+  // Define the width and height of the rectangle
+  float width = 1.0f;
+  float height = 0.5f;
+
+  // Define the corners of the rectangle in local space (2D in X-Y plane)
+  vertices[0] = {0.0f, 0.0f, 0.0f, 0xff0000ff};
+  vertices[1] = {width, 0.0f, 0.0f, 0xff00ff00};
+  vertices[2] = {width, height, 0.0f, 0xffff0000};
+  vertices[3] = {0.0f, height, 0.0f, 0xff0000ff};
+
+  // Set up indices for two triangles (quad)
+  index[0] = 0;
+  index[1] = 1;
+  index[2] = 2;
+  index[3] = 2;
+  index[4] = 3;
+  index[5] = 0;
+
+  applyTransform();
+
+  // Set up state (e.g., render state, texture, shaders)
+  uint64_t state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A;
+  bgfx::setState(state);
+
+  // Set the vertex and index buffers
+  bgfx::setVertexBuffer(0, &tvb);
+  bgfx::setIndexBuffer(&tib);
+
+  // Submit the draw call
+  bgfx::submit(
+      rendering::main_view,
+      rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE));
 }
+
 void NoteObject::update(float dt) {}

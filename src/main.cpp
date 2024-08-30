@@ -25,6 +25,7 @@
 #include "audio/AudioWrapper.h"
 #include "video/VideoPlayer.h"
 #include "video/VLCInstance.h"
+#include "view/TextView.h"
 #include <vlcpp/vlc.hpp>
 #ifdef _WIN32
 #include <windows.h>
@@ -248,7 +249,7 @@ void run() {
   //  videoPlayer.viewHeight = rendering::window_height;
   //  videoPlayer.play();
   resetViewTransform();
-
+  TextView fpsText("assets/fonts/notosanscjkjp.ttf", 24);
   while (!quit) {
 
     // SDL_RenderCopy(ren, tex, nullptr, nullptr);
@@ -294,7 +295,13 @@ void run() {
 
     bgfx::submit(rendering::clear_view, program);
     sceneManager.render();
-
+    // render fps, rounded to 2 decimal places
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << 1.0f / deltaTime;
+    fpsText.setText(oss.str());
+    fpsText.setPosition(10, 10);
+    RenderContext renderContext;
+    fpsText.render(renderContext);
     // shift left by 1
     float translate[16];
     bx::mtxTranslate(translate, 200.0f, 500.0f, 0.0f);
@@ -320,12 +327,12 @@ void run() {
     bgfx::submit(rendering::ui_view, program);
 
     // draw cube
-    bgfx::touch(rendering::main_view);
-
-    bgfx::setVertexBuffer(0, vbh);
-    bgfx::setIndexBuffer(ibh);
-    bgfx::setState(BGFX_STATE_DEFAULT);
-    bgfx::submit(rendering::main_view, program);
+    //    bgfx::touch(rendering::main_view);
+    //
+    //    bgfx::setVertexBuffer(0, vbh);
+    //    bgfx::setIndexBuffer(ibh);
+    //    bgfx::setState(BGFX_STATE_DEFAULT);
+    //    bgfx::submit(rendering::main_view, program);
 
     bgfx::frame();
     sceneManager.handleDeferred();
