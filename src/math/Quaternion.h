@@ -39,8 +39,10 @@ public:
   [[nodiscard]] Vector3 getAxis() const;
   [[nodiscard]] float getAngle() const;
   [[nodiscard]] Vector3 getAxisAngle() const;
+  [[nodiscard]] Vector3 toEuler() const;
+  void toMatrix(float *matrix) const;
 
-  static Quaternion lookRotation(const Vector3& forward, const Vector3& up);
-  static Quaternion axisAngle(const Vector3& axis, float angle);
-
+  static Quaternion lookRotation(const Vector3 &forward, const Vector3 &up);
+  static Quaternion axisAngle(const Vector3 &axis, float angle);
+  static Quaternion fromEuler(float x, float y, float z);
 };
