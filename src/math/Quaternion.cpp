@@ -187,9 +187,12 @@ Quaternion Quaternion::axisAngle(const Vector3 &axis, float angle) {
   return quaternion;
 }
 Quaternion Quaternion::fromEuler(float x, float y, float z) {
-  float halfX = x * 0.5f;
-  float halfY = y * 0.5f;
-  float halfZ = z * 0.5f;
+  float xRad = x * 0.0174532925f;
+  float yRad = y * 0.0174532925f;
+  float zRad = z * 0.0174532925f;
+  float halfX = xRad * 0.5f;
+  float halfY = yRad * 0.5f;
+  float halfZ = zRad * 0.5f;
 
   float cosX = cosf(halfX);
   float sinX = sinf(halfX);
@@ -203,7 +206,6 @@ Quaternion Quaternion::fromEuler(float x, float y, float z) {
   quaternion.x = cosY * sinX * cosZ + sinY * cosX * sinZ;
   quaternion.y = sinY * cosX * cosZ - cosY * sinX * sinZ;
   quaternion.z = cosY * cosX * sinZ - sinY * sinX * cosZ;
-
   return quaternion;
 }
 Vector3 Quaternion::toEuler() const {

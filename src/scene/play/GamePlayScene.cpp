@@ -11,16 +11,12 @@ void GamePlayScene::init() {
   addView(chartNameText);
   testNote.color = Color(0x550000FF);
   testNote.transform.position = {0.0f, 0.0f, 0.0f};
-  testNote.transform.rotation =
-      Quaternion::fromEuler(0.0f, 0.0f, 0.0f / 180.0f * 3.14159265359f);
+  testNote.transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
 }
 void GamePlayScene::update(float dt) {
 
   Quaternion targetRotation =
-      testNote.transform.rotation *
-      Quaternion::fromEuler(1.0f / 180.0f * 3.14159265359f,
-                            1.0f / 180.0f * 3.14159265359f,
-                            1.0f / 180.0f * 3.14159265359f);
+      testNote.transform.rotation * Quaternion::fromEuler(1.0f, 1.0f, 1.0f);
 
   float interpolationFactor = dt * 30;
   testNote.transform.rotation =
