@@ -18,7 +18,8 @@ void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
   if (soundDataList == nullptr) {
     return;
   }
-  if (soundDataList->empty()) return;
+  if (soundDataList->empty())
+    return;
 
   memset(pOutput, 0,
          frameCount * sizeof(ma_int16) * pDevice->playback.channels);
@@ -84,9 +85,7 @@ AudioWrapper::AudioWrapper() {
   ma_device_start(&device);
 }
 
-AudioWrapper::~AudioWrapper() {
-  unloadSounds();
-}
+AudioWrapper::~AudioWrapper() { unloadSounds(); }
 
 bool AudioWrapper::loadSound(const path_t &path) {
   SF_INFO sfInfo;
@@ -141,6 +140,7 @@ bool AudioWrapper::playSound(const path_t &path) {
   std::lock_guard<std::mutex> lock(soundDataListMutex);
   if (!ma_device_is_started(&device)) {
     ma_device_start(&device);
+    SDL_Log("Started playback device.");
   }
   if (soundDataIndexMap.find(path) == soundDataIndexMap.end()) {
     if (!loadSound(path)) {
@@ -154,7 +154,12 @@ bool AudioWrapper::playSound(const path_t &path) {
 
   return true;
 }
-
+void AudioWrapper::startDevice() {
+  if (!ma_device_is_started(&device)) {
+    ma_device_start(&device);
+    SDL_Log("Started playback device.");
+  }
+}
 void AudioWrapper::stopSounds() {
   std::lock_guard<std::mutex> lock(soundDataListMutex);
   ma_device_stop(&device);

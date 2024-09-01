@@ -16,9 +16,9 @@ Jukebox::~Jukebox() {
     delete videoPlayer.second;
   }
 }
-void Jukebox::render(){
-  if(currentBga != -1){
-    if(videoPlayerTable.find(currentBga) != videoPlayerTable.end()){
+void Jukebox::render() {
+  if (currentBga != -1) {
+    if (videoPlayerTable.find(currentBga) != videoPlayerTable.end()) {
       auto videoPlayer = videoPlayerTable[currentBga];
       videoPlayer->viewWidth = rendering::window_width;
       videoPlayer->viewHeight = rendering::window_height;
@@ -28,7 +28,7 @@ void Jukebox::render(){
   }
 }
 void Jukebox::loadSounds(bms_parser::Chart &chart,
-                         std::atomic_bool &isCancelled){
+                         std::atomic_bool &isCancelled) {
   parallel_for(chart.WavTable.size(), [&](int start, int end) {
     auto wav = std::next(chart.WavTable.begin(), start);
     for (int i = start; i < end; i++, ++wav) {
@@ -54,7 +54,8 @@ void Jukebox::loadSounds(bms_parser::Chart &chart,
         }
       }
       if (!found) {
-        SDL_Log("Failed to load sound for all extensions: %s", basePath.c_str());
+        SDL_Log("Failed to load sound for all extensions: %s",
+                basePath.c_str());
       }
     }
   });
@@ -86,7 +87,8 @@ void Jukebox::loadSounds(bms_parser::Chart &chart,
     }
   });
 }
-void Jukebox::loadBMPs(bms_parser::Chart &chart, std::atomic_bool &isCancelled) {
+void Jukebox::loadBMPs(bms_parser::Chart &chart,
+                       std::atomic_bool &isCancelled) {
   parallel_for(chart.BmpTable.size(), [&](int start, int end) {
     auto bmp = std::next(chart.BmpTable.begin(), start);
     for (int i = start; i < end; i++, ++bmp) {
@@ -107,9 +109,10 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart, std::atomic_bool &isCancelled) 
         }
         // calculate hash of base path
         auto pathHash = bms_parser::md5(basePath.string());
-        auto fileName = pathHash+"-" + std::to_string(bmp->first) + ".mp4";
-        auto transcodedPath = (Utils::GetDocumentsPath("temp")/fileName).string();
-        if(!std::filesystem::exists(transcodedPath)) {
+        auto fileName = pathHash + "-" + std::to_string(bmp->first) + ".mp4";
+        auto transcodedPath =
+            (Utils::GetDocumentsPath("temp") / fileName).string();
+        if (!std::filesystem::exists(transcodedPath)) {
           // mkdir
           std::filesystem::create_directories(Utils::GetDocumentsPath("temp"));
           int result = transcode(path.string().c_str(), transcodedPath.c_str(),
@@ -124,7 +127,8 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart, std::atomic_bool &isCancelled) 
         if (videoPlayer->loadVideo(transcodedPath)) {
           videoPlayerTable[bmp->first] = videoPlayer;
 
-          SDL_Log("video width: %f, video height: %f", videoPlayer->viewWidth, videoPlayer->viewHeight);
+          SDL_Log("video width: %f, video height: %f", videoPlayer->viewWidth,
+                  videoPlayer->viewHeight);
 
           found = true;
           SDL_Log("Loaded video to id: %d", bmp->first);
@@ -204,7 +208,7 @@ void Jukebox::schedule(bms_parser::Chart &chart,
     for (auto &timeline : measure->TimeLines) {
       if (isCancelled)
         return;
-      if(timeline->BgaBase != -1){
+      if (timeline->BgaBase != -1) {
         bmpQueue.emplace(timeline->Timing, timeline->BgaBase);
       }
       std::vector<std::pair<long long, int>> notes;
@@ -233,6 +237,7 @@ void Jukebox::schedule(bms_parser::Chart &chart,
 void Jukebox::play() {
   if (playThread.joinable())
     playThread.join();
+  audio.startDevice();
   isPlaying = true;
   startPos = std::chrono::high_resolution_clock::now();
   auto hz = 8000;
@@ -243,7 +248,7 @@ void Jukebox::play() {
       auto positionMicro =
           std::chrono::duration_cast<std::chrono::microseconds>(position)
               .count();
-      if(!audioQueue.empty()) {
+      if (!audioQueue.empty()) {
         if (positionMicro >= audioQueue.front().first) {
           SDL_Log("Playing sound at %lld; id: %d; actual time: %lld",
                   audioQueue.front().first, audioQueue.front().second,
@@ -252,19 +257,21 @@ void Jukebox::play() {
           audioQueue.pop();
         }
       }
-      if(!bmpQueue.empty()) {
+      if (!bmpQueue.empty()) {
         if (positionMicro >= bmpQueue.front().first) {
           SDL_Log("Playing video at %lld; id: %d; actual time: %lld",
                   bmpQueue.front().first, bmpQueue.front().second,
                   positionMicro);
-          if(videoPlayerTable.find(bmpQueue.front().second) != videoPlayerTable.end()){
+          if (videoPlayerTable.find(bmpQueue.front().second) !=
+              videoPlayerTable.end()) {
             auto videoPlayer = videoPlayerTable[bmpQueue.front().second];
             videoPlayer->play();
             videoPlayer->viewWidth = rendering::window_width;
             videoPlayer->viewHeight = rendering::window_height;
             currentBga = bmpQueue.front().second;
           } else {
-            SDL_Log("Video player not found for id: %d", bmpQueue.front().second);
+            SDL_Log("Video player not found for id: %d",
+                    bmpQueue.front().second);
           }
           bmpQueue.pop();
         }

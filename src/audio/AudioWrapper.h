@@ -18,8 +18,8 @@ struct SoundData {
   size_t resampledFrameCount;
 };
 struct UserData {
-  std::mutex* mutex;
-  std::vector<std::shared_ptr<SoundData>>* soundDataList;
+  std::mutex *mutex;
+  std::vector<std::shared_ptr<SoundData>> *soundDataList;
 };
 class AudioWrapper {
 public:
@@ -28,6 +28,7 @@ public:
   bool loadSound(const path_t &path);
   void preloadSounds(const std::vector<path_t> &paths);
   bool playSound(const path_t &path);
+  void startDevice();
   void stopSounds();
   void unloadSound(const path_t &path);
   void unloadSounds();
