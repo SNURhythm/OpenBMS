@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.13)
 include(ExternalProject)
-project(MyProject VERSION 1.0 LANGUAGES C CXX)
+project(OpenBMS VERSION 1.0 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 #find_package(bgfx CONFIG REQUIRED)
 set(BUILD_PROGRAMS OFF)
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,25 +23,25 @@ include_directories(bgfx/bx/include)
 include_directories(bgfx/bimg/include)
 include_directories(bgfx/bgfx/3rdparty)
 #include_directories(libsndfile/include)
-if(MINGW)
+if (MINGW)
     include_directories(bgfx/bx/include/compat/mingw)
-endif()
+endif ()
 
-if(UNIX AND NOT APPLE)
+if (UNIX AND NOT APPLE)
     include_directories(bgfx/bx/include/compat/linux)
-endif()
+endif ()
 
-if(APPLE AND NOT IOS)
+if (APPLE AND NOT IOS)
     include_directories(bgfx/bx/include/compat/osx)
-endif()
+endif ()
 
-if(IOS)
+if (IOS)
     include_directories(bgfx/bx/include/compat/ios)
-endif()
+endif ()
 
-if(MSVC)
+if (MSVC)
     include_directories(bgfx/bx/include/compat/msvc)
-endif()
+endif ()
 
 # Source directory
 set(SRC_DIR src)
@@ -64,14 +64,14 @@ set(FFMPEG_LIBS
         x264
 )
 # Platform-specific settings
-if(WIN32)
+if (WIN32)
     find_package(SndFile CONFIG REQUIRED)
     set(CP_ASSETS "xcopy /s /i assets ${BUILD_DIR}\\assets /Y")
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         add_definitions(-DAMD64)
-    else()
+    else ()
         add_definitions(-DIA32)
-    endif()
+    endif ()
     link_directories(${LIB_DIR}/win32)
 
     find_library(SDL2_LIB SDL2 PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
@@ -88,7 +88,7 @@ if(WIN32)
     set(EXTRA_LIBS SndFile::sndfile)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
-elseif(UNIX AND NOT APPLE)
+elseif (UNIX AND NOT APPLE)
     set(CP_ASSETS "cp -r assets ${BUILD_DIR}")
     set(SDL2_LIB SDL2)
     set(SDL2MAIN_LIB SDL2main)
@@ -100,7 +100,7 @@ elseif(UNIX AND NOT APPLE)
     set(VLC_PLUGINS_TAR "")
     set(EXTRA_LIBS X11 sndfile)
     add_definitions(-DSDL_VIDEO_DRIVER_X11=ON)
-elseif(APPLE)
+elseif (APPLE)
     link_directories(${LIB_DIR}/darwin)
     find_package(SndFile CONFIG REQUIRED)
     set(CP_ASSETS "cp -r assets ${BUILD_DIR}")
@@ -127,24 +127,24 @@ elseif(APPLE)
     find_library(COCOA Cocoa)
     find_library(METAL Metal)
     find_library(SECURITY Security)
-    if(NOT FOUNDATION)
+    if (NOT FOUNDATION)
         message(FATAL_ERROR "Foundation framework not found")
-    else()
-      message(STATUS "Foundation framework found: ${FOUNDATION}")
-    endif()
-    if(NOT FFMPEG_LIBS)
-      message(FATAL_ERROR "FFmpeg libraries not found")
-    else()
-      message(STATUS "FFmpeg libraries found: ${FFMPEG_LIBS}")
-    endif()
+    else ()
+        message(STATUS "Foundation framework found: ${FOUNDATION}")
+    endif ()
+    if (NOT FFMPEG_LIBS)
+        message(FATAL_ERROR "FFmpeg libraries not found")
+    else ()
+        message(STATUS "FFmpeg libraries found: ${FFMPEG_LIBS}")
+    endif ()
     # Add the Foundation framework to the linking process
     set(EXTRA_LIBS ${EXTRA_LIBS} ${FOUNDATION} ${AUDIO_TOOLBOX} ${VIDEO_TOOLBOX} ${CORE_AUDIO} ${AV_KIT} ${CORE_IMAGE} ${CORE_MEDIA} ${ACCELERATE} ${OPENGL} ${OPENCL} ${COCOA} ${METAL} ${SECURITY} SndFile::sndfile bz2 z iconv)
-elseif(IOS)
+elseif (IOS)
     # TODO
     find_library(UIKIT UIKit)
     find_library(FOUNDATION Foundation)
     target_link_libraries(main PRIVATE ${UIKIT} ${FOUNDATION})
-endif()
+endif ()
 
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
 add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
@@ -156,31 +156,31 @@ target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${
 
 # Custom target for copying assets
 add_custom_command(
-    TARGET main POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
+        TARGET main POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
 )
 
 # Copy *.dll / *.so / *.dylib files
-if(NOT "${DLLS}" STREQUAL "")
+if (NOT "${DLLS}" STREQUAL "")
     add_custom_command(
-        TARGET main PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+            TARGET main PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     )
-endif()
+endif ()
 
 # Copy VLC plugins
-if(NOT "${VLC_PLUGINS_TAR}" STREQUAL "")
+if (NOT "${VLC_PLUGINS_TAR}" STREQUAL "")
     add_custom_command(
-        TARGET main POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/${VLC_PLUGINS_TAR}
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+            TARGET main POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/${VLC_PLUGINS_TAR}
+            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     )
-endif()
+endif ()
 
 # Copy shaders
 add_custom_command(
-    TARGET main POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
+        TARGET main POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
 )
 
 # Installation rules
