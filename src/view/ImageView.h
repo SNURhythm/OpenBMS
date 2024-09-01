@@ -30,5 +30,4 @@ public:
   void render(RenderContext &context) override;
   static void dropCache(const path_t &path);
   static void dropAllCache();
-
 };

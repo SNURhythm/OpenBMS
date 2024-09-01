@@ -32,8 +32,9 @@ private:
   std::queue<std::pair<long long, int>> audioQueue;
   std::queue<std::pair<long long, int>> bmpQueue;
   std::unordered_map<int, path_t> wavTableAbs;
-  std::unordered_map<int, VideoPlayer*> videoPlayerTable;
+  std::unordered_map<int, VideoPlayer *> videoPlayerTable;
   int currentBga = -1;
   std::vector<std::string> audioExtensions = {"flac", "wav", "ogg", "mp3"};
-  std::vector<std::string> videoExtensions = { "mp4", "wmv", "m4v", "webm", "mpg", "mpeg", "m1v", "m2v", "avi"};
+  std::vector<std::string> videoExtensions = {
+      "mp4", "wmv", "m4v", "webm", "mpg", "mpeg", "m1v", "m2v", "avi"};
 };
