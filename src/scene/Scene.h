@@ -13,7 +13,7 @@ public:
   Scene() = delete;
   Scene(ApplicationContext &context) : context(context) {}
   std::vector<View *> views;
-  std::map<Uint64, std::pair<Uint64,std::vector< std::function<void()>>>>
+  std::map<Uint64, std::pair<Uint64, std::vector<std::function<void()>>>>
       deferred;
   virtual void init() = 0; // Initialize the scene
   EventHandleResult handleEvents(SDL_Event &event) {
@@ -23,12 +23,14 @@ public:
     return {};
   }
   virtual void update(float dt) = 0; // Update the scene logic
-  void defer(const std::function<void()> &func, Uint64 delay, bool shouldWaitFrame = false) {
+  void defer(const std::function<void()> &func, Uint64 delay,
+             bool shouldWaitFrame = false) {
     Uint64 time = SDL_GetTicks64() + delay;
     if (deferred.find(time) == deferred.end()) {
       deferred[time] = {};
     }
-    deferred[time].first = shouldWaitFrame?context.currentFrame+1:context.currentFrame;
+    deferred[time].first =
+        shouldWaitFrame ? context.currentFrame + 1 : context.currentFrame;
     deferred[time].second.push_back(func);
   }
   void handleDeferred() {
@@ -37,7 +39,7 @@ public:
     auto it = deferred.begin();
     while (it != deferred.end()) {
       if (it->first <= time) {
-        if(it->second.first<=context.currentFrame) {
+        if (it->second.first <= context.currentFrame) {
           SDL_Log("Handling deferred");
           for (const auto &func : it->second.second) {
             func();

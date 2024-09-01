@@ -273,7 +273,8 @@ void ChartDBHelper::SearchChartMeta(
       "total_scratch_notes,"
       "total_backspin_notes"
       " FROM chart_meta WHERE rtrim(title || ' ' || subtitle || ' ' || artist "
-      "|| ' ' || sub_artist || ' ' || genre) LIKE @text GROUP BY sha256 ORDER BY title";
+      "|| ' ' || sub_artist || ' ' || genre) LIKE @text GROUP BY sha256 ORDER "
+      "BY title";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
   if (rc != SQLITE_OK) {

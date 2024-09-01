@@ -113,7 +113,6 @@ LongNote::~LongNote() {
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 namespace bms_parser {
 Measure::~Measure() {
   for (const auto &Timeline : TimeLines) {
@@ -1791,4 +1790,3 @@ std::string md5(const std::string str) {
   return md5.hexdigest();
 }
 } // namespace bms_parser
-

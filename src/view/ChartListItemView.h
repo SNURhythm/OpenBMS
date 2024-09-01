@@ -15,7 +15,7 @@ public:
   void setTitle(const std::string &title);
   void setArtist(const std::string &artist);
   void setLevel(const std::string &level);
-  void setBanner(const path_t& path);
+  void setBanner(const path_t &path);
   void unsetBanner();
   void onSelected() override;
   void onUnselected() override;

@@ -30,7 +30,8 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
   levelView->setText(level);
   levelView->setAlign(TextView::TextAlign::RIGHT);
   levelView->setVAlign(TextView::TextVAlign::MIDDLE);
-  rootLayout->addView(bannerImage, {static_cast<int>(height/80.0*300.0), height, 0, 0, 8});
+  rootLayout->addView(
+      bannerImage, {static_cast<int>(height / 80.0 * 300.0), height, 0, 0, 8});
   rootLayout->addView(textLayout, {0, 0, 1});
   rootLayout->addView(levelView, {100, 20, 0});
   rootLayout->setPadding({0, 0, 0, 0});
@@ -52,9 +53,7 @@ void ChartListItemView::setBanner(const path_t &path) {
   bannerImage->setImage(path);
 }
 
-void ChartListItemView::unsetBanner() {
-  bannerImage->freeImage();
-}
+void ChartListItemView::unsetBanner() { bannerImage->freeImage(); }
 
 void ChartListItemView::render(RenderContext &context) {
   // SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);

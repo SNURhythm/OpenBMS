@@ -9,7 +9,7 @@ class VideoPlayer {
 public:
   VideoPlayer();
   ~VideoPlayer();
-  bool loadVideo(const std::string& videoPath);
+  bool loadVideo(const std::string &videoPath);
   void update();
   void render();
   void play();
@@ -20,14 +20,15 @@ public:
   float viewX = 0.0f;
   float viewY = 0.0f;
   float fps = 60.0f;
+
 private:
-  void* lock(void** planes);
-  void unlock(void* picture, void* const* planes);
-  void display(void* picture);
+  void *lock(void **planes);
+  void unlock(void *picture, void *const *planes);
+  void display(void *picture);
 
   void updateVideoTexture(unsigned int width, unsigned int height);
   std::mutex videoFrameMutex;
-  void* videoFrameData;
+  void *videoFrameData;
   unsigned int videoFrameWidth;
   unsigned int videoFrameHeight;
   int currentFrame = 0;
@@ -35,7 +36,6 @@ private:
   bgfx::TextureHandle videoTexture = BGFX_INVALID_HANDLE;
   bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
 
-  VLC::MediaPlayer* mediaPlayer = nullptr;
+  VLC::MediaPlayer *mediaPlayer = nullptr;
   unsigned int getPrecisePosition();
 };
-

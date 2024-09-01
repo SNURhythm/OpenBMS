@@ -294,27 +294,33 @@ void TextInputBox::onSelected() { isSelected = true; }
 
 void TextInputBox::onUnselected() { isSelected = false; }
 
-size_t TextInputBox::onTextChanged(std::function<void(const std::string &)> callback) {
+size_t
+TextInputBox::onTextChanged(std::function<void(const std::string &)> callback) {
   onTextChangedCallbacks.push_back(callback);
   return onTextChangedCallbacks.size() - 1;
 }
 
-void TextInputBox::removeOnTextChanged(std::function<void(const std::string &)> callback) {
+void TextInputBox::removeOnTextChanged(
+    std::function<void(const std::string &)> callback) {
   for (size_t i = 0; i < onTextChangedCallbacks.size(); i++) {
-    if (onTextChangedCallbacks[i].target<void(const std::string &)>() == callback.target<void(const std::string &)>()) {
+    if (onTextChangedCallbacks[i].target<void(const std::string &)>() ==
+        callback.target<void(const std::string &)>()) {
       onTextChangedCallbacks.erase(onTextChangedCallbacks.begin() + i);
     }
   }
 }
 
-size_t TextInputBox::onSubmit(std::function<void(const std::string &)> callback) {
+size_t
+TextInputBox::onSubmit(std::function<void(const std::string &)> callback) {
   onSubmitCallbacks.push_back(callback);
   return onSubmitCallbacks.size() - 1;
 }
 
-void TextInputBox::removeOnSubmit(std::function<void(const std::string &)> callback) {
+void TextInputBox::removeOnSubmit(
+    std::function<void(const std::string &)> callback) {
   for (size_t i = 0; i < onSubmitCallbacks.size(); i++) {
-    if (onSubmitCallbacks[i].target<void(const std::string &)>() == callback.target<void(const std::string &)>()) {
+    if (onSubmitCallbacks[i].target<void(const std::string &)>() ==
+        callback.target<void(const std::string &)>()) {
       onSubmitCallbacks.erase(onSubmitCallbacks.begin() + i);
     }
   }

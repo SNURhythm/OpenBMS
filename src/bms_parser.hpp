@@ -15,7 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 namespace bms_parser {
 class TimeLine;
 
@@ -61,7 +60,6 @@ public:
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  *
  */
@@ -92,7 +90,6 @@ public:
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include <vector>
 
 /**
@@ -119,7 +116,7 @@ public:
   double Pos = 0;
 
   explicit TimeLine(int lanes, bool metaOnly);
-  
+
   TimeLine *SetNote(int lane, Note *note);
 
   TimeLine *SetInvisibleNote(int lane, Note *note);
@@ -150,7 +147,6 @@ public:
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  *
  */
@@ -180,7 +176,6 @@ public:
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include <filesystem>
 #include <string>
@@ -289,7 +284,6 @@ public:
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  *
  */
@@ -332,7 +326,6 @@ public:
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include <atomic>
 #include <filesystem>
@@ -2667,4 +2660,3 @@ private:
 std::string md5(const std::string str);
 } // namespace bms_parser
 #endif
-

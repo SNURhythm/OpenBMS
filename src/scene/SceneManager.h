@@ -7,7 +7,6 @@ class EventHandleResult;
 class ApplicationContext;
 class SceneManager {
 private:
-
   ApplicationContext &context;
 
 public:

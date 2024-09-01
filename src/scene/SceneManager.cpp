@@ -43,6 +43,4 @@ void SceneManager::cleanup() {
     currentScene.reset();
   }
 }
-SceneManager::~SceneManager() {
-  cleanup();
-}
+SceneManager::~SceneManager() { cleanup(); }
