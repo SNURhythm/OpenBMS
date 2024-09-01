@@ -6,11 +6,11 @@
 #include "View.h"
 #include <functional>
 #include <string>
-class Button: public View {
+class Button : public View {
 private:
-
   std::function<void()> onClickListener;
   View *contentView;
+
 public:
   Button(int x, int y, int width, int height);
   ~Button() override;

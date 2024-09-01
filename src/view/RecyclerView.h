@@ -117,7 +117,7 @@ public:
     context.scissor = scissors;
     // flush rendering
     bgfx::setScissor();
-    if(items.size() * itemHeight < this->getHeight()) {
+    if (items.size() * itemHeight < this->getHeight()) {
       return;
     }
     rendering::PosColorVertex vertices[] = {
@@ -420,7 +420,7 @@ private:
     int startIndex = getStartIndex();
     int endIndex = getEndIndex();
     // if all items are visible
-    if(items.size() * itemHeight < this->getHeight()) {
+    if (items.size() * itemHeight < this->getHeight()) {
       startIndex = 0;
       endIndex = items.size() - 1;
       scrollOffset = 0;

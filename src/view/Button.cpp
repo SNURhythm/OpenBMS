@@ -28,9 +28,7 @@ void Button::setContentView(View *view) {
   view->setPosition(getX(), getY());
   view->setSize(getWidth(), getHeight());
 }
-Button::~Button() {
-  delete contentView;
-}
+Button::~Button() { delete contentView; }
 void Button::onLayout() {
   if (contentView) {
     contentView->setPosition(getX(), getY());

@@ -16,4 +16,4 @@ typedef std::string path_t;
 #define fspath_to_path_t(fspath) (fspath.string())
 #endif
 
-std::string path_t_to_utf8(const path_t& input);
+std::string path_t_to_utf8(const path_t &input);
