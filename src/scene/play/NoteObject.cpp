@@ -26,10 +26,11 @@ void NoteObject::render(RenderContext &context) {
   float height = 0.5f;
 
   // Define the corners of the rectangle in local space (2D in X-Y plane)
-  vertices[0] = {0.0f, 0.0f, 0.0f, 0xff0000ff};
-  vertices[1] = {width, 0.0f, 0.0f, 0xff00ff00};
-  vertices[2] = {width, height, 0.0f, 0xffff0000};
-  vertices[3] = {0.0f, height, 0.0f, 0xff0000ff};
+  uint32_t abgr = color.toABGR();
+  vertices[0] = {0.0f, 0.0f, 0.0f, abgr};
+  vertices[1] = {width, 0.0f, 0.0f, abgr};
+  vertices[2] = {width, height, 0.0f, abgr};
+  vertices[3] = {0.0f, height, 0.0f, abgr};
 
   // Set up indices for two triangles (quad)
   index[0] = 0;
@@ -42,7 +43,8 @@ void NoteObject::render(RenderContext &context) {
   applyTransform();
 
   // Set up state (e.g., render state, texture, shaders)
-  uint64_t state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A;
+  uint64_t state =
+      BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA;
   bgfx::setState(state);
 
   // Set the vertex and index buffers
