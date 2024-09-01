@@ -9,6 +9,7 @@ void GamePlayScene::init() {
   chartNameText->setText("Selected: " + chart->Meta.Title);
   chartNameText->setPosition(10, 10);
   addView(chartNameText);
+  testNote.color = Color(0x550000FF);
   testNote.transform.position = {0.0f, 0.0f, 0.0f};
   testNote.transform.rotation =
       Quaternion::fromEuler(0.0f, 0.0f, 0.0f / 180.0f * 3.14159265359f);
