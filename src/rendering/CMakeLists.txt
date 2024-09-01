@@ -1,1 +1,1 @@
-target_sources(main PRIVATE common.cpp)
+target_sources(main PRIVATE common.cpp Color.cpp)
