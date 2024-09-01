@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 namespace bms_parser {
 class TimeLine;
 
@@ -26,11 +27,11 @@ public:
   bool IsPlayed = false;
   bool IsDead = false;
   long long PlayedTime = 0;
-  TimeLine *Timeline;
+  TimeLine *Timeline = nullptr;
 
   // private Note nextNote;
 
-  Note(int Wav);
+  explicit Note(int Wav);
 
   void Play(long long Time);
 
@@ -43,6 +44,7 @@ public:
   virtual bool IsLandmineNote() { return false; }
 };
 } // namespace bms_parser
+
 /*
  * Copyright (C) 2024 VioletXF, khoeun03
  * This program is free software: you can redistribute it and/or modify
@@ -58,6 +60,7 @@ public:
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 /**
  *
@@ -66,12 +69,13 @@ namespace bms_parser {
 class LandmineNote : public Note {
 public:
   float Damage;
-  LandmineNote(float Damage);
-  virtual ~LandmineNote() override;
+  explicit LandmineNote(float Damage);
+  ~LandmineNote() override;
 
-  virtual bool IsLandmineNote() override { return true; }
+  bool IsLandmineNote() override { return true; }
 };
 } // namespace bms_parser
+
 /*
  * Copyright (C) 2024 VioletXF, khoeun03
  * This program is free software: you can redistribute it and/or modify
@@ -87,6 +91,7 @@ public:
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include <vector>
 
@@ -114,7 +119,7 @@ public:
   double Pos = 0;
 
   explicit TimeLine(int lanes, bool metaOnly);
-
+  
   TimeLine *SetNote(int lane, Note *note);
 
   TimeLine *SetInvisibleNote(int lane, Note *note);
@@ -123,11 +128,12 @@ public:
 
   TimeLine *AddBackgroundNote(Note *note);
 
-  double GetStopDuration();
+  [[nodiscard]] double GetStopDuration() const;
 
   ~TimeLine();
 };
 } // namespace bms_parser
+
 /*
  * Copyright (C) 2024 VioletXF, khoeun03
  * This program is free software: you can redistribute it and/or modify
@@ -143,6 +149,7 @@ public:
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 /**
  *
@@ -157,6 +164,7 @@ public:
   ~Measure();
 };
 } // namespace bms_parser
+
 /*
  * Copyright (C) 2024 VioletXF, khoeun03
  * This program is free software: you can redistribute it and/or modify
@@ -173,6 +181,7 @@ public:
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include <filesystem>
 #include <string>
 #include <unordered_map>
@@ -185,12 +194,12 @@ public:
   std::string MD5;
   std::filesystem::path BmsPath;
   std::filesystem::path Folder;
-  std::string Artist = "";
-  std::string SubArtist = "";
+  std::string Artist;
+  std::string SubArtist;
   double Bpm = 0;
-  std::string Genre = "";
-  std::string Title = "";
-  std::string SubTitle = "";
+  std::string Genre;
+  std::string Title;
+  std::string SubTitle;
   int Rank = 3;
   double Total = 100;
   long long PlayLength = 0; // Timing of the last playable note, in microseconds
@@ -216,11 +225,13 @@ public:
   int TotalLandmineNotes = 0;
   int LnMode = 0; // 0: user decides, 1: LN, 2: CN, 3: HCN
 
-  int GetKeyLaneCount() const { return KeyMode; }
-  int GetScratchLaneCount() const { return IsDP ? 2 : 1; }
-  int GetTotalLaneCount() const { return KeyMode + GetScratchLaneCount(); }
+  [[nodiscard]] int GetKeyLaneCount() const { return KeyMode; }
+  [[nodiscard]] int GetScratchLaneCount() const { return IsDP ? 2 : 1; }
+  [[nodiscard]] int GetTotalLaneCount() const {
+    return KeyMode + GetScratchLaneCount();
+  }
 
-  std::vector<int> GetKeyLaneIndices() const {
+  [[nodiscard]] std::vector<int> GetKeyLaneIndices() const {
     switch (KeyMode) {
     case 5:
       return {0, 1, 2, 3, 4};
@@ -235,14 +246,14 @@ public:
     }
   }
 
-  std::vector<int> GetScratchLaneIndices() const {
+  [[nodiscard]] std::vector<int> GetScratchLaneIndices() const {
     if (IsDP) {
       return {7, 15};
     }
     return {7};
   }
 
-  std::vector<int> GetTotalLaneIndices() const {
+  [[nodiscard]] std::vector<int> GetTotalLaneIndices() const {
     std::vector<int> Result;
     Result.insert(Result.end(), GetKeyLaneIndices().begin(),
                   GetKeyLaneIndices().end());
@@ -278,33 +289,34 @@ public:
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 /**
  *
  */
 namespace bms_parser {
 class LongNote : public Note {
 public:
-  LongNote();
-  virtual ~LongNote() override;
+  ~LongNote() override;
   LongNote *Tail;
-  LongNote *Head;
+  LongNote *Head = nullptr;
   bool IsHolding = false;
-  bool IsTail();
-  long long ReleaseTime;
+  [[nodiscard]] bool IsTail() const;
+  long long ReleaseTime{};
 
-  LongNote(int Wav);
+  explicit LongNote(int Wav);
 
-  virtual void Press(long long Time) override;
+  void Press(long long Time) override;
 
   void Release(long long Time);
 
   void MissPress(long long Time);
 
-  virtual void Reset() override;
+  void Reset() override;
 
-  virtual bool IsLongNote() override { return true; }
+  bool IsLongNote() override { return true; }
 };
 } // namespace bms_parser
+
 /*
  * Copyright (C) 2024 VioletXF, khoeun03
  * This program is free software: you can redistribute it and/or modify
@@ -321,6 +333,7 @@ public:
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include <atomic>
 #include <filesystem>
 #include <map>
@@ -333,9 +346,10 @@ namespace bms_parser {
 class Parser {
 public:
   Parser();
-  void SetRandomSeed(int RandomSeed);
-  void Parse(std::filesystem::path path, Chart **Chart, bool addReadyMeasure,
-             bool metaOnly, std::atomic_bool &bCancelled);
+  void SetRandomSeed(unsigned int RandomSeed);
+
+  void Parse(const std::filesystem::path &path, Chart **Chart,
+             bool addReadyMeasure, bool metaOnly, std::atomic_bool &bCancelled);
   ~Parser();
   void Parse(const std::vector<unsigned char> &bytes, Chart **chart,
              bool addReadyMeasure, bool metaOnly, std::atomic_bool &bCancelled);
@@ -351,18 +365,20 @@ private:
   bool UseBase62 = false;
   int Lnobj = -1;
   int Lntype = 1;
-  int Seed;
-  inline int ParseHex(std::string_view Str);
-  inline int ParseInt(std::string_view Str, bool forceBase32 = false);
+  unsigned int Seed;
+  static inline int ParseHex(std::string_view Str);
+  inline int ParseInt(std::string_view Str, bool forceBase32 = false) const;
   void ParseHeader(Chart *Chart, std::string_view cmd, std::string_view Xx,
                    const std::string &Value);
-  inline bool MatchHeader(const std::string_view &str,
-                          const std::string_view &headerUpper);
-  inline int Gcd(int A, int B);
-  inline bool CheckResourceIdRange(int Id);
+  static inline bool MatchHeader(const std::string_view &str,
+                                 const std::string_view &headerUpper);
+  static inline unsigned long long Gcd(unsigned long long A,
+                                       unsigned long long B);
+  inline bool CheckResourceIdRange(int Id) const;
   inline int ToWaveId(Chart *Chart, std::string_view Wav, bool metaOnly);
 };
 } // namespace bms_parser
+
 // https://stackoverflow.com/questions/33165171/c-shiftjis-to-utf8-conversion
 
 #include <string>
@@ -2466,6 +2482,7 @@ static const unsigned char shiftJIS_convTable[25088] = {
     0x00, 0x20, 0x00, 0x20, 0x00, 0x20, 0x00, 0x20,
 };
 } // namespace bms_parser
+
 #include <string>
 #include <vector>
 
@@ -2511,7 +2528,6 @@ class SHA256 {
 protected:
   using uint8 = unsigned char;
   using uint32 = unsigned int;
-  using uint64 = unsigned long long;
 
   const static uint32 sha256_k[];
   static constexpr unsigned int SHA224_256_BLOCK_SIZE = (512 / 8);
@@ -2534,7 +2550,6 @@ std::string sha256(const std::vector<unsigned char> &bytes);
 
 #define SHA2_SHFR(x, n) (x >> n)
 #define SHA2_ROTR(x, n) ((x >> n) | (x << ((sizeof(x) << 3) - n)))
-#define SHA2_ROTL(x, n) ((x << n) | (x >> ((sizeof(x) << 3) - n)))
 #define SHA2_CH(x, y, z) ((x & y) ^ (~x & z))
 #define SHA2_MAJ(x, y, z) ((x & y) ^ (x & z) ^ (y & z))
 #define SHA256_F1(x) (SHA2_ROTR(x, 2) ^ SHA2_ROTR(x, 13) ^ SHA2_ROTR(x, 22))
@@ -2554,6 +2569,7 @@ std::string sha256(const std::vector<unsigned char> &bytes);
            ((uint32) * ((str) + 1) << 16) | ((uint32) * ((str) + 0) << 24);    \
   }
 } // namespace bms_parser
+
 /* MD5
  converted to C++ class by Frank Thilo (thilo@unix-ag.org)
  for bzflag (http://www.bzflag.org)
@@ -2651,3 +2667,4 @@ private:
 std::string md5(const std::string str);
 } // namespace bms_parser
 #endif
+
