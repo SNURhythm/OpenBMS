@@ -15,6 +15,7 @@ public:
   void play();
   void pause();
   void stop();
+  void seek(long long micro);
   float viewWidth = 1920.0f;
   float viewHeight = 1080.0f;
   float viewX = 0.0f;

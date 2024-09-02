@@ -19,5 +19,6 @@ void GamePlayScene::update(float dt) {}
 void GamePlayScene::renderScene() {
   RenderContext renderContext;
   renderer->render(renderContext, context.jukebox.getTimeMicros());
+  context.jukebox.render();
 }
 void GamePlayScene::cleanupScene() {}
