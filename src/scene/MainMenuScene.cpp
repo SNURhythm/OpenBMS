@@ -142,7 +142,8 @@ void MainMenuScene::initView(ApplicationContext &context) {
     if (willStart)
       return;
     auto selectedView = recyclerView->getViewByIndex(idx);
-    SDL_Log("Selected: %s", item.Title.c_str());
+    SDL_Log("Selected: %s; path: %s", item.Title.c_str(),
+            path_t_to_utf8(item.Folder / item.BmsPath).c_str());
     if (selectedView) {
       selectedView->onSelected();
     }
@@ -161,7 +162,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
       context.jukebox.stop();
       previewLoadCancelled = false;
       bms_parser::Parser parser;
-      bms_parser::Chart *chart;
+      bms_parser::Chart *chart = nullptr;
 
       try {
         SDL_Log("Parsing %s", path_t_to_utf8(item.BmsPath).c_str());
@@ -171,6 +172,10 @@ void MainMenuScene::initView(ApplicationContext &context) {
         delete chart;
         SDL_Log("Error parsing %s: %s", path_t_to_utf8(item.BmsPath).c_str(),
                 e.what());
+        return;
+      }
+      if (chart == nullptr) {
+        SDL_Log("Chart is null");
         return;
       }
       selectedChart = chart;

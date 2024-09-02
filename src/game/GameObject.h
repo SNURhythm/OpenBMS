@@ -17,6 +17,7 @@ public:
   GameObject();
   GameObject(Vector3 position, Quaternion rotation, Vector3 scale);
   GameObject(Vector3 position, Quaternion rotation);
+  virtual ~GameObject() = default;
   explicit GameObject(Vector3 position);
   void translate(Vector3 translation);
   void rotate(Quaternion rotation);
@@ -31,6 +32,15 @@ public:
   void lookAt(Vector3 target, Vector3 up);
 
   virtual void update(float dt) = 0;
-  virtual void render(RenderContext &context) = 0;
+  void render(RenderContext &context) {
+    if (visible) {
+      applyTransform();
+      renderImpl(context);
+    }
+  }
   void applyTransform() const;
+  bool visible = true;
+
+private:
+  virtual void renderImpl(RenderContext &context) = 0;
 };

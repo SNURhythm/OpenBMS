@@ -178,7 +178,8 @@ void Jukebox::loadChart(bms_parser::Chart &chart,
   isPlaying = false;
   if (playThread.joinable())
     playThread.join();
-  audioQueue = std::queue<std::pair<long long, int>>();
+  audioList.clear();
+  audioCursor = 0;
   audio.stopSounds();
   audio.unloadSounds();
   wavTableAbs.clear();
@@ -187,7 +188,8 @@ void Jukebox::loadChart(bms_parser::Chart &chart,
     delete videoPlayer.second;
   }
   videoPlayerTable.clear();
-  bmpQueue = std::queue<std::pair<long long, int>>();
+  bmpList.clear();
+  bmpCursor = 0;
   if (isCancelled)
     return;
   loadSounds(chart, isCancelled);
@@ -209,7 +211,7 @@ void Jukebox::schedule(bms_parser::Chart &chart,
       if (isCancelled)
         return;
       if (timeline->BgaBase != -1) {
-        bmpQueue.emplace(timeline->Timing, timeline->BgaBase);
+        bmpList.emplace_back(timeline->Timing, timeline->BgaBase);
       }
       std::vector<std::pair<long long, int>> notes;
       for (auto &note : timeline->Notes) {
@@ -228,7 +230,7 @@ void Jukebox::schedule(bms_parser::Chart &chart,
       for (auto &note : notes) {
         if (isCancelled)
           return;
-        audioQueue.push(note);
+        audioList.push_back(note);
       }
     }
   }
@@ -239,41 +241,38 @@ void Jukebox::play() {
     playThread.join();
   audio.startDevice();
   isPlaying = true;
-  startPos = std::chrono::high_resolution_clock::now();
+  stopwatch.start();
   auto hz = 8000;
   playThread = std::thread([this, hz] {
     while (isPlaying) {
+      // lock seek
+      std::lock_guard<std::mutex> lock(seekLock);
       auto now = std::chrono::high_resolution_clock::now();
-      auto position = now - startPos;
-      auto positionMicro =
-          std::chrono::duration_cast<std::chrono::microseconds>(position)
-              .count();
-      if (!audioQueue.empty()) {
-        if (positionMicro >= audioQueue.front().first) {
+      auto positionMicro = stopwatch.elapsedMicros();
+      if (audioCursor < audioList.size()) {
+        auto &target = audioList[audioCursor];
+        if (positionMicro >= target.first) {
           SDL_Log("Playing sound at %lld; id: %d; actual time: %lld",
-                  audioQueue.front().first, audioQueue.front().second,
-                  positionMicro);
-          audio.playSound(wavTableAbs[audioQueue.front().second].c_str());
-          audioQueue.pop();
+                  target.first, target.second, positionMicro);
+          audio.playSound(wavTableAbs[target.second].c_str());
+          audioCursor++;
         }
       }
-      if (!bmpQueue.empty()) {
-        if (positionMicro >= bmpQueue.front().first) {
+      if (bmpCursor < bmpList.size()) {
+        auto &target = bmpList[bmpCursor];
+        if (positionMicro >= target.first) {
           SDL_Log("Playing video at %lld; id: %d; actual time: %lld",
-                  bmpQueue.front().first, bmpQueue.front().second,
-                  positionMicro);
-          if (videoPlayerTable.find(bmpQueue.front().second) !=
-              videoPlayerTable.end()) {
-            auto videoPlayer = videoPlayerTable[bmpQueue.front().second];
+                  target.first, target.second, positionMicro);
+          if (videoPlayerTable.find(target.second) != videoPlayerTable.end()) {
+            auto videoPlayer = videoPlayerTable[target.second];
             videoPlayer->play();
             videoPlayer->viewWidth = rendering::window_width;
             videoPlayer->viewHeight = rendering::window_height;
-            currentBga = bmpQueue.front().second;
+            currentBga = target.second;
           } else {
-            SDL_Log("Video player not found for id: %d",
-                    bmpQueue.front().second);
+            SDL_Log("Video player not found for id: %d", target.second);
           }
-          bmpQueue.pop();
+          bmpCursor++;
         }
       }
       auto loopRunTime = std::chrono::high_resolution_clock::now() - now;
@@ -283,9 +282,28 @@ void Jukebox::play() {
   });
 }
 
+long long Jukebox::getTimeMicros() { return stopwatch.elapsedMicros(); }
+
 void Jukebox::stop() {
   isPlaying = false;
   if (playThread.joinable())
     playThread.join();
   audio.stopSounds();
+}
+void Jukebox::seek(long long micro) {
+  /* TODO: should also play audio/video which starts earlier than seek but
+      ends later than seek */
+  std::lock_guard<std::mutex> lock(seekLock);
+  stopwatch.seek(micro);
+  audio.stopSounds();
+  // move cursors to micro
+  audioCursor = 0;
+  bmpCursor = 0;
+  while (audioCursor < audioList.size() &&
+         audioList[audioCursor].first < micro) {
+    audioCursor++;
+  }
+  while (bmpCursor < bmpList.size() && bmpList[bmpCursor].first < micro) {
+    bmpCursor++;
+  }
 }

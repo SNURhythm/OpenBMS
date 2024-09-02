@@ -6,8 +6,15 @@
 #define SHADER_TEXT "text"
 namespace rendering {
 struct PosTexCoord0Vertex {
+  static bgfx::VertexLayout ms_decl;
   float x, y, z;
   float u, v;
+  static void init() {
+    ms_decl.begin()
+        .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+        .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+        .end();
+  }
 };
 struct PosColorVertex {
   static bgfx::VertexLayout ms_decl;

@@ -58,6 +58,7 @@
 
 bgfx::VertexLayout rendering::PosColorVertex::ms_decl;
 bgfx::VertexLayout rendering::PosTexVertex::ms_decl;
+bgfx::VertexLayout rendering::PosTexCoord0Vertex::ms_decl;
 
 static rendering::PosColorVertex cubeVertices[] = {
     {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
@@ -158,7 +159,7 @@ int main(int argv, char **args) {
   bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
   bgfx_init.resolution.width = rendering::window_width;
   bgfx_init.resolution.height = rendering::window_height;
-  bgfx_init.resolution.reset = BGFX_RESET_VSYNC;
+  bgfx_init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X2;
   bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
   // bgfx::setDebug(BGFX_DEBUG_TEXT);
@@ -193,6 +194,7 @@ void run() {
   // Initialize bgfx
   rendering::PosColorVertex::init();
   rendering::PosTexVertex::init();
+  rendering::PosTexCoord0Vertex::init();
 
   bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(
       bgfx::makeRef(cubeVertices, sizeof(cubeVertices)),
@@ -276,7 +278,8 @@ void run() {
         rendering::window_height = e.window.data2;
 
         // set bgfx resolution
-        bgfx::reset(rendering::window_width, rendering::window_height);
+        bgfx::reset(rendering::window_width, rendering::window_height,
+                    BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X2);
         SDL_Log("Window size: %d x %d", rendering::window_width,
                 rendering::window_height);
         resetViewTransform();
@@ -337,6 +340,7 @@ void run() {
     bgfx::frame();
     sceneManager.handleDeferred();
     context.currentFrame++;
+    //
   }
   sceneManager.cleanup();
   bgfx::destroy(vbh);
@@ -359,11 +363,11 @@ void resetViewTransform() {
                     rendering::window_height);
 
   bx::Vec3 at = {0.0f, 0.0f, 0.0f};
-  bx::Vec3 eye = {0.0f, 2.0f, -5.0f};
+  bx::Vec3 eye = {0.0f, 2.0f, -10.0f};
   float viewMtx[16];
   bx::mtxLookAt(viewMtx, eye, at);
   float projMtx[16];
-  bx::mtxProj(projMtx, 60.0f,
+  bx::mtxProj(projMtx, 120.0f,
               float(rendering::window_width) / float(rendering::window_height),
               0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
   bgfx::setViewTransform(rendering::main_view, viewMtx, projMtx);
