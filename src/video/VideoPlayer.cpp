@@ -126,16 +126,19 @@ void VideoPlayer::render() {
   vertex[0].z = 0.0f;
   vertex[0].u = 0.0f;
   vertex[0].v = 1.0f;
+
   vertex[1].x = viewWidth;
   vertex[1].y = viewHeight;
   vertex[1].z = 0.0f;
   vertex[1].u = 1.0f;
   vertex[1].v = 1.0f;
+
   vertex[2].x = 0.0f;
   vertex[2].y = 0.0f;
   vertex[2].z = 0.0f;
   vertex[2].u = 0.0f;
   vertex[2].v = 0.0f;
+  
   vertex[3].x = viewWidth;
   vertex[3].y = 0.0f;
   vertex[3].z = 0.0f;
