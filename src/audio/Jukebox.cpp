@@ -252,8 +252,9 @@ void Jukebox::play() {
       if (audioCursor < audioList.size()) {
         auto &target = audioList[audioCursor];
         if (positionMicro >= target.first) {
-          SDL_Log("Playing sound at %lld; id: %d; actual time: %lld",
-                  target.first, target.second, positionMicro);
+          //          SDL_Log("Playing sound at %lld; id: %d; actual time:
+          //          %lld",
+          //                  target.first, target.second, positionMicro);
           audio.playSound(wavTableAbs[target.second].c_str());
           audioCursor++;
         }
@@ -261,10 +262,12 @@ void Jukebox::play() {
       if (bmpCursor < bmpList.size()) {
         auto &target = bmpList[bmpCursor];
         if (positionMicro >= target.first) {
-          SDL_Log("Playing video at %lld; id: %d; actual time: %lld",
-                  target.first, target.second, positionMicro);
+          //          SDL_Log("Playing video at %lld; id: %d; actual time:
+          //          %lld",
+          //                  target.first, target.second, positionMicro);
           if (videoPlayerTable.find(target.second) != videoPlayerTable.end()) {
             auto videoPlayer = videoPlayerTable[target.second];
+            videoPlayer->seek(0);
             videoPlayer->play();
             videoPlayer->viewWidth = rendering::window_width;
             videoPlayer->viewHeight = rendering::window_height;
