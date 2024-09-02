@@ -138,7 +138,7 @@ void VideoPlayer::render() {
   vertex[2].z = 0.0f;
   vertex[2].u = 0.0f;
   vertex[2].v = 0.0f;
-  
+
   vertex[3].x = viewWidth;
   vertex[3].y = 0.0f;
   vertex[3].z = 0.0f;
@@ -204,4 +204,7 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
     videoFrameData =
         malloc(videoFrameWidth * videoFrameHeight * 3); // Assuming 32-bit RGBA
   }
+}
+void VideoPlayer::seek(long long int micro) {
+  mediaPlayer->setTime(micro / 1000.0f, true);
 }
