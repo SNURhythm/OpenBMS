@@ -4,6 +4,7 @@
 #include <string>
 #define SHADER_SIMPLE "simple"
 #define SHADER_TEXT "text"
+#define SHADER_YUVRGB "yuvrgb"
 namespace rendering {
 struct PosTexCoord0Vertex {
   static bgfx::VertexLayout ms_decl;

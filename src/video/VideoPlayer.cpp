@@ -8,8 +8,11 @@
 #include "../rendering/common.h"
 VideoPlayer::VideoPlayer()
     : videoFrameData(nullptr), videoFrameWidth(0), videoFrameHeight(0),
-      videoFrameUpdated(false), videoTexture(BGFX_INVALID_HANDLE) {
+      videoFrameUpdated(false) {
   s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+  s_texY = bgfx::createUniform("s_texY", bgfx::UniformType::Sampler);
+  s_texU = bgfx::createUniform("s_texU", bgfx::UniformType::Sampler);
+  s_texV = bgfx::createUniform("s_texV", bgfx::UniformType::Sampler);
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -17,13 +20,19 @@ VideoPlayer::~VideoPlayer() {
     mediaPlayer->stopAsync();
     delete mediaPlayer;
   }
-  if (bgfx::isValid(videoTexture)) {
-    bgfx::destroy(videoTexture);
+  for (int i = 0; i < 2; ++i) {
+    if (bgfx::isValid(videoTextures[i])) {
+      bgfx::destroy(videoTextures[i]);
+    }
   }
+
   if (videoFrameData) {
     free(videoFrameData);
   }
   bgfx::destroy(s_texColor);
+  bgfx::destroy(s_texY);
+  bgfx::destroy(s_texU);
+  bgfx::destroy(s_texV);
 }
 
 bool VideoPlayer::loadVideo(const std::string &videoPath) {
@@ -72,8 +81,9 @@ bool VideoPlayer::loadVideo(const std::string &videoPath) {
     updateVideoTexture(1920, 1080);
   }
 
-  mediaPlayer->setVideoFormat("RV24", videoFrameWidth, videoFrameHeight,
-                              videoFrameWidth * 3);
+  mediaPlayer->setVideoFormat("I420", videoFrameWidth, videoFrameHeight,
+                              videoFrameWidth);
+
   mediaPlayer->setPosition(0.0f, true);
 
   mediaPlayer->play();
@@ -86,17 +96,19 @@ bool VideoPlayer::loadVideo(const std::string &videoPath) {
 }
 
 void VideoPlayer::update() {
-  if (videoFrameUpdated) {
-    std::lock_guard<std::mutex> lock(videoFrameMutex);
-    videoFrameUpdated = false;
-
-    if (bgfx::isValid(videoTexture)) {
-      const bgfx::Memory *mem =
-          bgfx::makeRef(videoFrameData, videoFrameWidth * videoFrameHeight * 3);
-      bgfx::updateTexture2D(videoTexture, 0, 0, 0, 0, videoFrameWidth,
-                            videoFrameHeight, mem);
-    }
-  }
+  //  if (videoFrameUpdated) {
+  //    std::lock_guard<std::mutex> lock(videoFrameMutex);
+  //    videoFrameUpdated = false;
+  //
+  //    currentTextureIndex = 1 - currentTextureIndex; // Switch between
+  //    textures if (bgfx::isValid(videoTextures[currentTextureIndex])) {
+  //      const bgfx::Memory *mem =
+  //          bgfx::makeRef(videoFrameData, videoFrameWidth * videoFrameHeight *
+  //          3);
+  //      bgfx::updateTexture2D(videoTextures[currentTextureIndex], 0, 0, 0, 0,
+  //                            videoFrameWidth, videoFrameHeight, mem);
+  //    }
+  //  }
 }
 
 unsigned int VideoPlayer::getPrecisePosition() {
@@ -111,11 +123,7 @@ void VideoPlayer::render() {
   //  SDL_Log("Rendering video texture frame %d; time: %f", currentFrame,
   //  currentFrame / 30.0f);
 
-  bgfx::VertexLayout layout;
-  layout.begin()
-      .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-      .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
-      .end();
+  bgfx::VertexLayout &layout = rendering::PosTexCoord0Vertex::ms_decl;
   bgfx::allocTransientVertexBuffer(&tvb, 4, layout);
   bgfx::allocTransientIndexBuffer(&tib, 6);
   auto *vertex = (rendering::PosTexCoord0Vertex *)tvb.data;
@@ -157,10 +165,13 @@ void VideoPlayer::render() {
                  BGFX_STATE_BLEND_ALPHA);
   bgfx::setVertexBuffer(0, &tvb);
   bgfx::setIndexBuffer(&tib);
-  bgfx::setTexture(0, s_texColor, videoTexture);
+  bgfx::setTexture(0, s_texY, videoTextureY);
+  bgfx::setTexture(1, s_texU, videoTextureU);
+  bgfx::setTexture(2, s_texV, videoTextureV);
 
-  bgfx::submit(rendering::bga_view,
-               rendering::ShaderManager::getInstance().getProgram(SHADER_TEXT));
+  bgfx::submit(
+      rendering::bga_view,
+      rendering::ShaderManager::getInstance().getProgram(SHADER_YUVRGB));
 }
 
 void VideoPlayer::play() { mediaPlayer->play(); }
@@ -171,13 +182,29 @@ void VideoPlayer::stop() { mediaPlayer->stopAsync(); }
 
 void *VideoPlayer::lock(void **planes) {
   std::lock_guard<std::mutex> lock(videoFrameMutex);
-  *planes = videoFrameData;
+  planes[0] = videoFrameDataY;
+  planes[1] = videoFrameDataU;
+  planes[2] = videoFrameDataV;
   return nullptr;
 }
 
 void VideoPlayer::unlock(void *picture, void *const *planes) {
   std::lock_guard<std::mutex> lock(videoFrameMutex);
   videoFrameUpdated = true;
+
+  const bgfx::Memory *memY =
+      bgfx::makeRef(videoFrameDataY, videoFrameWidth * videoFrameHeight);
+  const bgfx::Memory *memU =
+      bgfx::makeRef(videoFrameDataU, videoFrameWidth * videoFrameHeight / 4);
+  const bgfx::Memory *memV =
+      bgfx::makeRef(videoFrameDataV, videoFrameWidth * videoFrameHeight / 4);
+
+  bgfx::updateTexture2D(videoTextureY, 0, 0, 0, 0, videoFrameWidth,
+                        videoFrameHeight, memY);
+  bgfx::updateTexture2D(videoTextureU, 0, 0, 0, 0, videoFrameWidth / 2,
+                        videoFrameHeight / 2, memU);
+  bgfx::updateTexture2D(videoTextureV, 0, 0, 0, 0, videoFrameWidth / 2,
+                        videoFrameHeight / 2, memV);
 }
 
 void VideoPlayer::display(void *picture) {
@@ -187,24 +214,36 @@ void VideoPlayer::display(void *picture) {
 
 void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
   if (width != videoFrameWidth || height != videoFrameHeight) {
-    if (bgfx::isValid(videoTexture)) {
-      bgfx::destroy(videoTexture);
-    }
+    if (bgfx::isValid(videoTextureY))
+      bgfx::destroy(videoTextureY);
+    if (bgfx::isValid(videoTextureU))
+      bgfx::destroy(videoTextureU);
+    if (bgfx::isValid(videoTextureV))
+      bgfx::destroy(videoTextureV);
+
     videoFrameWidth = width;
     videoFrameHeight = height;
 
-    videoTexture = bgfx::createTexture2D(
+    // Create textures for Y, U, and V planes
+    videoTextureY = bgfx::createTexture2D(
         uint16_t(videoFrameWidth), uint16_t(videoFrameHeight), false, 1,
-        bgfx::TextureFormat::RGB8, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE);
+        bgfx::TextureFormat::R8, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE);
 
-    if (videoFrameData) {
-      free(videoFrameData);
-    }
+    videoTextureU = bgfx::createTexture2D(
+        uint16_t(videoFrameWidth / 2), uint16_t(videoFrameHeight / 2), false, 1,
+        bgfx::TextureFormat::R8, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE);
 
-    videoFrameData =
-        malloc(videoFrameWidth * videoFrameHeight * 3); // Assuming 32-bit RGBA
+    videoTextureV = bgfx::createTexture2D(
+        uint16_t(videoFrameWidth / 2), uint16_t(videoFrameHeight / 2), false, 1,
+        bgfx::TextureFormat::R8, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE);
+
+    // Allocate memory for YUV data
+    videoFrameDataY = malloc(videoFrameWidth * videoFrameHeight);
+    videoFrameDataU = malloc(videoFrameWidth * videoFrameHeight / 4);
+    videoFrameDataV = malloc(videoFrameWidth * videoFrameHeight / 4);
   }
 }
+
 void VideoPlayer::seek(long long int micro) {
   mediaPlayer->setTime(micro / 1000.0f, true);
 }

@@ -362,8 +362,8 @@ void resetViewTransform() {
   bgfx::setViewRect(rendering::clear_view, 0, 0, rendering::window_width,
                     rendering::window_height);
 
-  bx::Vec3 at = {0.0f, 0.0f, 0.0f};
-  bx::Vec3 eye = {0.0f, 2.0f, -10.0f};
+  bx::Vec3 at = {4.0f, 2.0f, 0.0f};
+  bx::Vec3 eye = {4.0f, 0.0f, -5.0f};
   float viewMtx[16];
   bx::mtxLookAt(viewMtx, eye, at);
   float projMtx[16];
