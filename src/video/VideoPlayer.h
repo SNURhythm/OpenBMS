@@ -29,14 +29,12 @@ private:
 
   void updateVideoTexture(unsigned int width, unsigned int height);
   std::mutex videoFrameMutex;
-  void *videoFrameData;
+
   unsigned int videoFrameWidth;
   unsigned int videoFrameHeight;
   int currentFrame = 0;
   bool videoFrameUpdated;
-  bgfx::TextureHandle videoTextures[2] = {BGFX_INVALID_HANDLE,
-                                          BGFX_INVALID_HANDLE};
-  bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
+
   bgfx::UniformHandle s_texY = BGFX_INVALID_HANDLE;
   bgfx::UniformHandle s_texU = BGFX_INVALID_HANDLE;
   bgfx::UniformHandle s_texV = BGFX_INVALID_HANDLE;
@@ -47,7 +45,7 @@ private:
   bgfx::TextureHandle videoTextureY = BGFX_INVALID_HANDLE;
   bgfx::TextureHandle videoTextureU = BGFX_INVALID_HANDLE;
   bgfx::TextureHandle videoTextureV = BGFX_INVALID_HANDLE;
-  void *videoFrameDataY;
-  void *videoFrameDataU;
-  void *videoFrameDataV;
+  void *videoFrameDataY = nullptr;
+  void *videoFrameDataU = nullptr;
+  void *videoFrameDataV = nullptr;
 };
