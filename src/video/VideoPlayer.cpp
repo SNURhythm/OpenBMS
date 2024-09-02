@@ -82,8 +82,8 @@ bool VideoPlayer::loadVideo(const std::string &videoPath) {
   if (!hasVideo) {
     updateVideoTexture(1920, 1080);
   }
-  mediaPlayer->setVideoFormat("I420", videoFrameWidth, videoFrameHeight,
-                              videoFrameWidth);
+  auto pitch = videoFrameWidth;
+  mediaPlayer->setVideoFormat("I420", videoFrameWidth, videoFrameHeight, pitch);
   mediaPlayer->setVideoCallbacks(
       [this](void **planes) { return lock(planes); },
       [this](void *picture, void *const *planes) { unlock(picture, planes); },
@@ -249,11 +249,9 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
 
     // Allocate memory for YUV data
 
-    videoFrameDataY = malloc(videoFrameWidth * videoFrameHeight); // Y plane
-    videoFrameDataU =
-        malloc((videoFrameWidth / 2) * (videoFrameHeight / 2)); // U plane
-    videoFrameDataV =
-        malloc((videoFrameWidth / 2) * (videoFrameHeight / 2)); // V plane
+    videoFrameDataY = malloc(videoFrameWidth * videoFrameHeight);     // Y plane
+    videoFrameDataU = malloc(videoFrameWidth * videoFrameHeight / 2); // U plane
+    videoFrameDataV = malloc(videoFrameWidth * videoFrameHeight / 2); // V plane
 
     // Check if memory allocation was successful
     if (!videoFrameDataY || !videoFrameDataU || !videoFrameDataV) {
