@@ -1,6 +1,5 @@
-// fs_yuv_to_rgb.sc
 $input v_texcoord0
-
+#include <bgfx_shader.sh>
 SAMPLER2D(s_texY, 0);
 SAMPLER2D(s_texU, 1);
 SAMPLER2D(s_texV, 2);
