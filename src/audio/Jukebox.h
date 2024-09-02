@@ -8,6 +8,7 @@
 #include <atomic>
 #include "../path.h"
 #include "../video/VideoPlayer.h"
+#include "../utils/Stopwatch.h"
 class Jukebox {
 public:
   Jukebox();
@@ -20,17 +21,21 @@ public:
   void render();
 
   long long getTimeMicros();
+  void seek(long long micro);
 
 private:
+  // seek lock
+  std::mutex seekLock;
   void loadSounds(bms_parser::Chart &chart, std::atomic_bool &isCancelled);
   void loadBMPs(bms_parser::Chart &chart, std::atomic_bool &isCancelled);
   std::atomic_bool isPlaying = false;
   std::thread playThread;
-  std::chrono::high_resolution_clock::time_point startPos;
-  std::chrono::high_resolution_clock::time_point position;
+  Stopwatch stopwatch;
   AudioWrapper audio;
-  std::queue<std::pair<long long, int>> audioQueue;
-  std::queue<std::pair<long long, int>> bmpQueue;
+  std::vector<std::pair<long long, int>> audioList;
+  size_t audioCursor = 0;
+  std::vector<std::pair<long long, int>> bmpList;
+  size_t bmpCursor = 0;
   std::unordered_map<int, path_t> wavTableAbs;
   std::unordered_map<int, VideoPlayer *> videoPlayerTable;
   int currentBga = -1;

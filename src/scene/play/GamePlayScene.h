@@ -5,13 +5,12 @@
 #pragma once
 #include "../Scene.h"
 #include "../../bms_parser.hpp"
-#include "NoteObject.h"
+class BMSRenderer;
 class GamePlayScene : public Scene {
 private:
   bms_parser::Chart *chart;
 
 public:
-  NoteObject testNote;
   GamePlayScene() = delete;
   explicit GamePlayScene(ApplicationContext &context, bms_parser::Chart *chart)
       : Scene(context) {
@@ -21,4 +20,7 @@ public:
   void update(float dt) override;
   void renderScene() override;
   void cleanupScene() override;
+
+private:
+  BMSRenderer *renderer;
 };
