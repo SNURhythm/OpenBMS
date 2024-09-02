@@ -1,7 +1,6 @@
-// vs_yuv_to_rgb.sc
 $input a_position, a_texcoord0
 $output v_texcoord0
-
+#include <bgfx_shader.sh>
 uniform mat4 u_modelViewProj;
 
 void main() {
