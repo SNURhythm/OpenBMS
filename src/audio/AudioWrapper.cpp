@@ -162,7 +162,7 @@ void AudioWrapper::startDevice() {
 }
 void AudioWrapper::stopSounds() {
   std::lock_guard<std::mutex> lock(soundDataListMutex);
-  //  ma_device_stop(&device);
+  ma_device_stop(&device);
   for (auto &soundData : soundDataList) {
     soundData->playing = false;
   }
