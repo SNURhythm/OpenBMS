@@ -23,6 +23,8 @@ public:
   float fps = 60.0f;
 
 private:
+  uint32_t setupFormat(char *chroma, unsigned *width, unsigned *height,
+                       unsigned *pitches, unsigned *lines);
   void *lock(void **planes);
   void unlock(void *picture, void *const *planes);
   void display(void *picture);
@@ -45,7 +47,7 @@ private:
   bgfx::TextureHandle videoTextureY = BGFX_INVALID_HANDLE;
   bgfx::TextureHandle videoTextureU = BGFX_INVALID_HANDLE;
   bgfx::TextureHandle videoTextureV = BGFX_INVALID_HANDLE;
-  void *videoFrameDataY = nullptr;
-  void *videoFrameDataU = nullptr;
-  void *videoFrameDataV = nullptr;
+  uint8_t *videoFrameDataY = nullptr;
+  uint8_t *videoFrameDataU = nullptr;
+  uint8_t *videoFrameDataV = nullptr;
 };
