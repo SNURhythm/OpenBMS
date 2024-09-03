@@ -245,6 +245,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
             context.jukebox.stop();
             context.sceneManager->changeScene(
                 new GamePlayScene(context, selectedChart));
+            return false;
           },
           0, true);
     }
