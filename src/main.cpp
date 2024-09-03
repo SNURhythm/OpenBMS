@@ -299,12 +299,12 @@ void run() {
     bgfx::submit(rendering::clear_view, program);
     sceneManager.render();
     // render fps, rounded to 2 decimal places
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(2) << 1.0f / deltaTime;
-    fpsText.setText(oss.str());
-    fpsText.setPosition(10, 10);
-    RenderContext renderContext;
-    fpsText.render(renderContext);
+    // std::ostringstream oss;
+    // oss << std::fixed << std::setprecision(2) << 1.0f / deltaTime;
+    // fpsText.setText(oss.str());
+    // fpsText.setPosition(10, 10);
+    // RenderContext renderContext;
+    // fpsText.render(renderContext);
     // shift left by 1
     float translate[16];
     bx::mtxTranslate(translate, 200.0f, 500.0f, 0.0f);
