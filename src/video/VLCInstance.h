@@ -12,7 +12,6 @@ public:
 
 private:
   VLCInstance() { vlcInstance = std::make_unique<VLC::Instance>(0, nullptr); }
-
   std::unique_ptr<VLC::Instance> vlcInstance;
 
   // Delete copy constructor and assignment operator
