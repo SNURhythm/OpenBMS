@@ -82,13 +82,19 @@ bool VideoPlayer::loadVideo(const std::string &videoPath) {
   if (!hasVideo) {
     updateVideoTexture(1920, 1080);
   }
-  auto pitch = videoFrameWidth;
-  mediaPlayer->setVideoFormat("I420", videoFrameWidth, videoFrameHeight, pitch);
+
+  mediaPlayer->setVideoFormat("I420", videoFrameWidth, videoFrameHeight,
+                              videoFrameWidth);
   mediaPlayer->setVideoCallbacks(
       [this](void **planes) { return lock(planes); },
       [this](void *picture, void *const *planes) { unlock(picture, planes); },
       [this](void *picture) { display(picture); });
-
+  mediaPlayer->setVideoFormatCallbacks(
+      [this](char *chroma, unsigned *width, unsigned *height, unsigned *pitches,
+             unsigned *lines) {
+        return setupFormat(chroma, width, height, pitches, lines);
+      },
+      nullptr);
   mediaPlayer->setPosition(0.0f, true);
 
   mediaPlayer->play();
@@ -100,6 +106,28 @@ bool VideoPlayer::loadVideo(const std::string &videoPath) {
   return true;
 }
 
+uint32_t VideoPlayer::setupFormat(char *chroma, unsigned *width,
+                                  unsigned *height, unsigned *pitches,
+                                  unsigned *lines) {
+  if (chroma == nullptr || width == nullptr || height == nullptr ||
+      pitches == nullptr || lines == nullptr)
+    return 0;
+  chroma[0] = 'I';
+  chroma[1] = '4';
+  chroma[2] = '2';
+  chroma[3] = '0';
+  chroma[4] = '\0';
+  *width = videoFrameWidth;
+  *height = videoFrameHeight;
+  pitches[0] = videoFrameWidth;
+  pitches[1] = videoFrameWidth / 2;
+  pitches[2] = videoFrameWidth / 2;
+  lines[0] = videoFrameHeight;
+  lines[1] = videoFrameHeight / 2;
+  lines[2] = videoFrameHeight / 2;
+  return 1;
+}
+
 void VideoPlayer::update() {
   if (videoFrameUpdated) {
     std::lock_guard<std::mutex> lock(videoFrameMutex);
@@ -107,10 +135,10 @@ void VideoPlayer::update() {
 
     const bgfx::Memory *memY =
         bgfx::makeRef(videoFrameDataY, videoFrameWidth * videoFrameHeight);
-    const bgfx::Memory *memU =
-        bgfx::makeRef(videoFrameDataU, videoFrameWidth * videoFrameHeight / 4);
-    const bgfx::Memory *memV =
-        bgfx::makeRef(videoFrameDataV, videoFrameWidth * videoFrameHeight / 4);
+    const bgfx::Memory *memU = bgfx::makeRef(
+        videoFrameDataU, (videoFrameWidth / 2) * (videoFrameHeight / 2));
+    const bgfx::Memory *memV = bgfx::makeRef(
+        videoFrameDataV, (videoFrameWidth / 2) * (videoFrameHeight / 2));
 
     bgfx::updateTexture2D(videoTextureY, 0, 0, 0, 0, videoFrameWidth,
                           videoFrameHeight, memY);
@@ -249,9 +277,12 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
 
     // Allocate memory for YUV data
 
-    videoFrameDataY = malloc(videoFrameWidth * videoFrameHeight);     // Y plane
-    videoFrameDataU = malloc(videoFrameWidth * videoFrameHeight / 2); // U plane
-    videoFrameDataV = malloc(videoFrameWidth * videoFrameHeight / 2); // V plane
+    videoFrameDataY =
+        new uint8_t[videoFrameWidth * videoFrameHeight]; // Y plane
+    videoFrameDataU =
+        new uint8_t[videoFrameWidth * videoFrameHeight / 4]; // U plane
+    videoFrameDataV =
+        new uint8_t[videoFrameWidth * videoFrameHeight / 4]; // V plane
 
     // Check if memory allocation was successful
     if (!videoFrameDataY || !videoFrameDataU || !videoFrameDataV) {
