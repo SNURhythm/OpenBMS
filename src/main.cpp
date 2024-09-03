@@ -363,7 +363,7 @@ void resetViewTransform() {
                     rendering::window_height);
 
   bx::Vec3 at = {4.0f, 2.0f, 0.0f};
-  bx::Vec3 eye = {4.0f, 0.0f, -5.0f};
+  bx::Vec3 eye = {4.0f, 1.5f, -2.1f};
   float viewMtx[16];
   bx::mtxLookAt(viewMtx, eye, at);
   float projMtx[16];
