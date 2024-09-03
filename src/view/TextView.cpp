@@ -52,6 +52,7 @@ void TextView::setText(const std::string &newText) {
   }
   rect.w = surface->w;
   rect.h = surface->h;
+  SDL_Log("Rendered text: %s", newText.c_str());
   texture = rendering::sdlSurfaceToBgfxTexture(surface);
   SDL_FreeSurface(surface);
 }
