@@ -241,6 +241,7 @@ void Jukebox::play() {
     playThread.join();
   audio.startDevice();
   isPlaying = true;
+  stopwatch.reset();
   stopwatch.start();
   auto hz = 8000;
   playThread = std::thread([this, hz] {
