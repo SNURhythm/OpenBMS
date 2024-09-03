@@ -13,7 +13,7 @@ public:
   Scene() = delete;
   Scene(ApplicationContext &context) : context(context) {}
   std::vector<View *> views;
-  std::map<Uint64, std::pair<Uint64, std::vector<std::function<void()>>>>
+  std::map<Uint64, std::pair<Uint64, std::vector<std::function<bool()>>>>
       deferred;
   virtual void init() = 0; // Initialize the scene
   EventHandleResult handleEvents(SDL_Event &event) {
@@ -23,7 +23,7 @@ public:
     return {};
   }
   virtual void update(float dt) = 0; // Update the scene logic
-  void defer(const std::function<void()> &func, Uint64 delay,
+  void defer(const std::function<bool()> &func, Uint64 delay,
              bool shouldWaitFrame = false) {
     Uint64 time = SDL_GetTicks64() + delay;
     if (deferred.find(time) == deferred.end()) {
@@ -42,11 +42,12 @@ public:
         if (it->second.first <= context.currentFrame) {
           SDL_Log("Handling deferred");
           for (const auto &func : it->second.second) {
-            func();
+            if(!func()) return;
             if (isDead) {
               return;
             }
           }
+          SDL_Log("Done");
           it = deferred.erase(it);
         } else {
           ++it;
@@ -68,6 +69,7 @@ public:
   // Cleanup resources when exiting the scene (non-virtual public method)
   inline void cleanup() {
     isDead = true;
+    SDL_Log("Cleaning up");
     cleanupScene(); // Additional custom cleanup
     for (auto view : views) {
       delete view;
