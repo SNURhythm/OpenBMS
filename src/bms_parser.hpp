@@ -15,7 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 namespace bms_parser {
 class TimeLine;
 
@@ -61,7 +60,6 @@ public:
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  *
  */
@@ -91,7 +89,6 @@ public:
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include <vector>
 
@@ -155,7 +152,6 @@ public:
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  *
  */
@@ -185,7 +181,6 @@ public:
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include <filesystem>
 #include <string>
@@ -260,10 +255,12 @@ public:
 
   [[nodiscard]] std::vector<int> GetTotalLaneIndices() const {
     std::vector<int> Result;
-    Result.insert(Result.end(), GetKeyLaneIndices().begin(),
-                  GetKeyLaneIndices().end());
-    Result.insert(Result.end(), GetScratchLaneIndices().begin(),
-                  GetScratchLaneIndices().end());
+    std::vector<int> keyLaneIndices = GetKeyLaneIndices();
+    std::vector<int> scratchLaneIndices = GetScratchLaneIndices();
+    Result.insert(Result.end(), keyLaneIndices.begin(), keyLaneIndices.end());
+    Result.insert(Result.end(), scratchLaneIndices.begin(),
+                  scratchLaneIndices.end());
+
     return Result;
   }
 };
@@ -293,7 +290,6 @@ public:
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 /**
  *
@@ -435,7 +431,6 @@ std::string md5(const std::string str);
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include <atomic>
 #include <filesystem>
@@ -2672,4 +2667,3 @@ std::string sha256(const std::vector<unsigned char> &bytes);
            ((uint32) * ((str) + 1) << 16) | ((uint32) * ((str) + 0) << 24);    \
   }
 } // namespace bms_parser
-
