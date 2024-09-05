@@ -6,6 +6,8 @@
 #include <iostream>
 #include <cstring>
 #include "../rendering/common.h"
+
+#include <thread>
 VideoPlayer::VideoPlayer()
     : videoFrameWidth(0), videoFrameHeight(0), videoFrameUpdated(false),
       videoFrameDataY(nullptr), videoFrameDataU(nullptr),
@@ -40,31 +42,45 @@ VideoPlayer::~VideoPlayer() {
   }
 }
 
-bool VideoPlayer::loadVideo(const std::string &videoPath) {
+bool VideoPlayer::loadVideo(const std::string &videoPath,
+                            std::atomic<bool> &isCancelled) {
   SDL_Log("Loading video: %s", videoPath.c_str());
   VLC::Media media(videoPath, VLC::Media::FromPath);
   if (mediaPlayer) {
     mediaPlayer->stopAsync();
     delete mediaPlayer;
   }
+  if (isCancelled)
+    return false;
 
   currentFrame = 0;
   auto &instance = *VLCInstance::getInstance().getVLCInstance();
   mediaPlayer = new VLC::MediaPlayer(instance, media);
-
-  media.parseRequest(instance,
-                     VLC::Media::ParseFlags::Local |
-                         VLC::Media::ParseFlags::FetchLocal,
-                     10000);
-  while (media.parsedStatus(instance) != VLC::Media::ParsedStatus::Done) {
-    if (media.parsedStatus(instance) == VLC::Media::ParsedStatus::Failed) {
-      SDL_Log("Failed to parse video");
-      return false;
+  if (isCancelled)
+    return false;
+  auto loadThread = std::thread([this, &instance, &media, &isCancelled]() {
+    media.parseRequest(instance,
+                       VLC::Media::ParseFlags::Local |
+                           VLC::Media::ParseFlags::FetchLocal,
+                       10000);
+    while (media.parsedStatus(instance) != VLC::Media::ParsedStatus::Done &&
+           !isCancelled) {
+      if (media.parsedStatus(instance) == VLC::Media::ParsedStatus::Failed) {
+        SDL_Log("Failed to parse video");
+        return false;
+      }
+      SDL_Delay(10);
     }
-    SDL_Delay(10);
+  });
+  loadThread.join();
+  if (isCancelled) {
+    SDL_Log("Cancelled loading video");
+    return false;
   }
   bool hasVideo = false;
   for (auto &track : media.tracks(VLC::MediaTrack::Type::Video)) {
+    if (isCancelled)
+      return false;
     if (track.type() == VLC::MediaTrack::Type::Video) {
       unsigned int width = track.width();
       unsigned int height = track.height();

@@ -9,7 +9,7 @@ class VideoPlayer {
 public:
   VideoPlayer();
   ~VideoPlayer();
-  bool loadVideo(const std::string &videoPath);
+  bool loadVideo(const std::string &videoPath, std::atomic<bool> &isCancelled);
   void update();
   void render();
   void play();
