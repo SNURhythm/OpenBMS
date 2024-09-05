@@ -210,21 +210,34 @@ public:
       bool changed = false;
       if (event.key.keysym.sym == SDLK_UP) {
         changed = true;
+        bool isInitialSelection = selectedIndex == -1;
+        int prevIndex = selectedIndex;
         if (selectedIndex > 0) {
           selectedIndex--;
-          if (onUnselected) {
-            onUnselected(items[selectedIndex + 1], selectedIndex + 1);
+        } else {
+          selectedIndex = items.size() - 1;
+        }
+        if (!items.empty()) {
+          if (onUnselected && !isInitialSelection) {
+            onUnselected(items[prevIndex], prevIndex);
           }
           if (onSelected) {
             onSelected(items[selectedIndex], selectedIndex);
           }
         }
+
       } else if (event.key.keysym.sym == SDLK_DOWN) {
         changed = true;
+        bool isInitialSelection = selectedIndex == -1;
+        int prevIndex = selectedIndex;
         if (selectedIndex < items.size() - 1) {
           selectedIndex++;
-          if (onUnselected) {
-            onUnselected(items[selectedIndex - 1], selectedIndex - 1);
+        } else {
+          selectedIndex = 0;
+        }
+        if (!items.empty()) {
+          if (onUnselected && !isInitialSelection) {
+            onUnselected(items[prevIndex], prevIndex);
           }
           if (onSelected) {
             onSelected(items[selectedIndex], selectedIndex);

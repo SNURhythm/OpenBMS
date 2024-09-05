@@ -6,6 +6,7 @@
 #include <vector>
 #include "../path.h"
 #include <mutex>
+#include <atomic>
 // Custom data structure to hold PCM data and playback state
 struct SoundData {
   std::vector<short> pcmData;
@@ -25,8 +26,9 @@ class AudioWrapper {
 public:
   AudioWrapper();
   ~AudioWrapper();
-  bool loadSound(const path_t &path);
-  void preloadSounds(const std::vector<path_t> &paths);
+  bool loadSound(const path_t &path, std::atomic<bool> &isCancelled);
+  void preloadSounds(const std::vector<path_t> &paths,
+                     std::atomic<bool> &isCancelled);
   bool playSound(const path_t &path);
   void startDevice();
   void stopSounds();

@@ -87,14 +87,17 @@ AudioWrapper::AudioWrapper() {
 
 AudioWrapper::~AudioWrapper() { unloadSounds(); }
 
-bool AudioWrapper::loadSound(const path_t &path) {
+bool AudioWrapper::loadSound(const path_t &path,
+                             std::atomic<bool> &isCancelled) {
   SF_INFO sfInfo;
   auto soundData = std::make_shared<SoundData>();
-  bool result = decodeAudioToPCM(path, soundData->pcmData, sfInfo);
+  bool result = decodeAudioToPCM(path, soundData->pcmData, sfInfo, isCancelled);
   if (!result) {
     SDL_Log("Failed to decode audio file %ls", path.c_str());
     return false;
   }
+  if (isCancelled)
+    return false;
 
   soundData->currentFrame = 0;
   soundData->channels = sfInfo.channels;
@@ -110,6 +113,8 @@ bool AudioWrapper::loadSound(const path_t &path) {
     SDL_Log("Failed to initialize resampler.");
     return false;
   }
+  if (isCancelled)
+    return false;
 
   // Resample the audio data to 44100 Hz
 
@@ -118,9 +123,13 @@ bool AudioWrapper::loadSound(const path_t &path) {
                   sfInfo.samplerate);
   soundData->resampledData.resize(resampledFrameCount * sfInfo.channels);
   ma_uint64 size = (ma_uint64)soundData->pcmData.size();
+  if (isCancelled)
+    return false;
   ma_resampler_process_pcm_frames(
       &soundData->resampler, soundData->pcmData.data(), &size,
       soundData->resampledData.data(), &resampledFrameCount);
+  if (isCancelled)
+    return false;
   soundData->resampledFrameCount = resampledFrameCount;
   {
     std::lock_guard<std::mutex> lock(soundDataListMutex);
@@ -130,9 +139,10 @@ bool AudioWrapper::loadSound(const path_t &path) {
   return true;
 }
 
-void AudioWrapper::preloadSounds(const std::vector<path_t> &paths) {
+void AudioWrapper::preloadSounds(const std::vector<path_t> &paths,
+                                 std::atomic<bool> &isCancelled) {
   for (const auto &path : paths) {
-    loadSound(path);
+    loadSound(path, isCancelled);
   }
 }
 
@@ -143,9 +153,8 @@ bool AudioWrapper::playSound(const path_t &path) {
     SDL_Log("Started playback device.");
   }
   if (soundDataIndexMap.find(path) == soundDataIndexMap.end()) {
-    if (!loadSound(path)) {
-      return false;
-    }
+    SDL_Log("Sound not found: %s", path_t_to_utf8(path).c_str());
+    return false;
   }
 
   auto &soundData = soundDataList[soundDataIndexMap[path]];

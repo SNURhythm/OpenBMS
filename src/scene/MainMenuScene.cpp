@@ -159,8 +159,18 @@ void MainMenuScene::initView(ApplicationContext &context) {
     }
     loadThread = std::thread([this, item, &context]() {
       SDL_Log("Previewing %s", path_t_to_utf8(item.BmsPath).c_str());
-      context.jukebox.stop();
+
       previewLoadCancelled = false;
+      // dumb implementation of debounce
+      for (int i = 0; i < 50; i++) {
+        if (previewLoadCancelled) {
+          return;
+        }
+        if (willStart)
+          break;
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      }
+      context.jukebox.stop();
       bms_parser::Parser parser;
       bms_parser::Chart *chart = nullptr;
 

@@ -4,6 +4,7 @@
 #include <bgfx/bgfx.h>
 #include <vlcpp/vlc.hpp>
 #include <mutex>
+#include <future>
 
 class VideoPlayer {
 public:
@@ -42,6 +43,7 @@ private:
   bgfx::UniformHandle s_texV = BGFX_INVALID_HANDLE;
 
   VLC::MediaPlayer *mediaPlayer = nullptr;
+  VLC::Media media;
   unsigned int getPrecisePosition();
   int currentTextureIndex = 0;
   bgfx::TextureHandle videoTextureY = BGFX_INVALID_HANDLE;
