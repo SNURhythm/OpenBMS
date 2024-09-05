@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Judge.h"
 
 Judge::Judge(const int Rank) {

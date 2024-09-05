@@ -2,12 +2,13 @@
 #include "decoder.h"
 #include <SDL2/SDL.h>
 #include <algorithm>
+#include <atomic>
 #ifdef _WIN32
 #define sf_open sf_wchar_open
 #endif
 // Function to decode audio file to PCM
 bool decodeAudioToPCM(const path_t &filePath, std::vector<short> &buffer,
-                      SF_INFO &fileInfo) {
+                      SF_INFO &fileInfo, std::atomic<bool> &isCancelled) {
   // Open the audio file
   SNDFILE *file = sf_open(filePath.c_str(), SFM_READ, &fileInfo);
 
@@ -17,15 +18,28 @@ bool decodeAudioToPCM(const path_t &filePath, std::vector<short> &buffer,
     return false;
   }
 
+  if (isCancelled) {
+    sf_close(file);
+    return false;
+  }
   // Prepare a buffer to hold the PCM data
   buffer.resize(fileInfo.frames * fileInfo.channels, 0);
   // Read the audio data into the buffer
   std::vector<double> tempBuffer(fileInfo.frames * fileInfo.channels);
+  if (isCancelled) {
+    sf_close(file);
+    return false;
+  }
   sf_count_t numFrames =
       sf_readf_double(file, tempBuffer.data(), fileInfo.frames);
+  if (isCancelled) {
+    sf_close(file);
+    return false;
+  }
   if (numFrames < 0) {
     SDL_Log("Failed to read audio data from file %s, error: %s",
             filePath.c_str(), sf_strerror(file));
+    sf_close(file);
     return false;
   }
   // Convert the double buffer to short
@@ -33,6 +47,10 @@ bool decodeAudioToPCM(const path_t &filePath, std::vector<short> &buffer,
       tempBuffer.begin(), tempBuffer.end(), buffer.begin(), [](double val) {
         return static_cast<short>(std::clamp(val, -1.0, 1.0) * 32767);
       });
+  if (isCancelled) {
+    sf_close(file);
+    return false;
+  }
 
   if (numFrames < fileInfo.frames) {
     SDL_Log("Failed to read all audio data from file %s, read %lld frames",

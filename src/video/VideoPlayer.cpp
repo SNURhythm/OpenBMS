@@ -8,6 +8,7 @@
 #include "../rendering/common.h"
 
 #include <thread>
+#include <future>
 VideoPlayer::VideoPlayer()
     : videoFrameWidth(0), videoFrameHeight(0), videoFrameUpdated(false),
       videoFrameDataY(nullptr), videoFrameDataU(nullptr),
@@ -45,10 +46,11 @@ VideoPlayer::~VideoPlayer() {
 bool VideoPlayer::loadVideo(const std::string &videoPath,
                             std::atomic<bool> &isCancelled) {
   SDL_Log("Loading video: %s", videoPath.c_str());
-  VLC::Media media(videoPath, VLC::Media::FromPath);
+  media = VLC::Media(videoPath, VLC::Media::FromPath);
   if (mediaPlayer) {
     mediaPlayer->stopAsync();
     delete mediaPlayer;
+    mediaPlayer = nullptr;
   }
   if (isCancelled)
     return false;
@@ -58,25 +60,30 @@ bool VideoPlayer::loadVideo(const std::string &videoPath,
   mediaPlayer = new VLC::MediaPlayer(instance, media);
   if (isCancelled)
     return false;
-  auto loadThread = std::thread([this, &instance, &media, &isCancelled]() {
-    media.parseRequest(instance,
-                       VLC::Media::ParseFlags::Local |
-                           VLC::Media::ParseFlags::FetchLocal,
-                       10000);
-    while (media.parsedStatus(instance) != VLC::Media::ParsedStatus::Done &&
-           !isCancelled) {
-      if (media.parsedStatus(instance) == VLC::Media::ParsedStatus::Failed) {
-        SDL_Log("Failed to parse video");
-        return false;
-      }
-      SDL_Delay(10);
+
+  media.parseRequest(instance,
+                     VLC::Media::ParseFlags::Local |
+                         VLC::Media::ParseFlags::FetchLocal,
+                     10000);
+  media.eventManager().onParsedChanged([this](VLC::Media::ParsedStatus status) {
+    if (status == VLC::Media::ParsedStatus::Done) {
+      SDL_Log("Video parsed");
     }
   });
-  loadThread.join();
-  if (isCancelled) {
-    SDL_Log("Cancelled loading video");
-    return false;
+
+  while (media.parsedStatus(instance) != VLC::Media::ParsedStatus::Done) {
+    if (isCancelled) {
+      media.parseStop(instance);
+      SDL_Log("Cancelled loading video");
+      return false;
+    }
+    if (media.parsedStatus(instance) == VLC::Media::ParsedStatus::Failed) {
+      SDL_Log("Failed to parse video");
+      return false;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
+
   bool hasVideo = false;
   for (auto &track : media.tracks(VLC::MediaTrack::Type::Video)) {
     if (isCancelled)
@@ -98,23 +105,23 @@ bool VideoPlayer::loadVideo(const std::string &videoPath,
   if (!hasVideo) {
     updateVideoTexture(1920, 1080);
   }
-
-  mediaPlayer->setVideoFormat("I420", videoFrameWidth, videoFrameHeight,
-                              videoFrameWidth);
-  mediaPlayer->setVideoCallbacks(
-      [this](void **planes) { return lock(planes); },
-      [this](void *picture, void *const *planes) { unlock(picture, planes); },
-      [this](void *picture) { display(picture); });
   mediaPlayer->setVideoFormatCallbacks(
       [this](char *chroma, unsigned *width, unsigned *height, unsigned *pitches,
              unsigned *lines) {
         return setupFormat(chroma, width, height, pitches, lines);
       },
       nullptr);
+  mediaPlayer->setVideoFormat("I420", videoFrameWidth, videoFrameHeight,
+                              videoFrameWidth);
+  mediaPlayer->setVideoCallbacks(
+      [this](void **planes) { return lock(planes); },
+      [this](void *picture, void *const *planes) { unlock(picture, planes); },
+      [this](void *picture) { display(picture); });
+
   mediaPlayer->setPosition(0.0f, true);
 
   mediaPlayer->play();
-  mediaPlayer->setPause(true);
+  mediaPlayer->setPause(false);
   mediaPlayer->setTime(0.0f, true);
   //
 
