@@ -306,28 +306,28 @@ void run() {
     // RenderContext renderContext;
     // fpsText.render(renderContext);
     // shift left by 1
-    float translate[16];
-    bx::mtxTranslate(translate, 200.0f, 500.0f, 0.0f);
-    float rotate[16];
-    bx::mtxRotateZ(rotate, bx::toRad(45.0f));
-    float mtx[16];
-    bx::mtxMul(mtx, rotate, translate);
-    bgfx::setTransform(mtx);
-
-    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
-
-    bgfx::setVertexBuffer(0, triangleVbh);
-    bgfx::setIndexBuffer(triangleIbh);
-    bgfx::submit(rendering::ui_view, program);
-
-    bx::mtxTranslate(translate, 300.0f, 500.0f, 0.0f);
-    bx::mtxRotateZ(rotate, bx::toRad(45.0f));
-    bx::mtxMul(mtx, rotate, translate);
-    bgfx::setTransform(mtx);
-    bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
-    bgfx::setVertexBuffer(0, rectVbh);
-    bgfx::setIndexBuffer(rectIbh);
-    bgfx::submit(rendering::ui_view, program);
+    // float translate[16];
+    // bx::mtxTranslate(translate, 200.0f, 500.0f, 0.0f);
+    // float rotate[16];
+    // bx::mtxRotateZ(rotate, bx::toRad(45.0f));
+    // float mtx[16];
+    // bx::mtxMul(mtx, rotate, translate);
+    // bgfx::setTransform(mtx);
+    //
+    // bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+    //
+    // bgfx::setVertexBuffer(0, triangleVbh);
+    // bgfx::setIndexBuffer(triangleIbh);
+    // bgfx::submit(rendering::ui_view, program);
+    //
+    // bx::mtxTranslate(translate, 300.0f, 500.0f, 0.0f);
+    // bx::mtxRotateZ(rotate, bx::toRad(45.0f));
+    // bx::mtxMul(mtx, rotate, translate);
+    // bgfx::setTransform(mtx);
+    // bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
+    // bgfx::setVertexBuffer(0, rectVbh);
+    // bgfx::setIndexBuffer(rectIbh);
+    // bgfx::submit(rendering::ui_view, program);
 
     // draw cube
     //    bgfx::touch(rendering::main_view);
