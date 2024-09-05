@@ -82,28 +82,35 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart,
           continue;
         }
         // calculate hash of base path
-        auto pathHash = bms_parser::md5(basePath.string());
-        auto fileName = pathHash + "-" + std::to_string(bmp->first) + ".mp4";
-        auto transcodedPath =
-            (Utils::GetDocumentsPath("temp") / fileName).string();
-        if (!std::filesystem::exists(transcodedPath)) {
-          // mkdir
-          std::filesystem::create_directories(Utils::GetDocumentsPath("temp"));
-          int result = transcode(path.string().c_str(), transcodedPath.c_str(),
-                                 &isCancelled);
-          if (isCancelled) {
-            // delete transcoded file
-            std::filesystem::remove(transcodedPath);
-            return;
-          }
-          if (result != 0) {
-            SDL_Log("Failed to transcode video: %ls", path.c_str());
-            continue;
+        auto targetPath = path;
+        // TODO: test if transcoding mp4 is necessary
+        if (/*ext != "mp4"*/ true) {
+          auto pathHash = bms_parser::md5(basePath.string());
+          auto transcodedFileName =
+              pathHash + "-" + std::to_string(bmp->first) + ".mp4";
+
+          targetPath =
+              (Utils::GetDocumentsPath("temp") / transcodedFileName).string();
+          if (!std::filesystem::exists(targetPath)) {
+            // mkdir
+            std::filesystem::create_directories(
+                Utils::GetDocumentsPath("temp"));
+            int result = transcode(path.string().c_str(), targetPath.c_str(),
+                                   &isCancelled);
+            if (isCancelled) {
+              // delete transcoded file
+              std::filesystem::remove(targetPath);
+              return;
+            }
+            if (result != 0) {
+              SDL_Log("Failed to transcode video: %ls", path.c_str());
+              continue;
+            }
           }
         }
         // new video player
         auto videoPlayer = new VideoPlayer();
-        if (videoPlayer->loadVideo(transcodedPath, isCancelled)) {
+        if (videoPlayer->loadVideo(targetPath, isCancelled)) {
           videoPlayerTable[bmp->first] = videoPlayer;
 
           SDL_Log("video width: %f, video height: %f", videoPlayer->viewWidth,
@@ -143,9 +150,11 @@ void Jukebox::loadChart(bms_parser::Chart &chart, bool scheduleNotes,
   if (isCancelled)
     return;
   SDL_Log("Loading sounds");
-  loadSounds(chart, isCancelled);
+  std::thread loadSoundThread(
+      [this, &chart, &isCancelled] { loadSounds(chart, isCancelled); });
   SDL_Log("Loading videos");
   loadBMPs(chart, isCancelled);
+  loadSoundThread.join();
 
   if (isCancelled)
     return;
