@@ -1,1 +1,1 @@
-target_sources(main PRIVATE GamePlayScene.cpp BMSRenderer.cpp)
+target_sources(main PRIVATE GamePlayScene.cpp BMSRenderer.cpp Judge.cpp)

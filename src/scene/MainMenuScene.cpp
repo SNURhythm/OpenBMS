@@ -180,7 +180,10 @@ void MainMenuScene::initView(ApplicationContext &context) {
       }
       selectedChart = chart;
 
-      context.jukebox.loadChart(*chart, previewLoadCancelled);
+      context.jukebox.loadChart(*chart, true, previewLoadCancelled);
+      if (previewLoadCancelled) {
+        return;
+      }
       if (!willStart) {
         context.jukebox.play();
       }

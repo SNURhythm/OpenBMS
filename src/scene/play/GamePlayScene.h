@@ -3,15 +3,24 @@
 //
 
 #pragma once
+#include "RhythmState.h"
 #include "../Scene.h"
 #include "../../bms_parser.hpp"
 #include "../../input/IRhythmControl.h"
 #include "../../view/TextView.h"
+
+struct StartOptions {
+  unsigned long long startPosition = 0;
+  bool autoKeySound = false;
+  bool autoPlay = false;
+};
 class RhythmInputHandler;
 class BMSRenderer;
 class GamePlayScene : public Scene, public IRhythmControl {
 private:
   bms_parser::Chart *chart;
+  bool isGamePaused = false;
+  std::atomic_bool isCancelled = false;
 
 public:
   GamePlayScene() = delete;
@@ -28,8 +37,15 @@ public:
   void releaseLane(int lane, double inputDelay) override;
 
 private:
+  StartOptions options;
+  void checkPassedTimeline(long long time);
+  void onJudge(const JudgeResult &JudgeResult);
+  JudgeResult pressNote(bms_parser::Note *note, long long pressedTime);
+  void releaseNote(bms_parser::Note *Note, long long ReleasedTime);
+  RhythmState *state = nullptr;
   BMSRenderer *renderer;
   RhythmInputHandler *inputHandler;
   std::map<int, bool> lanePressed;
   TextView *laneStateText;
+  std::mutex judgeMutex;
 };
