@@ -45,6 +45,7 @@ private:
   size_t bmpCursor = 0;
   std::unordered_map<int, path_t> wavTableAbs;
   std::unordered_map<int, VideoPlayer *> videoPlayerTable;
+  std::vector<std::future<bool>> asyncVideoLoads;
   int currentBga = -1;
   std::vector<std::string> audioExtensions = {"flac", "wav", "ogg", "mp3"};
   std::vector<std::string> videoExtensions = {
