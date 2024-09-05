@@ -27,6 +27,7 @@ void Jukebox::render() {
     }
   }
 }
+
 void Jukebox::loadSounds(bms_parser::Chart &chart,
                          std::atomic_bool &isCancelled) {
   parallel_for(chart.WavTable.size(), [&](int start, int end) {
@@ -117,6 +118,11 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart,
           std::filesystem::create_directories(Utils::GetDocumentsPath("temp"));
           int result = transcode(path.string().c_str(), transcodedPath.c_str(),
                                  &isCancelled);
+          if (isCancelled) {
+            // delete transcoded file
+            std::filesystem::remove(transcodedPath);
+            return;
+          }
           if (result != 0) {
             SDL_Log("Failed to transcode video: %ls", path.c_str());
             continue;
@@ -124,7 +130,7 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart,
         }
         // new video player
         auto videoPlayer = new VideoPlayer();
-        if (videoPlayer->loadVideo(transcodedPath)) {
+        if (videoPlayer->loadVideo(transcodedPath, isCancelled)) {
           videoPlayerTable[bmp->first] = videoPlayer;
 
           SDL_Log("video width: %f, video height: %f", videoPlayer->viewWidth,
@@ -173,13 +179,12 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart,
     }
   });
 }
-void Jukebox::loadChart(bms_parser::Chart &chart,
+void Jukebox::loadChart(bms_parser::Chart &chart, bool scheduleNotes,
                         std::atomic_bool &isCancelled) {
   isPlaying = false;
   if (playThread.joinable())
     playThread.join();
-  audioList.clear();
-  audioCursor = 0;
+
   audio.stopSounds();
   audio.unloadSounds();
   wavTableAbs.clear();
@@ -188,22 +193,26 @@ void Jukebox::loadChart(bms_parser::Chart &chart,
     delete videoPlayer.second;
   }
   videoPlayerTable.clear();
-  bmpList.clear();
-  bmpCursor = 0;
+
   if (isCancelled)
     return;
+  SDL_Log("Loading sounds");
   loadSounds(chart, isCancelled);
+  SDL_Log("Loading videos");
   loadBMPs(chart, isCancelled);
 
   if (isCancelled)
     return;
-  schedule(chart, isCancelled);
+  schedule(chart, scheduleNotes, isCancelled);
   SDL_Log("Chart loaded");
 }
 
-void Jukebox::schedule(bms_parser::Chart &chart,
+void Jukebox::schedule(bms_parser::Chart &chart, bool scheduleNotes,
                        std::atomic_bool &isCancelled) {
-
+  audioCursor = 0;
+  bmpCursor = 0;
+  audioList.clear();
+  bmpList.clear();
   for (auto &measure : chart.Measures) {
     if (isCancelled)
       return;
@@ -214,12 +223,14 @@ void Jukebox::schedule(bms_parser::Chart &chart,
         bmpList.emplace_back(timeline->Timing, timeline->BgaBase);
       }
       std::vector<std::pair<long long, int>> notes;
-      for (auto &note : timeline->Notes) {
-        if (isCancelled)
-          return;
-        if (note == nullptr)
-          continue;
-        notes.emplace_back(timeline->Timing, note->Wav);
+      if (scheduleNotes) {
+        for (auto &note : timeline->Notes) {
+          if (isCancelled)
+            return;
+          if (note == nullptr)
+            continue;
+          notes.emplace_back(timeline->Timing, note->Wav);
+        }
       }
       for (auto &bgNote : timeline->BackgroundNotes) {
         if (isCancelled)
@@ -233,6 +244,11 @@ void Jukebox::schedule(bms_parser::Chart &chart,
         audioList.push_back(note);
       }
     }
+  }
+}
+void Jukebox::playKeySound(int wav) {
+  if (isPlaying) {
+    audio.playSound(wavTableAbs[wav].c_str());
   }
 }
 
@@ -250,6 +266,10 @@ void Jukebox::play() {
       std::lock_guard<std::mutex> lock(seekLock);
       auto now = std::chrono::high_resolution_clock::now();
       auto positionMicro = stopwatch.elapsedMicros();
+      if (onTickCb) {
+        onTickCb(positionMicro);
+      }
+
       if (audioCursor < audioList.size()) {
         auto &target = audioList[audioCursor];
         if (positionMicro >= target.first) {

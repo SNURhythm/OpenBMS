@@ -9,19 +9,26 @@
 #include "../path.h"
 #include "../video/VideoPlayer.h"
 #include "../utils/Stopwatch.h"
+
 class Jukebox {
 public:
   Jukebox();
   ~Jukebox();
 
-  void loadChart(bms_parser::Chart &chart, std::atomic_bool &isCancelled);
-  void schedule(bms_parser::Chart &chart, std::atomic_bool &isCancelled);
+  void loadChart(bms_parser::Chart &chart, bool scheduleNotes,
+                 std::atomic_bool &isCancelled);
+  void schedule(bms_parser::Chart &chart, bool scheduleNotes,
+                std::atomic_bool &isCancelled);
+  void playKeySound(int wav);
   void play();
   void stop();
   void render();
 
   long long getTimeMicros();
   void seek(long long micro);
+  std::function<void(long long)> onTickCb;
+  void onTick(const std::function<void(long long)> &cb) { onTickCb = cb; }
+  void removeOnTick() { onTickCb = nullptr; }
 
 private:
   // seek lock
