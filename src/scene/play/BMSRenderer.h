@@ -56,6 +56,6 @@ public:
   void onLaneReleased(int lane, long long time);
   void onJudge(JudgeResult judgeResult, int combo);
   explicit BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming);
-  void drawJudgement(RenderContext context);
+  void drawJudgement(RenderContext context) const;
   void render(RenderContext &context, long long micro);
 };

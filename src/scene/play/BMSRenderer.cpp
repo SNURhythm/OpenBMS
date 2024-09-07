@@ -50,7 +50,7 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
                          rendering::window_height / 2);
   judgeText->setAlign(TextView::CENTER);
 }
-void BMSRenderer::drawJudgement(RenderContext context) {
+void BMSRenderer::drawJudgement(RenderContext context) const {
   if (latestJudgeResult.judgement == None) {
     return;
   }
