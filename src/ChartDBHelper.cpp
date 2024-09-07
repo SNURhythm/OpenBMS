@@ -233,6 +233,9 @@ void ChartDBHelper::SelectAllChartMeta(
     return;
   }
 
+  // reserve space for the result
+  chartMetas.reserve(sqlite3_column_count(stmt));
+
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     auto chartMeta = ReadChartMeta(stmt);
     chartMetas.push_back(chartMeta);
@@ -285,6 +288,9 @@ void ChartDBHelper::SearchChartMeta(
   }
   // %text%
   sqlite3_bind_text(stmt, 1, ("%" + text + "%").c_str(), -1, SQLITE_TRANSIENT);
+
+  // reserve space for the result
+  chartMetas.reserve(sqlite3_column_count(stmt));
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     auto chartMeta = ReadChartMeta(stmt);
@@ -440,6 +446,7 @@ std::vector<path_t> ChartDBHelper::SelectAllEntries(sqlite3 *db) {
     return std::vector<path_t>();
   }
   std::vector<path_t> entries;
+  entries.reserve(sqlite3_column_count(stmt));
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     std::filesystem::path entry = std::filesystem::path(
         reinterpret_cast<const char *>(sqlite3_column_text(stmt, 0)));
