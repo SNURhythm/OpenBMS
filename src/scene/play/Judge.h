@@ -74,9 +74,8 @@ private:
               {Bad, std::pair<long long, long long>(-220000, 280000)},
               {Kpoor, std::pair<long long, long long>(-500000, 150000)}}};
 
-  std::map<Judgement, std::pair<long long, long long>> timingWindows;
-
 public:
+  std::map<Judgement, std::pair<long long, long long>> timingWindows;
   explicit Judge(int Rank);
   static bool checkRange(long long Diff, long long Early, long long Late);
   JudgeResult judgeNow(const bms_parser::Note *Note, long long InputTime);
