@@ -231,9 +231,8 @@ void VideoPlayer::render() {
   bgfx::setTexture(1, s_texU, videoTextureU);
   bgfx::setTexture(2, s_texV, videoTextureV);
 
-  bgfx::submit(
-      rendering::bga_view,
-      rendering::ShaderManager::getInstance().getProgram(SHADER_YUVRGB));
+  bgfx::submit(viewId, rendering::ShaderManager::getInstance().getProgram(
+                           SHADER_YUVRGB));
 }
 
 void VideoPlayer::play() { mediaPlayer->play(); }

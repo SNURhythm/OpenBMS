@@ -235,12 +235,15 @@ void run() {
                      0x00000000);
   bgfx::setViewClear(rendering::ui_view, BGFX_CLEAR_DEPTH, 0x00000000);
   bgfx::setViewClear(rendering::bga_view, BGFX_CLEAR_DEPTH, 0x00000000);
+  bgfx::setViewClear(rendering::bga_layer_view, BGFX_CLEAR_DEPTH, 0x00000000);
   bgfx::setViewClear(rendering::main_view, BGFX_CLEAR_DEPTH, 0x00000000, 1.0f,
                      0);
   // This is set to determine the size of the drawable surface
   bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
                     rendering::window_height);
   bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
+                    rendering::window_height);
+  bgfx::setViewRect(rendering::bga_layer_view, 0, 0, rendering::window_width,
                     rendering::window_height);
   auto program =
       rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
@@ -295,6 +298,7 @@ void run() {
     bgfx::submit(rendering::clear_view, program);
     bgfx::touch(rendering::ui_view);
     bgfx::touch(rendering::bga_view);
+    bgfx::touch(rendering::bga_layer_view);
 
     bgfx::submit(rendering::clear_view, program);
     sceneManager.render();
@@ -357,6 +361,9 @@ void resetViewTransform() {
                     rendering::window_height);
   bgfx::setViewTransform(rendering::bga_view, nullptr, ortho);
   bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
+                    rendering::window_height);
+  bgfx::setViewTransform(rendering::bga_layer_view, nullptr, ortho);
+  bgfx::setViewRect(rendering::bga_layer_view, 0, 0, rendering::window_width,
                     rendering::window_height);
   bgfx::setViewTransform(rendering::clear_view, nullptr, ortho);
   bgfx::setViewRect(rendering::clear_view, 0, 0, rendering::window_width,
