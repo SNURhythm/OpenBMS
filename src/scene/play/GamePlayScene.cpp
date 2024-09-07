@@ -267,18 +267,20 @@ void GamePlayScene::checkPassedTimeline(long long time) {
   }
 }
 
-void GamePlayScene::onJudge(const JudgeResult &JudgeResult) {
+void GamePlayScene::onJudge(const JudgeResult &judgeResult) {
   std::lock_guard<std::mutex> lock(judgeMutex);
-  state->latestJudgeResult = JudgeResult;
-  state->judgeCount[JudgeResult.judgement]++;
-  if (JudgeResult.isComboBreak()) {
+  state->latestJudgeResult = judgeResult;
+
+  state->judgeCount[judgeResult.judgement]++;
+  if (judgeResult.isComboBreak()) {
     state->combo = 0;
     state->comboBreak++;
-  } else if (JudgeResult.judgement != Kpoor) {
+  } else if (judgeResult.judgement != Kpoor) {
     state->combo++;
   }
-  SDL_Log("Judge: %s, Combo: %d, Diff: %lld", JudgeResult.toString().c_str(),
-          state->combo, JudgeResult.Diff);
+  renderer->onJudge(judgeResult, state->combo);
+  SDL_Log("Judge: %s, Combo: %d, Diff: %lld", judgeResult.toString().c_str(),
+          state->combo, judgeResult.Diff);
   // CurrentRhythmHUD->OnJudge(state);
   // UE_LOG(LogTemp, Warning, TEXT("Judge: %s, Combo: %d, Diff: %lld"),
   // *JudgeResult.ToString(), state->Combo, JudgeResult.Diff);

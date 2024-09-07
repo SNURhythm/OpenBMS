@@ -35,25 +35,11 @@ TextView::~TextView() {
 }
 
 void TextView::setText(const std::string &newText) {
+  if (newText == text) {
+    return;
+  }
   this->text = newText;
-  if (newText.empty()) {
-    rect.w = 0;
-    rect.h = 0;
-
-    return;
-  }
-  SDL_Surface *surface = TTF_RenderUTF8_Blended(font, newText.c_str(), color);
-  if (bgfx::isValid(texture)) {
-    bgfx::destroy(texture);
-  }
-  if (!surface) {
-    SDL_Log("Failed to render text: %s", TTF_GetError());
-    return;
-  }
-  rect.w = surface->w;
-  rect.h = surface->h;
-  texture = rendering::sdlSurfaceToBgfxTexture(surface);
-  SDL_FreeSurface(surface);
+  createTexture();
 }
 
 void TextView::render(RenderContext &context) {
@@ -122,9 +108,24 @@ void TextView::setColor(SDL_Color newColor) {
 }
 
 void TextView::createTexture() {
-  if (!text.empty()) {
-    setText(text); // Re-create texture with new color
+  if (text.empty()) {
+    rect.w = 0;
+    rect.h = 0;
+
+    return;
   }
+  SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
+  if (bgfx::isValid(texture)) {
+    bgfx::destroy(texture);
+  }
+  if (!surface) {
+    SDL_Log("Failed to render text: %s", TTF_GetError());
+    return;
+  }
+  rect.w = surface->w;
+  rect.h = surface->h;
+  texture = rendering::sdlSurfaceToBgfxTexture(surface);
+  SDL_FreeSurface(surface);
 }
 
 void TextView::setAlign(TextAlign newAlign) { this->align = newAlign; }
