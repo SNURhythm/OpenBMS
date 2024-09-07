@@ -43,7 +43,7 @@ private:
   Judge judge;
   StartOptions options;
   void checkPassedTimeline(long long time);
-  void onJudge(const JudgeResult &JudgeResult);
+  void onJudge(const JudgeResult &judgeResult);
   JudgeResult pressNote(bms_parser::Note *note, long long pressedTime);
   void releaseNote(bms_parser::Note *Note, long long ReleasedTime);
   RhythmState *state = nullptr;

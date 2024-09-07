@@ -11,6 +11,7 @@
 #include "../../game/SpriteObject.h"
 #include "../../rendering/Color.h"
 #include "../../scene/play/RhythmState.h"
+#include "../../view/TextView.h"
 struct LaneState {
   long long lastStateTime = -1;
   bool isPressed = false;
@@ -29,7 +30,12 @@ public:
 };
 class BMSRenderer {
 private:
+  ~BMSRenderer();
+  TextView *judgeText = nullptr;
   std::map<int, LaneState> laneStates;
+  JudgeResult latestJudgeResult = JudgeResult(None, 0);
+  std::chrono::system_clock::time_point latestJudgeResultTime;
+  int latestCombo = 0;
   float noteImageHeight = 0;
   float noteImageWidth = 0;
   std::vector<bms_parser::TimeLine *> timelines;
@@ -48,6 +54,8 @@ private:
 public:
   void onLanePressed(int lane, const JudgeResult judge, long long time);
   void onLaneReleased(int lane, long long time);
+  void onJudge(JudgeResult judgeResult, int combo);
   explicit BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming);
+  void drawJudgement(RenderContext context);
   void render(RenderContext &context, long long micro);
 };
