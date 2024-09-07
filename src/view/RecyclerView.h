@@ -38,7 +38,7 @@ public:
   int topMargin;    // Number of items to keep ready above the visible area
   int bottomMargin; // Number of items to keep ready below the visible area
 
-  inline void setItems(std::vector<T> items) {
+  inline void setItems(const std::vector<T> &items) {
     this->items = items;
     // reset selected index
     selectedIndex = -1;
