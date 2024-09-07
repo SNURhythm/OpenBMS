@@ -25,11 +25,12 @@ public:
   size_t onSubmit(std::function<void(const std::string &)> callback);
   void removeOnSubmit(std::function<void(const std::string &)> callback);
 
-  [[nodiscard]] inline std::string getText() const { return text; }
+  [[nodiscard]] inline std::string getText() const { return editingText; }
 
   [[nodiscard]] inline bool getSelected() const { return isSelected; }
 
 private:
+  std::string editingText;
   std::string composition;
   int compositionX = 0;
   int compositionY = 0;
