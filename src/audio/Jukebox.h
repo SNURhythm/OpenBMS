@@ -9,7 +9,10 @@
 #include "../path.h"
 #include "../video/VideoPlayer.h"
 #include "../utils/Stopwatch.h"
-
+struct BMPData {
+  int id;
+  int viewId;
+};
 class Jukebox {
 public:
   Jukebox();
@@ -41,7 +44,7 @@ private:
   AudioWrapper audio;
   std::vector<std::pair<long long, int>> audioList;
   size_t audioCursor = 0;
-  std::vector<std::pair<long long, int>> bmpList;
+  std::vector<std::pair<long long, BMPData>> bmpList;
   size_t bmpCursor = 0;
   std::unordered_map<int, path_t> wavTableAbs;
   std::unordered_map<int, VideoPlayer *> videoPlayerTable;

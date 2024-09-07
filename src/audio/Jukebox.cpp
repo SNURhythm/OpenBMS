@@ -168,7 +168,19 @@ void Jukebox::schedule(bms_parser::Chart &chart, bool scheduleNotes,
       if (isCancelled)
         return;
       if (timeline->BgaBase != -1) {
-        bmpList.emplace_back(timeline->Timing, timeline->BgaBase);
+        BMPData data{
+            .id = timeline->BgaBase,
+            .viewId = rendering::bga_view,
+        };
+
+        bmpList.emplace_back(timeline->Timing, data);
+      }
+      if (timeline->BgaLayer != -1) {
+        BMPData data{
+            .id = timeline->BgaLayer,
+            .viewId = rendering::bga_layer_view,
+        };
+        bmpList.emplace_back(timeline->Timing, data);
       }
       std::vector<std::pair<long long, int>> notes;
       if (scheduleNotes) {
@@ -234,15 +246,17 @@ void Jukebox::play() {
           //          SDL_Log("Playing video at %lld; id: %d; actual time:
           //          %lld",
           //                  target.first, target.second, positionMicro);
-          if (videoPlayerTable.find(target.second) != videoPlayerTable.end()) {
-            auto videoPlayer = videoPlayerTable[target.second];
+          if (videoPlayerTable.find(target.second.id) !=
+              videoPlayerTable.end()) {
+            auto videoPlayer = videoPlayerTable[target.second.id];
             videoPlayer->seek(0);
             videoPlayer->play();
             videoPlayer->viewWidth = rendering::window_width;
             videoPlayer->viewHeight = rendering::window_height;
-            currentBga = target.second;
+            videoPlayer->viewId = target.second.viewId;
+            currentBga = target.second.id;
           } else {
-            SDL_Log("Video player not found for id: %d", target.second);
+            SDL_Log("Video player not found for id: %d", target.second.id);
           }
           bmpCursor++;
         }

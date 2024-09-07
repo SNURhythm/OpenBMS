@@ -48,6 +48,7 @@ struct PosTexVertex {
 
 static bgfx::ViewId ui_view = 255;
 static bgfx::ViewId bga_view = 1;
+static bgfx::ViewId bga_layer_view = 2;
 static bgfx::ViewId main_view = 128;
 static bgfx::ViewId clear_view = 0;
 
