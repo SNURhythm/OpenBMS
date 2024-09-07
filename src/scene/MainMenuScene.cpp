@@ -114,6 +114,8 @@ void MainMenuScene::initView(ApplicationContext &context) {
       [](const bms_parser::ChartMeta &a, const bms_parser::ChartMeta &b) {
         return a.SHA256 == b.SHA256;
       });
+  auto dbHelper = ChartDBHelper::GetInstance();
+
   recyclerView->onCreateView = [this](const bms_parser::ChartMeta &item) {
     return new ChartListItemView(0, 0, rendering::window_width, 100, item.Title,
                                  item.Artist, std::to_string(item.PlayLevel));
@@ -267,6 +269,9 @@ void MainMenuScene::initView(ApplicationContext &context) {
   right->addView(startButton, {0, 100, 0});
   rootLayout->addView(right, {200, 0, 0});
   addView(rootLayout);
+  std::vector<bms_parser::ChartMeta> chartMetas;
+  dbHelper.SelectAllChartMeta(db, chartMetas);
+  recyclerView->setItems(chartMetas);
 }
 
 void MainMenuScene::update(float dt) {
@@ -305,7 +310,7 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
               return a.Title < b.Title;
             });
   std::vector<Diff> diffs;
-  std::cout << "Finding new bms files" << std::endl;
+  SDL_Log("Finding new bms files");
   std::unordered_set<path_t> oldFilesWs;
 
   for (auto &chartMeta : chartMetas) {
@@ -323,7 +328,9 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
     FindNewBmsFiles(diffs, oldFilesWs, entry, isCancelled);
   }
 
-  std::cout << "Found " << diffs.size() << " new bms files" << std::endl;
+  SDL_Log("Found %zu new bms files", diffs.size());
+  if (diffs.empty())
+    return;
   std::atomic_bool is_committing(false);
   std::atomic_int success_count(0);
   dbHelper.BeginTransaction(db);
@@ -362,7 +369,7 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
     }
   });
   dbHelper.CommitTransaction(db);
-  std::cout << "Inserted " << success_count << " new charts" << std::endl;
+  SDL_Log("Inserted %d new charts", success_count.load());
   // set items
   chartMetas.clear();
   dbHelper.SelectAllChartMeta(db, chartMetas);
@@ -504,7 +511,7 @@ void MainMenuScene::FindNewBmsFiles(
   std::vector<std::filesystem::path> directoriesToVisit;
   directoriesToVisit.push_back(path);
 #endif
-  SDL_Log("Finding new bms files in %s", path.c_str());
+  SDL_Log("Finding new bms files in %s", path_t_to_utf8(path).c_str());
   while (!directoriesToVisit.empty()) {
     if (isCancelled) {
       break;
