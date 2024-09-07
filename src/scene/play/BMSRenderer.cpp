@@ -9,7 +9,8 @@
 #include "../../rendering/common.h"
 #include "../../rendering/ShaderManager.h"
 #include "stb_image.h"
-BMSRenderer::BMSRenderer(bms_parser::Chart *chart) {
+BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
+    : latePoorTiming(latePoorTiming) {
   for (auto lane : chart->Meta.GetTotalLaneIndices()) {
     laneStates[lane] = LaneState();
   }
@@ -69,7 +70,8 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
        i++) {
     auto &timeLine = timelines[i];
     if (timeLine->Timing >= micro) {
-
+      if (y < yOrigin)
+        y = yOrigin;
       if (i > 0) {
         auto &prevTimeLine = timelines[i - 1];
         if (prevTimeLine->Timing + prevTimeLine->GetStopDuration() > micro) {
@@ -90,6 +92,9 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
       if (timeLine->IsFirstInMeasure) {
         drawRect(context, 8.0f, 0.05f, 0.0f, y, Color(255, 255, 255, 128));
       }
+    } else if (timeLine->Timing >= micro - latePoorTiming) {
+      y = yOrigin + (micro - timeLine->Timing) /
+                        static_cast<float>(latePoorTiming) * lowerBound;
     } else {
       state.currentTimelineIndex = i;
     }
@@ -97,7 +102,7 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
     // render notes
     for (const auto &note : timeLine->Notes) {
       if (note != nullptr) {
-        if (timeLine->Timing >= micro) {
+        if (timeLine->Timing >= micro - latePoorTiming) {
           if (note->IsPlayed) {
             continue;
           }

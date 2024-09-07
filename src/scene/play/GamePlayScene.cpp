@@ -11,7 +11,7 @@ void GamePlayScene::init() {
   chartNameText->setText("Selected: " + chart->Meta.Title);
   chartNameText->setPosition(10, 10);
   addView(chartNameText);
-  renderer = new BMSRenderer(chart);
+  renderer = new BMSRenderer(chart, judge.timingWindows[Bad].second);
   state = new RhythmState(chart, false);
   context.jukebox.schedule(*chart, false, isCancelled);
   context.jukebox.play();
@@ -93,7 +93,7 @@ int GamePlayScene::pressLane(int mainLane, int compensateLane,
     for (size_t j = isFirstMeasure ? state->passedTimelineCount : 0;
          j < measure->TimeLines.size(); j++) {
       const auto &timeline = measure->TimeLines[j];
-      if (timeline->Timing < pressedTime - 200000) {
+      if (timeline->Timing < pressedTime - latePoorTiming) {
         continue;
       }
       for (auto lane : candidates) {
@@ -107,7 +107,7 @@ int GamePlayScene::pressLane(int mainLane, int compensateLane,
         if (note->IsLandmineNote()) {
           continue;
         }
-        if (state->judge->judgeNow(note, pressedTime).judgement == None) {
+        if (judge.judgeNow(note, pressedTime).judgement == None) {
           continue;
         }
         const JudgeResult judgement = pressNote(note, pressedTime);
@@ -156,7 +156,7 @@ void GamePlayScene::releaseLane(int lane, double inputDelay) {
     for (size_t j = isFirstMeasure ? state->passedTimelineCount : 0;
          j < measure->TimeLines.size(); j++) {
       const auto &Timeline = measure->TimeLines[j];
-      if (Timeline->Timing < releasedTime - 200000) {
+      if (Timeline->Timing < releasedTime - latePoorTiming) {
         continue;
       }
       const auto &note = Timeline->Notes[lane];
@@ -184,7 +184,7 @@ void GamePlayScene::checkPassedTimeline(long long time) {
          j < measure->TimeLines.size(); j++) {
       totalLoopCount++;
       const auto &timeline = measure->TimeLines[j];
-      if (timeline->Timing < time - 200000) {
+      if (timeline->Timing < time - latePoorTiming) {
         if (isFirstMeasure) {
           state->passedTimelineCount++;
         }
@@ -228,8 +228,8 @@ void GamePlayScene::checkPassedTimeline(long long time) {
                 continue;
               }
               longNote->Release(time);
-              const auto judgeResult = state->judge->judgeNow(
-                  longNote->Head, longNote->Head->PlayedTime);
+              const auto judgeResult =
+                  judge.judgeNow(longNote->Head, longNote->Head->PlayedTime);
               onJudge(judgeResult);
               if (options.autoPlay) {
                 renderer->onLaneReleased(
@@ -289,7 +289,7 @@ JudgeResult GamePlayScene::pressNote(bms_parser::Note *note,
   if (note->Wav != bms_parser::Parser::NoWav && !options.autoKeySound) {
     context.jukebox.playKeySound(note->Wav);
   }
-  const auto judgeResult = state->judge->judgeNow(note, pressedTime);
+  const auto judgeResult = judge.judgeNow(note, pressedTime);
   if (judgeResult.judgement != None) {
     if (judgeResult.isNotePlayed()) {
       // TODO: play keybomb
@@ -320,7 +320,7 @@ void GamePlayScene::releaseNote(bms_parser::Note *Note,
     return;
   }
   LongNote->Release(ReleasedTime);
-  const auto judgeResult = state->judge->judgeNow(LongNote, ReleasedTime);
+  const auto judgeResult = judge.judgeNow(LongNote, ReleasedTime);
   // if tail judgement is not good/great/pgreat, make it bad
   if (judgeResult.judgement == None || judgeResult.judgement == Kpoor ||
       judgeResult.judgement == Poor) {
@@ -329,6 +329,6 @@ void GamePlayScene::releaseNote(bms_parser::Note *Note,
   }
   // otherwise, follow the head's judgement
   const auto HeadJudgeResult =
-      state->judge->judgeNow(LongNote->Head, LongNote->Head->PlayedTime);
+      judge.judgeNow(LongNote->Head, LongNote->Head->PlayedTime);
   onJudge(HeadJudgeResult);
 }

@@ -21,12 +21,15 @@ private:
   bms_parser::Chart *chart;
   bool isGamePaused = false;
   std::atomic_bool isCancelled = false;
+  long long latePoorTiming;
 
 public:
   GamePlayScene() = delete;
+
   explicit GamePlayScene(ApplicationContext &context, bms_parser::Chart *chart)
-      : Scene(context) {
+      : Scene(context), judge(chart->Meta.Rank) {
     this->chart = chart;
+    latePoorTiming = judge.timingWindows[Bad].second;
   };
   void init() override;
   void update(float dt) override;
@@ -37,15 +40,16 @@ public:
   void releaseLane(int lane, double inputDelay) override;
 
 private:
+  Judge judge;
   StartOptions options;
   void checkPassedTimeline(long long time);
   void onJudge(const JudgeResult &JudgeResult);
   JudgeResult pressNote(bms_parser::Note *note, long long pressedTime);
   void releaseNote(bms_parser::Note *Note, long long ReleasedTime);
   RhythmState *state = nullptr;
-  BMSRenderer *renderer;
-  RhythmInputHandler *inputHandler;
+  BMSRenderer *renderer = nullptr;
+  RhythmInputHandler *inputHandler = nullptr;
   std::map<int, bool> lanePressed;
-  TextView *laneStateText;
+  TextView *laneStateText = nullptr;
   std::mutex judgeMutex;
 };

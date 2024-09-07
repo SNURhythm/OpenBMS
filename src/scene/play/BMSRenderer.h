@@ -35,6 +35,8 @@ private:
   std::vector<bms_parser::TimeLine *> timelines;
   BMSRendererState state;
   float noteRenderWidth = 1.0f;
+  float lowerBound = -1.0f;
+  long long latePoorTiming;
   GameObject *getInstance(ObjectType type);
   void recycleInstance(ObjectType type, GameObject *object);
   void drawRect(RenderContext &context, float width, float height, float x,
@@ -46,6 +48,6 @@ private:
 public:
   void onLanePressed(int lane, const JudgeResult judge, long long time);
   void onLaneReleased(int lane, long long time);
-  explicit BMSRenderer(bms_parser::Chart *chart);
+  explicit BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming);
   void render(RenderContext &context, long long micro);
 };
