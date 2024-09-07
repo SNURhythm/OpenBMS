@@ -5,6 +5,7 @@
 #include <vlcpp/vlc.hpp>
 #include <mutex>
 #include <future>
+#include "../rendering/common.h"
 
 class VideoPlayer {
 public:
@@ -19,6 +20,7 @@ public:
   void seek(long long micro);
   float viewWidth = 1920.0f;
   float viewHeight = 1080.0f;
+  int viewId = rendering::bga_view;
   float viewX = 0.0f;
   float viewY = 0.0f;
   float fps = 60.0f;
