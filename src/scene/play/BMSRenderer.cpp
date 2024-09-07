@@ -9,6 +9,8 @@
 #include "../../rendering/common.h"
 #include "../../rendering/ShaderManager.h"
 #include "stb_image.h"
+
+#include <sstream>
 BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
     : latePoorTiming(latePoorTiming) {
   for (auto lane : chart->Meta.GetTotalLaneIndices()) {
@@ -42,6 +44,25 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
       bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
                             0, bgfx::copy(data, width * height * 4));
   stbi_image_free(data);
+
+  judgeText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
+  judgeText->setPosition(rendering::window_width / 2,
+                         rendering::window_height / 2);
+  judgeText->setAlign(TextView::CENTER);
+}
+void BMSRenderer::drawJudgement(RenderContext context) {
+  if (latestJudgeResult.judgement == None) {
+    return;
+  }
+  std::stringstream ss;
+  ss << latestJudgeResult.toString();
+  ss << " ";
+  if (latestCombo > 0) {
+    ss << latestCombo;
+  }
+  judgeText->setText(ss.str());
+
+  judgeText->render(context);
 }
 
 void BMSRenderer::onLanePressed(int lane, const JudgeResult judge,
@@ -57,6 +78,14 @@ void BMSRenderer::onLaneReleased(int lane, long long time) {
   SDL_Log("Released lane: %d, time: %lld", lane, time);
   laneStates[lane].isPressed = false;
   laneStates[lane].lastStateTime = time;
+}
+void BMSRenderer::onJudge(JudgeResult judgeResult, int combo) {
+  if (judgeResult.judgement == None) {
+    return;
+  }
+  latestJudgeResult = judgeResult;
+  latestJudgeResultTime = std::chrono::system_clock::now();
+  latestCombo = combo;
 }
 void BMSRenderer::render(RenderContext &context, long long micro) {
   float yOrigin = 0.0f;
@@ -146,6 +175,9 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
                      std::chrono::system_clock::now().time_since_epoch())
                      .count());
   }
+
+  // render judgement
+  drawJudgement(context);
 }
 void BMSRenderer::drawRect(RenderContext &context, float width, float height,
                            float x, float y, Color color) {
@@ -252,4 +284,13 @@ BMSRendererState::~BMSRendererState() {
       pair.second.pop();
     }
   }
+}
+BMSRenderer::~BMSRenderer() {
+  if (bgfx::isValid(noteTexture)) {
+    bgfx::destroy(noteTexture);
+  }
+  if (bgfx::isValid(noteTexture2)) {
+    bgfx::destroy(noteTexture2);
+  }
+  delete judgeText;
 }
