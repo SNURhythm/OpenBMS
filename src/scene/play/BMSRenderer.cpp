@@ -12,7 +12,7 @@
 
 #include <sstream>
 BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
-    : latePoorTiming(latePoorTiming) {
+    : latePoorTiming(latePoorTiming), chart(chart) {
   for (auto lane : chart->Meta.GetTotalLaneIndices()) {
     laneStates[lane] = LaneState();
   }
@@ -41,6 +41,15 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
     throw std::runtime_error("Failed to load note texture");
   }
   noteTexture2 =
+      bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
+                            0, bgfx::copy(data, width * height * 4));
+  stbi_image_free(data);
+  data = stbi_load("assets/img/scratch.png", &width, &height, &channels, 4);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  scratchTexture =
       bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
                             0, bgfx::copy(data, width * height * 4));
   stbi_image_free(data);
@@ -145,13 +154,18 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
           noteObject->height = static_cast<float>(noteImageHeight) /
                                static_cast<float>(noteImageWidth) *
                                noteRenderWidth;
-          auto x = note->Lane * noteRenderWidth;
+
+          auto x = laneToX(note->Lane);
           noteObject->transform.position = {x, y, 0.0f};
           noteObject->transform.rotation =
               Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
           noteObject->visible = true;
-          noteObject->setTexture(note->Lane % 2 == 0 ? noteTexture
-                                                     : noteTexture2);
+          auto &texture =
+              isScratch(note->Lane)
+                  ? scratchTexture
+                  : (note->Lane % 2 == 0 ? noteTexture : noteTexture2);
+
+          noteObject->setTexture(texture);
           noteObject->render(context);
         } else {
           if (state.noteObjectMap.find(note) != state.noteObjectMap.end()) {
@@ -253,8 +267,20 @@ void BMSRenderer::drawLaneBeam(RenderContext &context, int lane,
     color = laneState.lastPressedJudge.Diff > 0 ? Color(255, 0, 0, 255 * alpha)
                                                 : Color(0, 0, 255, 255 * alpha);
   }
-  drawRect(context, noteRenderWidth, 10.0f, lane * noteRenderWidth, 0.0f,
-           color);
+  drawRect(context, noteRenderWidth, 10.0f, laneToX(lane), 0.0f, color);
+}
+
+inline bool BMSRenderer::isLeftScratch(int lane) { return lane == 7; }
+inline bool BMSRenderer::isRightScratch(int lane) { return lane == 15; }
+inline bool BMSRenderer::isScratch(int lane) {
+  return isLeftScratch(lane) || isRightScratch(lane);
+}
+inline float BMSRenderer::laneToX(int lane) {
+  if (isLeftScratch(lane)) {
+    return 0.0f;
+  }
+
+  return (lane + 1) * noteRenderWidth;
 }
 GameObject *BMSRenderer::getInstance(ObjectType type) {
   if (state.objectPool.find(type) == state.objectPool.end()) {

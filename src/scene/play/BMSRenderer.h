@@ -48,14 +48,21 @@ private:
   void drawRect(RenderContext &context, float width, float height, float x,
                 float y, Color color);
   void drawLaneBeam(RenderContext &context, int lane, const long long time);
+  void drawJudgement(RenderContext context) const;
+  bool isLeftScratch(int lane);
+  bool isRightScratch(int lane);
+  bool isScratch(int lane);
+  float laneToX(int lane);
   bgfx::TextureHandle noteTexture = BGFX_INVALID_HANDLE;
   bgfx::TextureHandle noteTexture2 = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle scratchTexture;
+  bms_parser::Chart *chart;
 
 public:
   void onLanePressed(int lane, const JudgeResult judge, long long time);
   void onLaneReleased(int lane, long long time);
   void onJudge(JudgeResult judgeResult, int combo);
   explicit BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming);
-  void drawJudgement(RenderContext context) const;
+
   void render(RenderContext &context, long long micro);
 };
