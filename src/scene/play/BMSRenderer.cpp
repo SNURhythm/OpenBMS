@@ -58,6 +58,9 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   judgeText->setPosition(rendering::window_width / 2,
                          rendering::window_height / 2);
   judgeText->setAlign(TextView::CENTER);
+  scoreText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
+  scoreText->setPosition(0, rendering::window_height - 50);
+  scoreText->setAlign(TextView::LEFT);
 }
 void BMSRenderer::drawJudgement(RenderContext context) const {
   if (latestJudgeResult.judgement == None) {
@@ -73,28 +76,31 @@ void BMSRenderer::drawJudgement(RenderContext context) const {
 
   judgeText->render(context);
 }
-
+void BMSRenderer::drawScore(RenderContext &context) const {
+  std::stringstream ss;
+  ss << "Score: " << latestScore;
+  scoreText->setText(ss.str());
+  scoreText->render(context);
+}
 void BMSRenderer::onLanePressed(int lane, const JudgeResult judge,
                                 long long time) {
-  SDL_Log("Pressed lane: %d, judge: %s, time: %lld", lane,
-          judge.toString().c_str(), time);
   laneStates[lane].isPressed = true;
   laneStates[lane].lastPressedJudge = judge;
   laneStates[lane].lastStateTime = time;
 }
 
 void BMSRenderer::onLaneReleased(int lane, long long time) {
-  SDL_Log("Released lane: %d, time: %lld", lane, time);
   laneStates[lane].isPressed = false;
   laneStates[lane].lastStateTime = time;
 }
-void BMSRenderer::onJudge(JudgeResult judgeResult, int combo) {
+void BMSRenderer::onJudge(JudgeResult judgeResult, int combo, int score) {
   if (judgeResult.judgement == None) {
     return;
   }
   latestJudgeResult = judgeResult;
   latestJudgeResultTime = std::chrono::system_clock::now();
   latestCombo = combo;
+  latestScore = score;
 }
 void BMSRenderer::render(RenderContext &context, long long micro) {
   float yOrigin = 0.0f;
@@ -192,6 +198,7 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
 
   // render judgement
   drawJudgement(context);
+  drawScore(context);
 }
 void BMSRenderer::drawRect(RenderContext &context, float width, float height,
                            float x, float y, Color color) {
@@ -319,4 +326,5 @@ BMSRenderer::~BMSRenderer() {
     bgfx::destroy(noteTexture2);
   }
   delete judgeText;
+  delete scoreText;
 }

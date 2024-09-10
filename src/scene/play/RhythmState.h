@@ -20,6 +20,11 @@ public:
     }
   }
 
+  int getScore() {
+    // PGreat * 2 + Great
+    return judgeCount[PGreat] * 2 + judgeCount[Great];
+  }
+
   ~RhythmState() {}
 
 private:

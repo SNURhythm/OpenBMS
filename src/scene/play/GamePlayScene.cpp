@@ -278,9 +278,7 @@ void GamePlayScene::onJudge(const JudgeResult &judgeResult) {
   } else if (judgeResult.judgement != Kpoor) {
     state->combo++;
   }
-  renderer->onJudge(judgeResult, state->combo);
-  SDL_Log("Judge: %s, Combo: %d, Diff: %lld", judgeResult.toString().c_str(),
-          state->combo, judgeResult.Diff);
+  renderer->onJudge(judgeResult, state->combo, state->getScore());
   // CurrentRhythmHUD->OnJudge(state);
   // UE_LOG(LogTemp, Warning, TEXT("Judge: %s, Combo: %d, Diff: %lld"),
   // *JudgeResult.ToString(), state->Combo, JudgeResult.Diff);
