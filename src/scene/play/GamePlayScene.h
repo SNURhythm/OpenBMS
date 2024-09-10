@@ -26,8 +26,9 @@ private:
 public:
   GamePlayScene() = delete;
 
-  explicit GamePlayScene(ApplicationContext &context, bms_parser::Chart *chart)
-      : Scene(context), judge(chart->Meta.Rank) {
+  explicit GamePlayScene(ApplicationContext &context, bms_parser::Chart *chart,
+                         StartOptions options)
+      : Scene(context), judge(chart->Meta.Rank), options(options) {
     this->chart = chart;
     latePoorTiming = judge.timingWindows[Bad].second;
   };

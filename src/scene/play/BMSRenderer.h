@@ -32,10 +32,12 @@ class BMSRenderer {
 private:
   ~BMSRenderer();
   TextView *judgeText = nullptr;
+  TextView *scoreText = nullptr;
   std::map<int, LaneState> laneStates;
   JudgeResult latestJudgeResult = JudgeResult(None, 0);
   std::chrono::system_clock::time_point latestJudgeResultTime;
   int latestCombo = 0;
+  int latestScore = 0;
   float noteImageHeight = 0;
   float noteImageWidth = 0;
   std::vector<bms_parser::TimeLine *> timelines;
@@ -49,6 +51,7 @@ private:
                 float y, Color color);
   void drawLaneBeam(RenderContext &context, int lane, const long long time);
   void drawJudgement(RenderContext context) const;
+  void drawScore(RenderContext &context) const;
   bool isLeftScratch(int lane);
   bool isRightScratch(int lane);
   bool isScratch(int lane);
@@ -61,7 +64,7 @@ private:
 public:
   void onLanePressed(int lane, const JudgeResult judge, long long time);
   void onLaneReleased(int lane, long long time);
-  void onJudge(JudgeResult judgeResult, int combo);
+  void onJudge(JudgeResult judgeResult, int combo, int score);
   explicit BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming);
 
   void render(RenderContext &context, long long micro);
