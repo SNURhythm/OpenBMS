@@ -110,6 +110,7 @@ elseif (APPLE)
     find_library(SDL2_TFF_LIB SDL2_ttf PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(VLC_LIB vlc PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(VLCCORE_LIB vlccore PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
+    find_library(LUAJIT_LIB luajit PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(FFMPEG_LIBS NAMES avcodec avfilter avformat avutil avdevice swresample swscale postproc vpx x264 x265 PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     set(CMAKE_MACOSX_RPATH 1)
     set(CMAKE_INSTALL_RPATH "@executable_path/lib")
@@ -153,7 +154,7 @@ add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 # Main executable
 add_executable(main)
 
-target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} ${FFMPEG_LIBS} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
+target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} ${FFMPEG_LIBS} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
 
 # Custom target for copying assets
 add_custom_command(
