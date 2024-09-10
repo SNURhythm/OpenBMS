@@ -55,7 +55,7 @@
 #elif __posix
 // POSIX
 #endif
-
+#include <sol/sol.hpp>
 bgfx::VertexLayout rendering::PosColorVertex::ms_decl;
 bgfx::VertexLayout rendering::PosTexVertex::ms_decl;
 bgfx::VertexLayout rendering::PosTexCoord0Vertex::ms_decl;
@@ -74,6 +74,15 @@ static const uint16_t cubeTriList[] = {
 int rendering::window_width = 800;
 int rendering::window_height = 600;
 int main(int argv, char **args) {
+  sol::state lua;
+  int x = 0;
+  lua.set_function("beep", [&x] { ++x; });
+  // call beep 100 times
+  auto code = "beep()";
+  lua.safe_script(code);
+
+  assert(x == 1);
+  SDL_Log("lua result: %d", x);
   SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
   SDL_SetHint(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, "1");
   // print bgfx version

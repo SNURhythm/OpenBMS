@@ -80,6 +80,7 @@
 		B7D27AEB2C7CD4B400189ED7 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D27AEA2C7CD4B400189ED7 /* Accelerate.framework */; };
 		B7D27AED2C7CD4D700189ED7 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D27AEC2C7CD4D700189ED7 /* CoreVideo.framework */; };
 		B7D27AEF2C7CD4EC00189ED7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D27AEE2C7CD4EC00189ED7 /* Security.framework */; };
+		B7D7520F2C90026F00CC4FF8 /* libluajit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D751BD2C90026F00CC4FF8 /* libluajit.a */; };
 		B7E62F7D2C39A21100275C00 /* libsndfile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7E62F7C2C39A21100275C00 /* libsndfile.a */; };
 		B7FA8B052C7D068600B7EAAF /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FA8B042C7D068600B7EAAF /* AVFoundation.framework */; };
 		B7FA8B072C7D069D00B7EAAF /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FA8B062C7D069D00B7EAAF /* CoreGraphics.framework */; };
@@ -932,6 +933,7 @@
 		B7D27AF02C7CE2F900189ED7 /* libvlc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvlc.a; path = lib/libvlc.a; sourceTree = "<group>"; };
 		B7D27AF12C7CE2FA00189ED7 /* libcompat.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcompat.a; path = lib/libcompat.a; sourceTree = "<group>"; };
 		B7D27AF22C7CE2FA00189ED7 /* libvlccore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvlccore.a; path = lib/libvlccore.a; sourceTree = "<group>"; };
+		B7D751BD2C90026F00CC4FF8 /* libluajit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libluajit.a; path = lib/libluajit.a; sourceTree = "<group>"; };
 		B7E62EE22C399F5200275C00 /* libsndfile.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsndfile.a; path = ../../../lib/ios/libsndfile.a; sourceTree = "<group>"; };
 		B7E62F7C2C39A21100275C00 /* libsndfile.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsndfile.a; path = lib/libsndfile.a; sourceTree = "<group>"; };
 		B7FA8B022C7D065C00B7EAAF /* libvlc-full-static.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libvlc-full-static.a"; path = "lib/libvlc-full-static.a"; sourceTree = "<group>"; };
@@ -995,6 +997,7 @@
 				B77B0DFD2BF7BD3900945F27 /* SDL2.framework in Frameworks */,
 				B7FFC3A92BFAAFF3000C838E /* libbimg.a in Frameworks */,
 				B7FFC3A62BFAAFF3000C838E /* libbgfx.a in Frameworks */,
+				B7D7520F2C90026F00CC4FF8 /* libluajit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1038,6 +1041,7 @@
 		B72522F62BF7AD7100C6C414 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B7D751BD2C90026F00CC4FF8 /* libluajit.a */,
 				B7FA8B122C7D098E00B7EAAF /* libvlcplugin.a */,
 				B7FA8B0E2C7D06F200B7EAAF /* OpenGLES.framework */,
 				B7FA8B0C2C7D06D700B7EAAF /* GLKit.framework */,
