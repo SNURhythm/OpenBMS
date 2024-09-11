@@ -82,20 +82,17 @@ int main(int argv, char **args) {
   SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
   SDL_SetHint(SDL_HINT_IME_SUPPORT_EXTENDED_TEXT, "1");
   // print bgfx version
-  std::cout << "bgfx version: " << BGFX_API_VERSION << "OSX:" << BX_PLATFORM_OSX
-            << std::endl;
+  SDL_Log("bgfx version: %d OSX:%d", BGFX_API_VERSION, BX_PLATFORM_OSX);
   // print libsdl version
   SDL_version compiled;
   SDL_version linked;
   SDL_VERSION(&compiled);
   SDL_GetVersion(&linked);
 
-  std::cout << "SDL compile version: " << static_cast<int>(compiled.major)
-            << "." << static_cast<int>(compiled.minor) << "."
-            << static_cast<int>(compiled.patch) << std::endl;
-  std::cout << "SDL link version: " << static_cast<int>(linked.major) << "."
-            << static_cast<int>(linked.minor) << "."
-            << static_cast<int>(linked.patch) << std::endl;
+  SDL_Log("SDL compile version: %d.%d.%d", static_cast<int>(compiled.major),
+          static_cast<int>(compiled.minor), static_cast<int>(compiled.patch));
+  SDL_Log("SDL link version: %d.%d.%d", static_cast<int>(linked.major),
+          static_cast<int>(linked.minor), static_cast<int>(linked.patch));
 
 #if TARGET_OS_OSX
   setSmoothScrolling(true);
@@ -104,18 +101,18 @@ int main(int argv, char **args) {
   plugin_path = plugin_path.substr(0, plugin_path.find_last_of('/'));
   plugin_path += "/plugins";
   setenv("VLC_PLUGIN_PATH", plugin_path.c_str(), 1);
-  std::cout << "VLC_PLUGIN_PATH: " << getenv("VLC_PLUGIN_PATH") << std::endl;
+  SDL_Log("VLC_PLUGIN_PATH: %s", getenv("VLC_PLUGIN_PATH"));
 #endif
   using std::cerr;
   using std::endl;
 
   // print libvlc version
-  std::cout << libvlc_get_version();
+  SDL_Log("libvlc version: %s", libvlc_get_version());
   // vlc instance
-  std::cout << "VLC init..." << std::endl;
+  SDL_Log("VLC init...");
   VLCInstance::getInstance();
 
-  std::cout << "VLC init done" << std::endl;
+  SDL_Log("VLC init done");
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     cerr << "SDL_Init Error: " << SDL_GetError() << endl;
     return EXIT_FAILURE;
@@ -144,8 +141,8 @@ int main(int argv, char **args) {
 #if !BX_PLATFORM_EMSCRIPTEN
   SDL_SysWMinfo wmi;
   SDL_VERSION(&wmi.version);
-  printf("SDL_major: %d, SDL_minor: %d, SDL_patch: %d\n", wmi.version.major,
-         wmi.version.minor, wmi.version.patch);
+  SDL_Log("SDL_major: %d, SDL_minor: %d, SDL_patch: %d\n", wmi.version.major,
+          wmi.version.minor, wmi.version.patch);
   wmi.version.major = 2.0;
   wmi.version.minor = 0;
   if (!SDL_GetWindowWMInfo(win, &wmi)) {
@@ -175,7 +172,7 @@ int main(int argv, char **args) {
 
   SDL_DestroyWindow(win);
   SDL_Quit();
-  std::cout << "SDL quit" << std::endl;
+  SDL_Log("SDL quit");
 
   return EXIT_SUCCESS;
 }
