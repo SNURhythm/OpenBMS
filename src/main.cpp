@@ -7,11 +7,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_video.h>
-#include "targets.h"
 #include "main.h"
 #include "scene/MainMenuScene.h"
 #include "scene/SceneManager.h"
-#include <cerrno>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -20,10 +18,8 @@
 #include <bgfx/platform.h>
 #include <bx/platform.h>
 #include "rendering/common.h"
-#include "rendering/ShaderManager.h"
 #include "context.h"
 #include "audio/AudioWrapper.h"
-#include "video/VideoPlayer.h"
 #include "video/VLCInstance.h"
 #include "view/TextView.h"
 #include <vlcpp/vlc.hpp>
@@ -60,17 +56,17 @@ bgfx::VertexLayout rendering::PosColorVertex::ms_decl;
 bgfx::VertexLayout rendering::PosTexVertex::ms_decl;
 bgfx::VertexLayout rendering::PosTexCoord0Vertex::ms_decl;
 
-static rendering::PosColorVertex cubeVertices[] = {
-    {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
-    {-1.0f, -1.0f, 1.0f, 0xff00ff00},  {1.0f, -1.0f, 1.0f, 0xff00ffff},
-    {-1.0f, 1.0f, -1.0f, 0xffff0000},  {1.0f, 1.0f, -1.0f, 0xffff00ff},
-    {-1.0f, -1.0f, -1.0f, 0xffffff00}, {1.0f, -1.0f, -1.0f, 0xffffffff},
-};
-
-static const uint16_t cubeTriList[] = {
-    0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7, 0, 2, 4, 4, 2, 6,
-    1, 5, 3, 5, 7, 3, 0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7,
-};
+// static rendering::PosColorVertex cubeVertices[] = {
+//     {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
+//     {-1.0f, -1.0f, 1.0f, 0xff00ff00},  {1.0f, -1.0f, 1.0f, 0xff00ffff},
+//     {-1.0f, 1.0f, -1.0f, 0xffff0000},  {1.0f, 1.0f, -1.0f, 0xffff00ff},
+//     {-1.0f, -1.0f, -1.0f, 0xffffff00}, {1.0f, -1.0f, -1.0f, 0xffffffff},
+// };
+//
+// static const uint16_t cubeTriList[] = {
+//     0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7, 0, 2, 4, 4, 2, 6,
+//     1, 5, 3, 5, 7, 3, 0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7,
+// };
 int rendering::window_width = 800;
 int rendering::window_height = 600;
 int main(int argv, char **args) {
@@ -103,9 +99,9 @@ int main(int argv, char **args) {
 
 #if TARGET_OS_OSX
   setSmoothScrolling(true);
-  const char *runpath = args[0];
-  std::string plugin_path = runpath;
-  plugin_path = plugin_path.substr(0, plugin_path.find_last_of("/"));
+  const char *runPath = args[0];
+  std::string plugin_path = runPath;
+  plugin_path = plugin_path.substr(0, plugin_path.find_last_of('/'));
   plugin_path += "/plugins";
   setenv("VLC_PLUGIN_PATH", plugin_path.c_str(), 1);
   std::cout << "VLC_PLUGIN_PATH: " << getenv("VLC_PLUGIN_PATH") << std::endl;
@@ -138,7 +134,6 @@ int main(int argv, char **args) {
     cerr << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
     return EXIT_FAILURE;
   }
-  SDL_Renderer *ren = nullptr;
 
   // this is intended; we don't need renderer for bgfx but SDL creates window
   // handler after renderer creation on iOS
@@ -177,9 +172,7 @@ int main(int argv, char **args) {
 
   run();
   bgfx::shutdown();
-  if (ren != nullptr) {
-    SDL_DestroyRenderer(ren);
-  }
+
   SDL_DestroyWindow(win);
   SDL_Quit();
   std::cout << "SDL quit" << std::endl;
@@ -205,37 +198,39 @@ void run() {
   rendering::PosTexVertex::init();
   rendering::PosTexCoord0Vertex::init();
 
-  bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(
-      bgfx::makeRef(cubeVertices, sizeof(cubeVertices)),
-      rendering::PosColorVertex::ms_decl);
+  // const bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(
+  //     bgfx::makeRef(cubeVertices, sizeof(cubeVertices)),
+  //     rendering::PosColorVertex::ms_decl);
+  //
+  // // Create index buffer
+  // const bgfx::IndexBufferHandle ibh =
+  //     bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList,
+  //     sizeof(cubeTriList)));
+  // rendering::PosColorVertex triangleVert[] = {
+  //     {-100.0f, -100.0f, 0.0f, 0x339933FF},
+  //     {100.0f, -100.0f, 0.0f, 0x993333FF},
+  //     {0.0f, 100.0f, 0.0f, 0x333399FF},
+  // };
+  // constexpr uint16_t triangleInd[] = {0, 1, 2};
 
-  // Create index buffer
-  bgfx::IndexBufferHandle ibh =
-      bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
-  rendering::PosColorVertex triangleVert[] = {
-      {-100.0f, -100.0f, 0.0f, 0x339933FF},
-      {100.0f, -100.0f, 0.0f, 0x993333FF},
-      {0.0f, 100.0f, 0.0f, 0x333399FF},
-  };
-  uint16_t triangleInd[] = {0, 1, 2};
-
-  bgfx::VertexBufferHandle triangleVbh = bgfx::createVertexBuffer(
-      bgfx::makeRef(triangleVert, sizeof(triangleVert)),
-      rendering::PosColorVertex::ms_decl);
-  bgfx::IndexBufferHandle triangleIbh =
-      bgfx::createIndexBuffer(bgfx::makeRef(triangleInd, sizeof(triangleInd)));
-  rendering::PosColorVertex rectVert[] = {
-      {-100.0f, -100.0f, 100.0f, 0x339933FF},
-      {100.0f, -100.0f, 0.0f, 0x993333FF},
-      {100.0f, 100.0f, 0.0f, 0x333399FF},
-      {-100.0f, 100.0f, 0.0f, 0x993399FF},
-  };
-  uint16_t rectInd[] = {0, 1, 2, 0, 2, 3};
-  bgfx::VertexBufferHandle rectVbh =
-      bgfx::createVertexBuffer(bgfx::makeRef(rectVert, sizeof(rectVert)),
-                               rendering::PosColorVertex::ms_decl);
-  bgfx::IndexBufferHandle rectIbh =
-      bgfx::createIndexBuffer(bgfx::makeRef(rectInd, sizeof(rectInd)));
+  // bgfx::VertexBufferHandle triangleVbh = bgfx::createVertexBuffer(
+  //     bgfx::makeRef(triangleVert, sizeof(triangleVert)),
+  //     rendering::PosColorVertex::ms_decl);
+  // bgfx::IndexBufferHandle triangleIbh =
+  //     bgfx::createIndexBuffer(bgfx::makeRef(triangleInd,
+  //     sizeof(triangleInd)));
+  // rendering::PosColorVertex rectVert[] = {
+  //     {-100.0f, -100.0f, 100.0f, 0x339933FF},
+  //     {100.0f, -100.0f, 0.0f, 0x993333FF},
+  //     {100.0f, 100.0f, 0.0f, 0x333399FF},
+  //     {-100.0f, 100.0f, 0.0f, 0x993399FF},
+  // };
+  // uint16_t rectInd[] = {0, 1, 2, 0, 2, 3};
+  // bgfx::VertexBufferHandle rectVbh =
+  //     bgfx::createVertexBuffer(bgfx::makeRef(rectVert, sizeof(rectVert)),
+  //                              rendering::PosColorVertex::ms_decl);
+  // bgfx::IndexBufferHandle rectIbh =
+  //     bgfx::createIndexBuffer(bgfx::makeRef(rectInd, sizeof(rectInd)));
 
   // We will use this to reference where we're drawing
   // This is set once to determine the clear color to use on starting a new
@@ -356,8 +351,8 @@ void run() {
     //
   }
   sceneManager.cleanup();
-  bgfx::destroy(vbh);
-  bgfx::destroy(ibh);
+  // bgfx::destroy(vbh);
+  // bgfx::destroy(ibh);
 }
 
 void resetViewTransform() {
