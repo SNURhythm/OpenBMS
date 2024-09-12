@@ -89,7 +89,6 @@ public:
   void render(RenderContext &context) override {
 
     if (!touchDragging && touchDragged) {
-      SDL_Log("touchScrollSpeed: %f", touchScrollSpeedReal);
       touchScrollSpeed *= 0.98;
       if (touchScrollSpeedReal > 0.01f || touchScrollSpeedReal < -0.01f) {
         scrollOffset += touchScrollSpeedReal;
@@ -389,7 +388,6 @@ public:
     case SDL_FINGERUP: {
       touchDragging = false;
       touchDragged = true;
-      SDL_Log("touchScrollInertia: %f", touchScrollInertia);
       if (touchScrollInertia < 2.0f && touchScrollInertia > -2.0f) {
         touchScrollInertia = 0;
         touchScrollSpeed = 0;
