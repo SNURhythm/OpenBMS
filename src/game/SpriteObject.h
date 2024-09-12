@@ -11,7 +11,8 @@ class SpriteObject : public GameObject {
 public:
   float width = 0.1f;
   float height = 0.1f;
-
+  float tileU = 1.0f;
+  float tileV = 1.0f;
   explicit SpriteObject(bgfx::TextureHandle texture) : texture(texture) {
     s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
   }
