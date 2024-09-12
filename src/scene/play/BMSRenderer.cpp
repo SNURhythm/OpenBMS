@@ -10,6 +10,7 @@
 #include "../../rendering/ShaderManager.h"
 #include "stb_image.h"
 
+#include <assert.h>
 #include <sstream>
 BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
     : latePoorTiming(latePoorTiming), chart(chart) {
@@ -31,6 +32,8 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   }
   noteImageHeight = height;
   noteImageWidth = width;
+  noteRenderHeight = static_cast<float>(noteImageHeight) /
+                     static_cast<float>(noteImageWidth) * noteRenderWidth;
   noteTexture =
       bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
                             0, bgfx::copy(data, width * height * 4));
@@ -82,6 +85,7 @@ void BMSRenderer::drawScore(RenderContext &context) const {
   scoreText->setText(ss.str());
   scoreText->render(context);
 }
+
 void BMSRenderer::onLanePressed(int lane, const JudgeResult judge,
                                 long long time) {
   laneStates[lane].isPressed = true;
@@ -102,20 +106,97 @@ void BMSRenderer::onJudge(JudgeResult judgeResult, int combo, int score) {
   latestCombo = combo;
   latestScore = score;
 }
+void BMSRenderer::drawLongNote(RenderContext context, float headY, float tailY,
+                               bms_parser::LongNote *const &head) {
+  // assert head
+  assert(!head->IsTail() && "head is tail");
+  if (head->Tail->IsPlayed)
+    return;
+  float startY = head->IsPlayed ? judgeY : headY;
+  const float bodyHeight = tailY - startY;
+  const float bodyWidth = noteRenderWidth;
+  if (state.noteObjectMap.find(head) == state.noteObjectMap.end()) {
+    state.noteObjectMap[head] =
+        dynamic_cast<SpriteObject *>(getInstance(ObjectType::Note));
+  }
+  if (state.noteObjectMap.find(head->Tail) == state.noteObjectMap.end()) {
+    state.noteObjectMap[head->Tail] =
+        dynamic_cast<SpriteObject *>(getInstance(ObjectType::Note));
+  }
+  if (state.longBodyObjectMap.find(head) == state.longBodyObjectMap.end()) {
+    state.longBodyObjectMap[head] =
+        dynamic_cast<SpriteObject *>(getInstance(ObjectType::LongBody));
+  }
+
+  SpriteObject *bodyObject = state.longBodyObjectMap[head];
+  bodyObject->width = bodyWidth;
+  bodyObject->height = bodyHeight;
+  bodyObject->tileV = bodyHeight / noteRenderHeight;
+  bodyObject->transform.position = {laneToX(head->Lane), startY, 0.0f};
+  bodyObject->transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
+  bodyObject->visible = true;
+
+  SpriteObject *tailObject = state.noteObjectMap[head->Tail];
+  tailObject->width = noteRenderWidth;
+  tailObject->height = noteRenderHeight;
+  tailObject->transform.position = {laneToX(head->Tail->Lane), tailY, 0.0f};
+  tailObject->transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
+  tailObject->visible = true;
+  auto &texture = isScratch(head->Lane)
+                      ? scratchTexture
+                      : (head->Lane % 2 == 0 ? noteTexture : noteTexture2);
+
+  bodyObject->setTexture(texture);
+  tailObject->setTexture(texture);
+
+  bodyObject->render(context);
+  tailObject->render(context);
+
+  if (head->IsPlayed)
+    return;
+
+  SpriteObject *headObject = state.noteObjectMap[head];
+  headObject->width = noteRenderWidth;
+  headObject->height = noteRenderHeight;
+  headObject->transform.position = {laneToX(head->Lane), startY, 0.0f};
+  headObject->transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
+  headObject->visible = true;
+  headObject->setTexture(texture);
+  headObject->render(context);
+}
+void BMSRenderer::drawNormalNote(RenderContext &context, float y,
+                                 bms_parser::Note *const &note) {
+  if (state.noteObjectMap.find(note) == state.noteObjectMap.end()) {
+    state.noteObjectMap[note] =
+        dynamic_cast<SpriteObject *>(getInstance(ObjectType::Note));
+  }
+  SpriteObject *noteObject = state.noteObjectMap[note];
+  noteObject->width = noteRenderWidth;
+  noteObject->height = noteRenderHeight;
+
+  auto x = laneToX(note->Lane);
+  noteObject->transform.position = {x, y, 0.0f};
+  noteObject->transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
+  noteObject->visible = true;
+  auto &texture = isScratch(note->Lane)
+                      ? scratchTexture
+                      : (note->Lane % 2 == 0 ? noteTexture : noteTexture2);
+
+  noteObject->setTexture(texture);
+  noteObject->render(context);
+}
 void BMSRenderer::render(RenderContext &context, long long micro) {
-  float yOrigin = 0.0f;
-  drawRect(context, 8.0f,
-           static_cast<float>(noteImageHeight) /
-               static_cast<float>(noteImageWidth) * noteRenderWidth,
-           0.0f, yOrigin, Color(255, 255, 255, 255));
-  float y = yOrigin;
+  drawRect(context, 8.0f, noteRenderHeight, 0.0f, judgeY,
+           Color(255, 255, 255, 255));
+  float y = judgeY;
+  std::map<bms_parser::LongNote *, float> longNoteLookahead;
   // render timeline
-  for (size_t i = state.currentTimelineIndex; i < timelines.size() && y < 20.0f;
-       i++) {
+  for (size_t i = state.currentTimelineIndex;
+       i < timelines.size() && y < upperBound; i++) {
     auto &timeLine = timelines[i];
     if (timeLine->Timing >= micro) {
-      if (y < yOrigin)
-        y = yOrigin;
+      if (y < judgeY)
+        y = judgeY;
       if (i > 0) {
         auto &prevTimeLine = timelines[i - 1];
         if (prevTimeLine->Timing + prevTimeLine->GetStopDuration() > micro) {
@@ -134,11 +215,12 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
       }
 
       if (timeLine->IsFirstInMeasure) {
+        // render measure line
         drawRect(context, 8.0f, 0.05f, 0.0f, y, Color(255, 255, 255, 128));
       }
     } else if (timeLine->Timing >= micro - latePoorTiming) {
-      y = yOrigin + (micro - timeLine->Timing) /
-                        static_cast<float>(latePoorTiming) * lowerBound;
+      y = judgeY + (micro - timeLine->Timing) /
+                       static_cast<float>(latePoorTiming) * lowerBound;
     } else {
       state.currentTimelineIndex = i;
     }
@@ -151,29 +233,35 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
             continue;
           }
           // render note
-          if (state.noteObjectMap.find(note) == state.noteObjectMap.end()) {
-            state.noteObjectMap[note] =
-                dynamic_cast<SpriteObject *>(getInstance(ObjectType::Note));
+          if (note->IsLongNote()) {
+            auto *longNote = dynamic_cast<bms_parser::LongNote *>(note);
+            if (longNote->IsTail()) {
+              // find head's y
+              auto it = longNoteLookahead.find(longNote->Head);
+              if (it != longNoteLookahead.end()) {
+                drawLongNote(context, it->second, y, longNote->Head);
+                // remove from lookahead
+                longNoteLookahead.erase(longNote->Head);
+              } else {
+                drawLongNote(context, lowerBound, y, longNote->Head);
+              }
+            } else {
+              longNoteLookahead[longNote] = y;
+            }
+          } else {
+            drawNormalNote(context, y, note);
           }
-          SpriteObject *noteObject = state.noteObjectMap[note];
-          noteObject->width = noteRenderWidth;
-          noteObject->height = static_cast<float>(noteImageHeight) /
-                               static_cast<float>(noteImageWidth) *
-                               noteRenderWidth;
-
-          auto x = laneToX(note->Lane);
-          noteObject->transform.position = {x, y, 0.0f};
-          noteObject->transform.rotation =
-              Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
-          noteObject->visible = true;
-          auto &texture =
-              isScratch(note->Lane)
-                  ? scratchTexture
-                  : (note->Lane % 2 == 0 ? noteTexture : noteTexture2);
-
-          noteObject->setTexture(texture);
-          noteObject->render(context);
         } else {
+          if (note->IsLongNote()) {
+            if (auto *longNote = dynamic_cast<bms_parser::LongNote *>(note);
+                longNote->IsTail()) {
+              // remove from orphan long note
+              state.orphanLongNotes.remove(longNote->Head);
+            } else {
+              // add to orphan long note
+              state.orphanLongNotes.push_back(longNote);
+            }
+          }
           if (state.noteObjectMap.find(note) != state.noteObjectMap.end()) {
             recycleInstance(ObjectType::Note, state.noteObjectMap[note]);
             state.noteObjectMap.erase(note);
@@ -187,6 +275,11 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
         // render note
       }
     }
+  }
+
+  // render leftover long notes
+  for (const auto &pair : longNoteLookahead) {
+    drawLongNote(context, pair.second, upperBound, pair.first);
   }
   // render lane beams
   for (auto &laneState : laneStates) {
@@ -300,7 +393,10 @@ GameObject *BMSRenderer::getInstance(ObjectType type) {
   }
   switch (type) {
   case Note:
+  case LongBody:
     return new SpriteObject(noteTexture);
+  default:
+    throw std::runtime_error("Unknown object type");
   }
 }
 void BMSRenderer::recycleInstance(ObjectType type, GameObject *object) {
