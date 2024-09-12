@@ -166,6 +166,8 @@ void BMSRenderer::drawLongNote(RenderContext context, float headY, float tailY,
 }
 void BMSRenderer::drawNormalNote(RenderContext &context, float y,
                                  bms_parser::Note *const &note) {
+  if (note->IsPlayed)
+    return;
   if (state.noteObjectMap.find(note) == state.noteObjectMap.end()) {
     state.noteObjectMap[note] =
         dynamic_cast<SpriteObject *>(getInstance(ObjectType::Note));
@@ -190,6 +192,9 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
            Color(255, 255, 255, 255));
   float y = judgeY;
   std::map<bms_parser::LongNote *, float> longNoteLookahead;
+  for (auto &orphanLongNote : state.orphanLongNotes) {
+    longNoteLookahead[orphanLongNote] = lowerBound;
+  }
   // render timeline
   for (size_t i = state.currentTimelineIndex;
        i < timelines.size() && y < upperBound; i++) {
@@ -229,13 +234,11 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
     for (const auto &note : timeLine->Notes) {
       if (note != nullptr) {
         if (timeLine->Timing >= micro - latePoorTiming) {
-          if (note->IsPlayed) {
+          if (note->IsDead) {
             continue;
           }
           // render note
           if (note->IsLongNote()) {
-            // TODO: Fix longnote rendering when longnote is so long that both
-            // head and tail are not detected in this loop
             auto *longNote = dynamic_cast<bms_parser::LongNote *>(note);
             if (longNote->IsTail()) {
               // find head's y
