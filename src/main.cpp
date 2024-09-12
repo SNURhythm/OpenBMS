@@ -135,8 +135,10 @@ int main(int argv, char **args) {
   // this is intended; we don't need renderer for bgfx but SDL creates window
   // handler after renderer creation on iOS
 #if TARGET_OS_IPHONE
-  ren = SDL_CreateRenderer(
-      win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  SDL_CreateRenderer(
+      win, -1,
+      SDL_RENDERER_ACCELERATED |
+          SDL_RENDERER_PRESENTVSYNC); // Intentionally discarding return value
 #endif
 #if !BX_PLATFORM_EMSCRIPTEN
   SDL_SysWMinfo wmi;

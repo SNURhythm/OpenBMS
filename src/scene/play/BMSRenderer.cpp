@@ -234,6 +234,8 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
           }
           // render note
           if (note->IsLongNote()) {
+            // TODO: Fix longnote rendering when longnote is so long that both
+            // head and tail are not detected in this loop
             auto *longNote = dynamic_cast<bms_parser::LongNote *>(note);
             if (longNote->IsTail()) {
               // find head's y
