@@ -4,6 +4,8 @@
 
 #include "RhythmInputHandler.h"
 #include "SDLInputSource.h"
+#include "SDLTouchInputSource.h"
+
 #include <map>
 void RhythmInputHandler::onKeyDown(int keyCode, KeySource keySource) {
 
@@ -38,8 +40,16 @@ bool RhythmInputHandler::startListenSDL() {
   sdlInputSource->setHandler(this);
   return sdlInputSource->startListen();
 }
+bool RhythmInputHandler::startListenTouch() {
+  if (touchInputSource != nullptr) {
+    return false;
+  }
+  touchInputSource = new SDLTouchInputSource();
+  touchInputSource->setHandler(this);
+  return touchInputSource->startListen();
+}
 void RhythmInputHandler::stopListen() {
-  for (auto &input : {&sdlInputSource}) { // TODO: multi input source
+  for (auto &input : {&sdlInputSource, &touchInputSource}) {
     if (*input != nullptr) {
       (*input)->stopListen();
       delete *input;
