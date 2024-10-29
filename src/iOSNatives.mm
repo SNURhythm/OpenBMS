@@ -2,6 +2,8 @@
 #if TARGET_OS_IOS
 #include <Foundation/Foundation.h>
 #include <UIKit/UIKit.h>
+#include <vector>
+#include <string>
 std::string GetIOSDocumentsPath() {
   return std::string([[NSSearchPathForDirectoriesInDomains(
       NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] UTF8String]);

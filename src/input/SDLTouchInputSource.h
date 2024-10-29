@@ -1,19 +1,14 @@
-//
-// Created by XF on 9/4/2024.
-//
-
 #pragma once
 #include "IInputSource.h"
-class SDLInputSource : public IInputSource {
+
+class SDLTouchInputSource : public IInputSource {
 public:
   static int EventHandler(void *userdata, SDL_Event *event);
   IInputHandler *handler = nullptr;
-  SDLInputSource();
-  ~SDLInputSource() override;
+  SDLTouchInputSource();
+  ~SDLTouchInputSource() override;
   bool startListen() override;
   void stopListen() override;
   void setHandler(IInputHandler *handler) override;
   bool isListening = false;
-
-private:
 };

@@ -99,8 +99,8 @@ void MainMenuScene::CheckEntries(ApplicationContext &context,
     }
     std::filesystem::path path(folder);
     dbHelper.InsertEntry(db, path);
-#endif
     entries = dbHelper.SelectAllEntries(db);
+#endif
   }
   LoadCharts(dbHelper, db, entries, scene, context.quitFlag);
   dbHelper.Close(db);

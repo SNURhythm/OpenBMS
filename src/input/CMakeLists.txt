@@ -1,1 +1,1 @@
-target_sources(main PRIVATE SDLInputSource.cpp RhythmInputHandler.cpp InputNormalizer.cpp)
+target_sources(main PRIVATE SDLInputSource.cpp RhythmInputHandler.cpp InputNormalizer.cpp SDLTouchInputSource.cpp)
