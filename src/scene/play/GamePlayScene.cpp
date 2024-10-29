@@ -18,6 +18,7 @@ void GamePlayScene::init() {
   state->isPlaying = true;
   inputHandler = new RhythmInputHandler(this, chart->Meta);
   inputHandler->startListenSDL();
+  inputHandler->startListenTouch();
   laneStateText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   laneStateText->setPosition(100, 100);
   for (const auto &lane : chart->Meta.GetTotalLaneIndices()) {

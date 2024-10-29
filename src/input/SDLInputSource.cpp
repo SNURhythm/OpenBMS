@@ -4,23 +4,23 @@
 
 #include "SDLInputSource.h"
 
-int EventHandler(void *userdata, SDL_Event *event) {
+int SDLInputSource::EventHandler(void *userdata, SDL_Event *event) {
   auto *InputSource = (SDLInputSource *)userdata;
-  if (InputSource->hander == nullptr) {
+  if (InputSource->handler == nullptr) {
     return 0;
   }
   switch (event->type) {
   case SDL_KEYDOWN:
-    InputSource->hander->onKeyDown(event->key.keysym.scancode, ScanCode);
+    InputSource->handler->onKeyDown(event->key.keysym.scancode, ScanCode);
     break;
   case SDL_KEYUP:
-    InputSource->hander->onKeyUp(event->key.keysym.scancode, ScanCode);
+    InputSource->handler->onKeyUp(event->key.keysym.scancode, ScanCode);
     break;
   }
   return 0;
 }
 
-SDLInputSource::SDLInputSource() { hander = nullptr; }
+SDLInputSource::SDLInputSource() { handler = nullptr; }
 
 SDLInputSource::~SDLInputSource() {
   if (isListening) {
@@ -47,5 +47,5 @@ void SDLInputSource::stopListen() {
 }
 
 void SDLInputSource::setHandler(IInputHandler *handler) {
-  this->hander = handler;
+  this->handler = handler;
 }
