@@ -54,6 +54,8 @@ static bgfx::ViewId clear_view = 0;
 
 extern int window_width;
 extern int window_height;
+extern float near_clip;
+extern float far_clip;
 
 bgfx::TextureHandle sdlSurfaceToBgfxTexture(SDL_Surface *surface);
 

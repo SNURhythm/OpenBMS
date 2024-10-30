@@ -5,6 +5,7 @@
 #include "RhythmInputHandler.h"
 #include "SDLInputSource.h"
 #include "SDLTouchInputSource.h"
+#include "../rendering/common.h"
 
 #include <map>
 void RhythmInputHandler::onKeyDown(int keyCode, KeySource keySource) {
@@ -27,6 +28,14 @@ void RhythmInputHandler::onKeyUp(int keyCode, KeySource keySource) {
 void RhythmInputHandler::onFingerDown(int fingerIndex, Vector3 location) {
   SDL_Log("FingerDown: %d, (%f, %f, %f)", fingerIndex, location.x, location.y,
           location.z);
+  // deproject screen position to 3d position
+  float near_clip = rendering::near_clip;
+  float far_clip = rendering::far_clip;
+  Vector3 position;
+  position.x = (location.x / rendering::window_width * 2.0f - 1.0f) * near_clip;
+  position.y =
+      (location.y / rendering::window_height * 2.0f - 1.0f) * near_clip;
+  SDL_Log("Position: (%f, %f, %f)", position.x, position.y, position.z);
 }
 void RhythmInputHandler::onFingerUp(int fingerIndex, Vector3 location) {
   SDL_Log("FingerUp: %d, (%f, %f, %f)", fingerIndex, location.x, location.y,

@@ -379,7 +379,8 @@ void resetViewTransform() {
   float projMtx[16];
   bx::mtxProj(projMtx, 120.0f,
               float(rendering::window_width) / float(rendering::window_height),
-              0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+              rendering::near_clip, rendering::far_clip,
+              bgfx::getCaps()->homogeneousDepth);
   bgfx::setViewTransform(rendering::main_view, viewMtx, projMtx);
   bgfx::setViewRect(rendering::main_view, 0, 0, rendering::window_width,
                     rendering::window_height);
