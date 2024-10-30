@@ -4,6 +4,8 @@
 
 #include "common.h"
 namespace rendering {
+float near_clip = 0.1f;
+float far_clip = 100.0f;
 void createRect(bgfx::TransientVertexBuffer &tvb,
                 bgfx::TransientIndexBuffer &tib, int x, int y, int width,
                 int height, uint32_t color) {
