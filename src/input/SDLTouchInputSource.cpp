@@ -20,6 +20,15 @@ int SDLTouchInputSource::EventHandler(void *userdata, SDL_Event *event) {
                                      Vector3(screenX, screenY, 0.0f));
     break;
   }
+    // emulate touch with click
+  case SDL_MOUSEBUTTONDOWN:
+    InputSource->handler->onFingerDown(
+        0, Vector3(event->button.x, event->button.y, 0.0f));
+    break;
+  case SDL_MOUSEBUTTONUP:
+    InputSource->handler->onFingerUp(
+        0, Vector3(event->button.x, event->button.y, 0.0f));
+    break;
     // case SDL_FINGERMOTION:
     //   InputSource->handler->onFingerMove(
     //       event->tfinger.fingerId,

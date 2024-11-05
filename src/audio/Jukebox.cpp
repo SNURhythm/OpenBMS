@@ -256,7 +256,7 @@ void Jukebox::play() {
             videoPlayer->viewId = target.second.viewId;
             currentBga = target.second.id;
           } else {
-            SDL_Log("Video player not found for id: %d", target.second.id);
+            // SDL_Log("Video player not found for id: %d", target.second.id);
           }
           bmpCursor++;
         }
