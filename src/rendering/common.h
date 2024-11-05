@@ -1,5 +1,6 @@
 #pragma once
-
+class Camera;
+#include <SDL2/SDL.h>
 #include <bgfx/bgfx.h>
 #include <string>
 #define SHADER_SIMPLE "simple"
@@ -51,7 +52,8 @@ static bgfx::ViewId bga_view = 1;
 static bgfx::ViewId bga_layer_view = 2;
 static bgfx::ViewId main_view = 128;
 static bgfx::ViewId clear_view = 0;
-
+extern Camera *main_camera;
+extern Camera game_camera;
 extern int window_width;
 extern int window_height;
 extern float near_clip;

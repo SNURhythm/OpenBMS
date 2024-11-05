@@ -52,6 +52,7 @@
 // POSIX
 #endif
 #include <sol/sol.hpp>
+#include "rendering/Camera.h"
 bgfx::VertexLayout rendering::PosColorVertex::ms_decl;
 bgfx::VertexLayout rendering::PosTexVertex::ms_decl;
 bgfx::VertexLayout rendering::PosTexCoord0Vertex::ms_decl;
@@ -69,7 +70,10 @@ bgfx::VertexLayout rendering::PosTexCoord0Vertex::ms_decl;
 // };
 int rendering::window_width = 800;
 int rendering::window_height = 600;
+Camera *rendering::main_camera = nullptr;
+Camera rendering::game_camera{rendering::main_view};
 int main(int argv, char **args) {
+  rendering::main_camera = &rendering::game_camera;
   sol::state lua;
   int x = 0;
   lua.set_function("beep", [&x] { ++x; });
@@ -374,14 +378,16 @@ void resetViewTransform() {
 
   bx::Vec3 at = {4.0f, 2.0f, 0.0f};
   bx::Vec3 eye = {4.0f, 1.5f, -2.1f};
-  float viewMtx[16];
-  bx::mtxLookAt(viewMtx, eye, at);
-  float projMtx[16];
-  bx::mtxProj(projMtx, 120.0f,
-              float(rendering::window_width) / float(rendering::window_height),
-              rendering::near_clip, rendering::far_clip,
-              bgfx::getCaps()->homogeneousDepth);
-  bgfx::setViewTransform(rendering::main_view, viewMtx, projMtx);
-  bgfx::setViewRect(rendering::main_view, 0, 0, rendering::window_width,
-                    rendering::window_height);
+
+  float aspect =
+      float(rendering::window_width) / float(rendering::window_height);
+  rendering::game_camera.edit()
+      .setPosition(eye)
+      .setLookAt(at)
+      .setAspectRatio(aspect)
+      .setViewRect(0, 0, rendering::window_width, rendering::window_height)
+      .commit();
+  if (rendering::main_camera != nullptr) {
+    rendering::main_camera->render();
+  }
 }

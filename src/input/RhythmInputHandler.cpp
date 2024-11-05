@@ -6,7 +6,8 @@
 #include "SDLInputSource.h"
 #include "SDLTouchInputSource.h"
 #include "../rendering/common.h"
-
+#include "bx/math.h"
+#include "../rendering/Camera.h"
 #include <map>
 void RhythmInputHandler::onKeyDown(int keyCode, KeySource keySource) {
 
@@ -26,20 +27,23 @@ void RhythmInputHandler::onKeyUp(int keyCode, KeySource keySource) {
   }
 }
 void RhythmInputHandler::onFingerDown(int fingerIndex, Vector3 location) {
-  SDL_Log("FingerDown: %d, (%f, %f, %f)", fingerIndex, location.x, location.y,
-          location.z);
-  // deproject screen position to 3d position
-  float near_clip = rendering::near_clip;
-  float far_clip = rendering::far_clip;
-  Vector3 position;
-  position.x = (location.x / rendering::window_width * 2.0f - 1.0f) * near_clip;
-  position.y =
-      (location.y / rendering::window_height * 2.0f - 1.0f) * near_clip;
-  SDL_Log("Position: (%f, %f, %f)", position.x, position.y, position.z);
+
+  int lane = touchToLane(location);
+  for (auto &[index, fingerLane] : fingerToLane) {
+    if (fingerLane == lane)
+      return;
+  }
+  fingerToLane[fingerIndex] = lane;
+  control->pressLane(lane);
 }
 void RhythmInputHandler::onFingerUp(int fingerIndex, Vector3 location) {
   SDL_Log("FingerUp: %d, (%f, %f, %f)", fingerIndex, location.x, location.y,
           location.z);
+  if (fingerToLane.contains(fingerIndex)) {
+    int lane = fingerToLane[fingerIndex];
+    fingerToLane.erase(fingerIndex);
+    control->releaseLane(lane);
+  }
 }
 bool RhythmInputHandler::startListenSDL() {
   if (sdlInputSource != nullptr) {
@@ -65,6 +69,23 @@ void RhythmInputHandler::stopListen() {
       *input = nullptr;
     }
   }
+}
+int RhythmInputHandler::touchToLane(Vector3 location) {
+  float distance = rendering::game_camera.getDistanceFromEye({4.0, 2, 0});
+  float z = distance - sin(atan2(0.5, 2.1)) * 2;
+  bx::Vec3 position =
+      rendering::game_camera.deproject(location.x, location.y, z);
+  int line = (int)position.x - 1;
+  if (line < 0) {
+    line = 7;
+  } else if (line > keyMode - 1) {
+    if (keyMode >= 10) {
+      line = 15;
+    } else {
+      line = 7;
+    }
+  }
+  return line;
 }
 RhythmInputHandler::RhythmInputHandler(IRhythmControl *control,
                                        const bms_parser::ChartMeta &meta)
@@ -129,4 +150,5 @@ RhythmInputHandler::RhythmInputHandler(IRhythmControl *control,
         // Rscratch: RShift
         {SDL_KeyCode::SDLK_RSHIFT, 15}}}};
   keyMap = DefaultKeyMap[meta.KeyMode];
+  keyMode = meta.KeyMode;
 }

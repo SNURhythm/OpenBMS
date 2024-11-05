@@ -12,6 +12,8 @@ class RhythmInputHandler : public IInputHandler {
 private:
   IInputSource *sdlInputSource = nullptr;
   IInputSource *touchInputSource = nullptr;
+  int keyMode;
+  std::map<int, int> fingerToLane;
 
 public:
   IRhythmControl *control;
@@ -24,5 +26,6 @@ public:
   bool startListenSDL();
   bool startListenTouch();
   void stopListen();
+  int touchToLane(Vector3 location);
   std::map<SDL_Keycode, int> keyMap;
 };

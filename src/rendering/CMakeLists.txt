@@ -1,1 +1,1 @@
-target_sources(main PRIVATE common.cpp Color.cpp)
+target_sources(main PRIVATE common.cpp Color.cpp Camera.cpp)
