@@ -9,6 +9,8 @@
 #include "bx/math.h"
 #include "../rendering/Camera.h"
 #include <map>
+#include <cmath>
+
 void RhythmInputHandler::onKeyDown(int keyCode, KeySource keySource) {
 
   auto normalizedKeyCode = InputNormalizer::normalize(keyCode, keySource);
