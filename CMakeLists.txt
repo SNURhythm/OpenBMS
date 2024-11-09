@@ -52,7 +52,7 @@ set(BUILD_DIR ${CMAKE_BINARY_DIR}/build)
 
 # Libraries directory
 set(LIB_DIR lib)
-add_definitions(-DBX_CONFIG_DEBUG=0)
+add_definitions(-DBX_CONFIG_DEBUG=0 -DSOL_LUAJIT=1)
 set(FFMPEG_LIBS
         avcodec
         avfilter
