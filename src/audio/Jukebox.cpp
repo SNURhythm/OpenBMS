@@ -104,7 +104,9 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart,
         // }
         // new video player
         auto videoPlayer = new VideoPlayer();
-        if (videoPlayer->loadVideo(path.c_str(), isCancelled)) {
+        path_t p = fspath_to_path_t(path);
+
+        if (videoPlayer->loadVideo(path_t_to_utf8(p), isCancelled)) {
           videoPlayerTable[bmp->first] = videoPlayer;
 
           SDL_Log("video width: %f, video height: %f", videoPlayer->viewWidth,

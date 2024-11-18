@@ -6,7 +6,10 @@
 #include <mutex>
 #include <future>
 #include "../rendering/common.h"
-
+#include <queue>
+#include <thread>
+#include <atomic>
+#include <condition_variable>
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
