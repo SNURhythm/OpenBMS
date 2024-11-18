@@ -76,7 +76,6 @@ private:
 
   int videoFrameWidth;
   int videoFrameHeight;
-  int currentFrame = 0;
   bool hasVideoFrame;
 
   bgfx::UniformHandle s_texY = BGFX_INVALID_HANDLE;
@@ -85,6 +84,7 @@ private:
 
   VLC::MediaPlayer *mediaPlayer = nullptr;
   VLC::Media media;
+  int64_t startPTS = 0;
   unsigned int getPrecisePosition();
   int currentTextureIndex = 0;
   bgfx::TextureHandle videoTextureY = BGFX_INVALID_HANDLE;

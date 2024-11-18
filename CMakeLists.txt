@@ -170,14 +170,14 @@ if (NOT "${DLLS}" STREQUAL "")
     )
 endif ()
 
-# Copy VLC plugins
-if (NOT "${VLC_PLUGINS_TAR}" STREQUAL "")
-    add_custom_command(
-            TARGET main POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/${VLC_PLUGINS_TAR}
-            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    )
-endif ()
+# # Copy VLC plugins
+# if (NOT "${VLC_PLUGINS_TAR}" STREQUAL "")
+#     add_custom_command(
+#             TARGET main POST_BUILD
+#             COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/${VLC_PLUGINS_TAR}
+#             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+#     )
+# endif ()
 
 # Copy shaders
 add_custom_command(
