@@ -52,10 +52,10 @@ private:
   std::mutex videoMutex;
 
   std::vector<AVFrame *> frameBuffer; // Fixed-size ring buffer
-  size_t bufferHead = 0;
-  size_t bufferTail = 0;
+  std::atomic<size_t> bufferHead = 0;
+  std::atomic<size_t> bufferTail = 0;
   static const size_t maxBufferSize = 10; // Adjust as needed
-
+  std::atomic<size_t> bufferSize = 0;
   std::counting_semaphore<maxBufferSize> freeSpace{
       maxBufferSize};     // Tracks free buffer slots
   std::mutex bufferMutex; // Protect ring buffer operations
