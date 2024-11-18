@@ -82,8 +82,6 @@ private:
   bgfx::UniformHandle s_texU = BGFX_INVALID_HANDLE;
   bgfx::UniformHandle s_texV = BGFX_INVALID_HANDLE;
 
-  VLC::MediaPlayer *mediaPlayer = nullptr;
-  VLC::Media media;
   int64_t startPTS = 0;
   unsigned int getPrecisePosition();
   int currentTextureIndex = 0;
