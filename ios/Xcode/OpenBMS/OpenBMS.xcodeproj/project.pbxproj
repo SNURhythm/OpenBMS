@@ -725,7 +725,6 @@
 		B71627EA2CD9EA470048648F /* transcode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = transcode.c; sourceTree = "<group>"; };
 		B71627EB2CD9EA470048648F /* VideoPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VideoPlayer.h; sourceTree = "<group>"; };
 		B71627EC2CD9EA470048648F /* VideoPlayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = VideoPlayer.cpp; sourceTree = "<group>"; };
-		B71627ED2CD9EA470048648F /* VLCInstance.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VLCInstance.h; sourceTree = "<group>"; };
 		B71627EF2CD9EA470048648F /* Button.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Button.h; sourceTree = "<group>"; };
 		B71627F02CD9EA470048648F /* Button.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Button.cpp; sourceTree = "<group>"; };
 		B71627F12CD9EA470048648F /* ChartListItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChartListItemView.h; sourceTree = "<group>"; };
@@ -1165,7 +1164,6 @@
 				B71627EA2CD9EA470048648F /* transcode.c */,
 				B71627EB2CD9EA470048648F /* VideoPlayer.h */,
 				B71627EC2CD9EA470048648F /* VideoPlayer.cpp */,
-				B71627ED2CD9EA470048648F /* VLCInstance.h */,
 			);
 			path = video;
 			sourceTree = "<group>";
@@ -2423,7 +2421,7 @@
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2467,7 +2465,7 @@
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
