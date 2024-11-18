@@ -41,25 +41,28 @@ VideoPlayer::~VideoPlayer() {
 
 void VideoPlayer::unloadVideo() {
   stopPredecoding();
-  if (frame) {
-    av_frame_free(&frame);
-    frame = nullptr;
-  }
-  if (packet) {
-    av_packet_free(&packet);
-    packet = nullptr;
-  }
-  if (swsContext) {
-    sws_freeContext(swsContext);
-    swsContext = nullptr;
-  }
-  if (formatContext) {
-    avformat_close_input(&formatContext);
-    formatContext = nullptr;
-  }
-  if (codecContext) {
-    avcodec_free_context(&codecContext);
-    codecContext = nullptr;
+  {
+    std::lock_guard<std::mutex> videoLock(videoMutex);
+    if (frame) {
+      av_frame_free(&frame);
+      frame = nullptr;
+    }
+    if (packet) {
+      av_packet_free(&packet);
+      packet = nullptr;
+    }
+    if (swsContext) {
+      sws_freeContext(swsContext);
+      swsContext = nullptr;
+    }
+    if (formatContext) {
+      avformat_close_input(&formatContext);
+      formatContext = nullptr;
+    }
+    if (codecContext) {
+      avcodec_free_context(&codecContext);
+      codecContext = nullptr;
+    }
   }
 }
 
@@ -174,7 +177,7 @@ void VideoPlayer::update() {
   {
     std::lock_guard<std::mutex> lock(bufferMutex);
     // check if buffer is empty
-    if (bufferHead == bufferTail) {
+    if (bufferSize == 0) {
       SDL_Log("Buffer is empty");
       return;
     }
@@ -191,6 +194,7 @@ void VideoPlayer::update() {
     }
     frameBuffer[bufferHead] = nullptr; // Clear buffer slot
     bufferHead = (bufferHead + 1) % maxBufferSize;
+    --bufferSize;
   }
   freeSpace.release(); // Signal that a buffer slot is free
 
@@ -374,6 +378,7 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
 }
 
 void VideoPlayer::seek(int64_t micro) {
+  std::lock_guard<std::mutex> videoLock(videoMutex);
   if (!formatContext || !codecContext || videoStreamIndex < 0)
     return;
 
@@ -395,6 +400,7 @@ void VideoPlayer::seek(int64_t micro) {
       }
     }
     bufferHead = bufferTail = 0; // Reset buffer indices
+    bufferSize = 0;
 
     freeSpace.release(maxBufferSize); // Reset freeSpace
   }
@@ -420,7 +426,8 @@ void VideoPlayer::predecodeFrames() {
 
     if (!predecodingActive)
       break;
-
+    if (!formatContext || !codecContext || videoStreamIndex < 0)
+      return;
     AVPacket *packet = av_packet_alloc();
     if (av_read_frame(formatContext, packet) >= 0) {
       if (packet->stream_index == videoStreamIndex) {
@@ -432,6 +439,7 @@ void VideoPlayer::predecodeFrames() {
             std::lock_guard<std::mutex> lock(bufferMutex);
             frameBuffer[bufferTail] = decodedFrame;
             bufferTail = (bufferTail + 1) % maxBufferSize;
+            ++bufferSize;
           }
         } else {
           av_frame_free(&decodedFrame);
@@ -463,5 +471,6 @@ void VideoPlayer::stopPredecoding() {
       }
     }
     bufferHead = bufferTail = 0; // Reset buffer indices
+    bufferSize = 0;
   }
 }
