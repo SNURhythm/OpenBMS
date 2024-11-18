@@ -69,81 +69,83 @@ void VideoPlayer::unloadVideo() {
 bool VideoPlayer::loadVideo(const std::string &videoPath,
                             std::atomic<bool> &isCancelled) {
   unloadVideo();
-
-  AVFormatContext *tempFormatContext = avformat_alloc_context();
-  // genpts
-  tempFormatContext->flags |= AVFMT_FLAG_GENPTS | AVFMT_FLAG_SORT_DTS;
-  if (avformat_open_input(&tempFormatContext, videoPath.c_str(), nullptr,
-                          nullptr) < 0) {
-    return false;
-  }
-  if (avformat_find_stream_info(tempFormatContext, nullptr) < 0) {
-    avformat_close_input(&tempFormatContext);
-    return false;
-  }
-
-  for (unsigned i = 0; i < tempFormatContext->nb_streams; i++) {
-    if (tempFormatContext->streams[i]->codecpar->codec_type ==
-        AVMEDIA_TYPE_VIDEO) {
-      videoStreamIndex = i;
-      break;
+  {
+    std::lock_guard<std::mutex> videoLock(videoMutex);
+    AVFormatContext *tempFormatContext = avformat_alloc_context();
+    // genpts
+    tempFormatContext->flags |= AVFMT_FLAG_GENPTS | AVFMT_FLAG_SORT_DTS;
+    if (avformat_open_input(&tempFormatContext, videoPath.c_str(), nullptr,
+                            nullptr) < 0) {
+      return false;
     }
-  }
-
-  if (videoStreamIndex == -1) {
-    avformat_close_input(&tempFormatContext);
-    return false;
-  }
-
-  const AVCodec *codec = avcodec_find_decoder(
-      tempFormatContext->streams[videoStreamIndex]->codecpar->codec_id);
-  if (!codec) {
-    avformat_close_input(&tempFormatContext);
-    return false;
-  }
-  codecContext = avcodec_alloc_context3(codec);
-  avcodec_parameters_to_context(
-      codecContext, tempFormatContext->streams[videoStreamIndex]->codecpar);
-
-  // Fix missing extradata (SPS/PPS)
-  if (!codecContext->extradata || codecContext->extradata_size <= 0) {
-    SDL_Log("Fixing missing SPS/PPS extradata");
-    AVCodecParameters *codecParams =
-        formatContext->streams[videoStreamIndex]->codecpar;
-    if (codecParams->extradata_size > 0 && codecParams->extradata) {
-      codecContext->extradata = (uint8_t *)av_mallocz(
-          codecParams->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
-      memcpy(codecContext->extradata, codecParams->extradata,
-             codecParams->extradata_size);
-      codecContext->extradata_size = codecParams->extradata_size;
+    if (avformat_find_stream_info(tempFormatContext, nullptr) < 0) {
+      avformat_close_input(&tempFormatContext);
+      return false;
     }
+
+    for (unsigned i = 0; i < tempFormatContext->nb_streams; i++) {
+      if (tempFormatContext->streams[i]->codecpar->codec_type ==
+          AVMEDIA_TYPE_VIDEO) {
+        videoStreamIndex = i;
+        break;
+      }
+    }
+
+    if (videoStreamIndex == -1) {
+      avformat_close_input(&tempFormatContext);
+      return false;
+    }
+
+    const AVCodec *codec = avcodec_find_decoder(
+        tempFormatContext->streams[videoStreamIndex]->codecpar->codec_id);
+    if (!codec) {
+      avformat_close_input(&tempFormatContext);
+      return false;
+    }
+    codecContext = avcodec_alloc_context3(codec);
+    avcodec_parameters_to_context(
+        codecContext, tempFormatContext->streams[videoStreamIndex]->codecpar);
+
+    // Fix missing extradata (SPS/PPS)
+    if (!codecContext->extradata || codecContext->extradata_size <= 0) {
+      SDL_Log("Fixing missing SPS/PPS extradata");
+      AVCodecParameters *codecParams =
+          formatContext->streams[videoStreamIndex]->codecpar;
+      if (codecParams->extradata_size > 0 && codecParams->extradata) {
+        codecContext->extradata = (uint8_t *)av_mallocz(
+            codecParams->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+        memcpy(codecContext->extradata, codecParams->extradata,
+               codecParams->extradata_size);
+        codecContext->extradata_size = codecParams->extradata_size;
+      }
+    }
+    if (avcodec_open2(codecContext, codec, nullptr) < 0) {
+      avcodec_free_context(&codecContext);
+      avformat_close_input(&tempFormatContext);
+      return false;
+    }
+    startPTS = tempFormatContext->streams[videoStreamIndex]->start_time;
+    if (startPTS == AV_NOPTS_VALUE) {
+      startPTS = 0; // Default to 0 if start_time is not available
+    }
+
+    frame = av_frame_alloc();
+    packet = av_packet_alloc();
+    swsContext = sws_getContext(codecContext->width, codecContext->height,
+                                codecContext->pix_fmt, codecContext->width,
+                                codecContext->height, AV_PIX_FMT_YUV420P,
+                                SWS_BILINEAR, nullptr, nullptr, nullptr);
+
+    fps = tempFormatContext->streams[videoStreamIndex]->avg_frame_rate.num /
+          tempFormatContext->streams[videoStreamIndex]->avg_frame_rate.den;
+
+    updateVideoTexture(codecContext->width, codecContext->height);
+
+    formatContext = tempFormatContext;
+    predecodingActive = true;
+    predecodeThread = std::thread(&VideoPlayer::predecodeFrames, this);
+    return true;
   }
-  if (avcodec_open2(codecContext, codec, nullptr) < 0) {
-    avcodec_free_context(&codecContext);
-    avformat_close_input(&tempFormatContext);
-    return false;
-  }
-  startPTS = tempFormatContext->streams[videoStreamIndex]->start_time;
-  if (startPTS == AV_NOPTS_VALUE) {
-    startPTS = 0; // Default to 0 if start_time is not available
-  }
-
-  frame = av_frame_alloc();
-  packet = av_packet_alloc();
-  swsContext = sws_getContext(codecContext->width, codecContext->height,
-                              codecContext->pix_fmt, codecContext->width,
-                              codecContext->height, AV_PIX_FMT_YUV420P,
-                              SWS_BILINEAR, nullptr, nullptr, nullptr);
-
-  fps = tempFormatContext->streams[videoStreamIndex]->avg_frame_rate.num /
-        tempFormatContext->streams[videoStreamIndex]->avg_frame_rate.den;
-
-  updateVideoTexture(codecContext->width, codecContext->height);
-
-  formatContext = tempFormatContext;
-  predecodingActive = true;
-  predecodeThread = std::thread(&VideoPlayer::predecodeFrames, this);
-  return true;
 }
 uint32_t VideoPlayer::setupFormat(char *chroma, unsigned *width,
                                   unsigned *height, unsigned *pitches,
@@ -421,34 +423,44 @@ void VideoPlayer::seek(int64_t micro) {
 }
 
 void VideoPlayer::predecodeFrames() {
+
   while (predecodingActive) {
     freeSpace.acquire(); // Wait for free space in the buffer
 
     if (!predecodingActive)
       break;
-    if (!formatContext || !codecContext || videoStreamIndex < 0)
-      return;
-    AVPacket *packet = av_packet_alloc();
-    if (av_read_frame(formatContext, packet) >= 0) {
-      if (packet->stream_index == videoStreamIndex) {
-        avcodec_send_packet(codecContext, packet);
-        AVFrame *decodedFrame = av_frame_alloc();
-        if (avcodec_receive_frame(codecContext, decodedFrame) == 0) {
-          // Add frame to ring buffer
-          {
-            std::lock_guard<std::mutex> lock(bufferMutex);
-            frameBuffer[bufferTail] = decodedFrame;
-            bufferTail = (bufferTail + 1) % maxBufferSize;
-            ++bufferSize;
-          }
-        } else {
-          av_frame_free(&decodedFrame);
-        }
+    {
+      std::lock_guard<std::mutex> videoLock(videoMutex);
+      if (!formatContext || !codecContext || videoStreamIndex < 0) {
+        SDL_Log(
+            "VideoPlayer::predecodeFrames: formatContext or codecContext or "
+            "videoStreamIndex is null");
+        continue;
       }
-      av_packet_unref(packet);
+      AVPacket *packet = av_packet_alloc();
+      if (av_read_frame(formatContext, packet) >= 0) {
+        if (packet->stream_index == videoStreamIndex) {
+          avcodec_send_packet(codecContext, packet);
+          AVFrame *decodedFrame = av_frame_alloc();
+          if (avcodec_receive_frame(codecContext, decodedFrame) == 0) {
+            // Add frame to ring buffer
+            {
+              std::lock_guard<std::mutex> lock(bufferMutex);
+              frameBuffer[bufferTail] = decodedFrame;
+              bufferTail = (bufferTail + 1) % maxBufferSize;
+              ++bufferSize;
+            }
+          } else {
+            SDL_Log("VideoPlayer::predecodeFrames failed to receive frame");
+            av_frame_free(&decodedFrame);
+          }
+        }
+        av_packet_unref(packet);
+      }
     }
     av_packet_free(&packet);
   }
+  SDL_Log("VideoPlayer::predecodeFrames exited");
 }
 
 void VideoPlayer::stopPredecoding() {
