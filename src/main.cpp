@@ -20,9 +20,7 @@
 #include "rendering/common.h"
 #include "context.h"
 #include "audio/AudioWrapper.h"
-#include "video/VLCInstance.h"
 #include "view/TextView.h"
-#include <vlcpp/vlc.hpp>
 #ifdef _WIN32
 #include <windows.h>
 
@@ -100,23 +98,10 @@ int main(int argv, char **args) {
 
 #if TARGET_OS_OSX
   setSmoothScrolling(true);
-  const char *runPath = args[0];
-  std::string plugin_path = runPath;
-  plugin_path = plugin_path.substr(0, plugin_path.find_last_of('/'));
-  plugin_path += "/plugins";
-  setenv("VLC_PLUGIN_PATH", plugin_path.c_str(), 1);
-  SDL_Log("VLC_PLUGIN_PATH: %s", getenv("VLC_PLUGIN_PATH"));
 #endif
   using std::cerr;
   using std::endl;
 
-  // print libvlc version
-  SDL_Log("libvlc version: %s", libvlc_get_version());
-  // vlc instance
-  SDL_Log("VLC init...");
-  VLCInstance::getInstance();
-
-  SDL_Log("VLC init done");
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
     cerr << "SDL_Init Error: " << SDL_GetError() << endl;
     return EXIT_FAILURE;

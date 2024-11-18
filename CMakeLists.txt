@@ -81,11 +81,8 @@ if (WIN32)
     find_library(LUAJIT_LIB luajit PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
     set(MINGW32_LIB mingw32)
 
-    find_library(VLC_LIB vlc PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
-    find_library(VLCCORE_LIB vlccore PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
     # glob all the dlls
     file(GLOB DLLS ${LIB_DIR}/win32/*.dll)
-    set(VLC_PLUGINS_TAR libvlcplugins/win32.tar.gz)
     set(EXTRA_LIBS SndFile::sndfile)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
 
@@ -95,10 +92,7 @@ elseif (UNIX AND NOT APPLE)
     set(SDL2MAIN_LIB SDL2main)
     set(SDL2_TFF_LIB SDL2_ttf)
     find_library(FFMPEG_LIBS avcodec avfilter avformat avutil avdevice swresample swscale postproc vpx x264 x265 PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
-    set(VLC_LIB vlc)
-    set(VLCCORE_LIB vlccore)
     file(GLOB DLLS ${LIB_DIR}/linux/*.so)
-    set(VLC_PLUGINS_TAR "")
     set(EXTRA_LIBS X11 sndfile)
     add_definitions(-DSDL_VIDEO_DRIVER_X11=ON)
 elseif (APPLE)
@@ -108,14 +102,11 @@ elseif (APPLE)
     find_library(SDL2_LIB SDL2 PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(SDL2MAIN_LIB SDL2main PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(SDL2_TFF_LIB SDL2_ttf PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
-    find_library(VLC_LIB vlc PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
-    find_library(VLCCORE_LIB vlccore PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(LUAJIT_LIB luajit PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(FFMPEG_LIBS NAMES avcodec avfilter avformat avutil avdevice swresample swscale postproc vpx x264 x265 PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     set(CMAKE_MACOSX_RPATH 1)
     set(CMAKE_INSTALL_RPATH "@executable_path/lib")
     file(GLOB DLLS ${LIB_DIR}/darwin/*.dylib)
-    set(VLC_PLUGINS_TAR libvlcplugins/darwin.tar.gz)
     find_library(FOUNDATION Foundation)
     find_library(AUDIO_TOOLBOX AudioToolbox)
     find_library(VIDEO_TOOLBOX VideoToolbox)
@@ -154,7 +145,7 @@ add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 # Main executable
 add_executable(main)
 
-target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${VLC_LIB} ${VLCCORE_LIB} ${FFMPEG_LIBS} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
+target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${FFMPEG_LIBS} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
 
 # Custom target for copying assets
 add_custom_command(
@@ -170,14 +161,6 @@ if (NOT "${DLLS}" STREQUAL "")
     )
 endif ()
 
-# # Copy VLC plugins
-# if (NOT "${VLC_PLUGINS_TAR}" STREQUAL "")
-#     add_custom_command(
-#             TARGET main POST_BUILD
-#             COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/${VLC_PLUGINS_TAR}
-#             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-#     )
-# endif ()
 
 # Copy shaders
 add_custom_command(

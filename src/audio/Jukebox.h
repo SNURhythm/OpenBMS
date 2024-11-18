@@ -1,8 +1,7 @@
 #pragma once
 #include "../bms_parser.hpp"
 #include "AudioWrapper.h"
-#include <chrono>
-#include <queue>
+#include <future>
 #include <thread>
 #include <unordered_map>
 #include <atomic>

@@ -3,9 +3,7 @@
 #include <SDL2/SDL.h>
 #include <bgfx/bgfx.h>
 #include <semaphore>
-#include <vlcpp/vlc.hpp>
 #include <mutex>
-#include <future>
 #include "../rendering/common.h"
 #include <queue>
 #include <thread>
@@ -56,7 +54,7 @@ private:
   std::vector<AVFrame *> frameBuffer; // Fixed-size ring buffer
   size_t bufferHead = 0;
   size_t bufferTail = 0;
-  static const size_t maxBufferSize = 30; // Adjust as needed
+  static const size_t maxBufferSize = 10; // Adjust as needed
 
   std::counting_semaphore<maxBufferSize> freeSpace{
       maxBufferSize};     // Tracks free buffer slots
