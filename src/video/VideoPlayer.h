@@ -52,7 +52,7 @@ private:
   std::queue<AVFrame *> frameBuffer;
   std::mutex frameBufferMutex;
   std::condition_variable frameBufferCV;
-  size_t maxBufferSize;
+  size_t maxBufferSize = 30;
 
   std::chrono::high_resolution_clock::time_point
       startTime;             // Start time for playback
@@ -62,8 +62,8 @@ private:
   std::mutex bufferMutex;           // Protect access to the frame queue
   std::condition_variable bufferCV; // Condition variable for buffer signaling
 
-  const size_t maxBufferFrames = 30; // Maximum number of frames in the buffer
-  bool isBuffering = false;          // Indicates if buffering is in progress
+  const size_t maxBufferFrames = 120; // Maximum number of frames in the buffer
+  bool isBuffering = false;           // Indicates if buffering is in progress
 
   uint32_t setupFormat(char *chroma, unsigned *width, unsigned *height,
                        unsigned *pitches, unsigned *lines);
