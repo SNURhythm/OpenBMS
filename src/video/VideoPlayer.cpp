@@ -10,7 +10,7 @@
 #include <thread>
 #include <future>
 VideoPlayer::VideoPlayer()
-    : videoFrameWidth(0), videoFrameHeight(0), videoFrameUpdated(false),
+    : videoFrameWidth(0), videoFrameHeight(0), hasVideoFrame(false),
       videoFrameDataY(nullptr), videoFrameDataU(nullptr),
       videoFrameDataV(nullptr) {
 
@@ -28,7 +28,7 @@ VideoPlayer::~VideoPlayer() {
   bgfx::destroy(s_texY);
   bgfx::destroy(s_texU);
   bgfx::destroy(s_texV);
-
+  unloadVideo();
   if (videoFrameDataY != nullptr) {
     free(videoFrameDataY);
     videoFrameDataY = nullptr;
@@ -43,89 +43,108 @@ VideoPlayer::~VideoPlayer() {
   }
 }
 
+void VideoPlayer::unloadVideo() {
+  std::lock_guard<std::mutex> lock(videoMutex);
+  hasVideoFrame = false;
+  stop();
+  if (frame != nullptr) {
+    av_frame_free(&frame);
+    frame = nullptr;
+  }
+  if (packet != nullptr) {
+    av_packet_free(&packet);
+    packet = nullptr;
+  }
+  if (swsContext != nullptr) {
+    sws_freeContext(swsContext);
+    swsContext = nullptr;
+  }
+  if (formatContext != nullptr) {
+    avformat_close_input(&formatContext);
+    formatContext = nullptr;
+  }
+  if (codecContext != nullptr) {
+    avcodec_free_context(&codecContext);
+    codecContext = nullptr;
+  }
+}
+
 bool VideoPlayer::loadVideo(const std::string &videoPath,
                             std::atomic<bool> &isCancelled) {
-  SDL_Log("Loading video: %s", videoPath.c_str());
-  media = VLC::Media(videoPath, VLC::Media::FromPath);
-  if (mediaPlayer) {
-    mediaPlayer->stopAsync();
-    delete mediaPlayer;
-    mediaPlayer = nullptr;
-  }
-  if (isCancelled)
+  // unload video
+  unloadVideo();
+  // Open video file
+  AVFormatContext *formatContext = avformat_alloc_context();
+  // genpts
+  formatContext->flags |= AVFMT_FLAG_GENPTS;
+
+  // faststart
+  AVDictionary *opts2 = NULL;
+  av_dict_set(&opts2, "movflags", "+faststart", 0);
+  if (avformat_open_input(&formatContext, videoPath.c_str(), nullptr, &opts2) <
+      0) {
+    SDL_Log("Failed to open video file");
     return false;
-
-  currentFrame = 0;
-  auto &instance = *VLCInstance::getInstance().getVLCInstance();
-  mediaPlayer = new VLC::MediaPlayer(instance, media);
-  if (isCancelled)
-    return false;
-
-  media.parseRequest(instance,
-                     VLC::Media::ParseFlags::Local |
-                         VLC::Media::ParseFlags::FetchLocal,
-                     10000);
-  media.eventManager().onParsedChanged([this](VLC::Media::ParsedStatus status) {
-    if (status == VLC::Media::ParsedStatus::Done) {
-      SDL_Log("Video parsed");
-    }
-  });
-
-  while (media.parsedStatus(instance) != VLC::Media::ParsedStatus::Done) {
-    if (isCancelled) {
-      media.parseStop(instance);
-      SDL_Log("Cancelled loading video");
-      return false;
-    }
-    if (media.parsedStatus(instance) == VLC::Media::ParsedStatus::Failed) {
-      SDL_Log("Failed to parse video");
-      return false;
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 
-  bool hasVideo = false;
-  for (auto &track : media.tracks(VLC::MediaTrack::Type::Video)) {
-    if (isCancelled)
-      return false;
-    if (track.type() == VLC::MediaTrack::Type::Video) {
-      unsigned int width = track.width();
-      unsigned int height = track.height();
-      fps = track.fpsNum() / static_cast<float>(track.fpsDen());
-      SDL_Log("Video FPS: %f; fpsNum: %d, fpsDen: %d", fps, track.fpsNum(),
-              track.fpsDen());
-      if (width == 0 || height == 0)
-        continue;
-      SDL_Log("Video dimensions: %dx%d", width, height);
-      updateVideoTexture(width, height);
-      hasVideo = true;
+  // Find stream information
+  if (avformat_find_stream_info(formatContext, nullptr) < 0) {
+    SDL_Log("Failed to find stream info");
+    avformat_close_input(&formatContext);
+    return false;
+  }
+
+  // Find the video stream
+  AVCodecParameters *codecParams = nullptr;
+  videoStreamIndex = -1;
+  for (unsigned i = 0; i < formatContext->nb_streams; i++) {
+    if (formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+      videoStreamIndex = i;
+      codecParams = formatContext->streams[i]->codecpar;
       break;
     }
   }
-  if (!hasVideo) {
-    updateVideoTexture(1920, 1080);
+  if (videoStreamIndex == -1) {
+    SDL_Log("No video stream found");
+    avformat_close_input(&formatContext);
+    return false;
   }
-  mediaPlayer->setVideoFormatCallbacks(
-      [this](char *chroma, unsigned *width, unsigned *height, unsigned *pitches,
-             unsigned *lines) {
-        return setupFormat(chroma, width, height, pitches, lines);
-      },
-      nullptr);
-  mediaPlayer->setVideoFormat("I420", videoFrameWidth, videoFrameHeight,
-                              videoFrameWidth);
-  mediaPlayer->setVideoCallbacks(
-      [this](void **planes) { return lock(planes); },
-      [this](void *picture, void *const *planes) { unlock(picture, planes); },
-      [this](void *picture) { display(picture); });
 
-  mediaPlayer->setPosition(0.0f, true);
+  // Find decoder for the video stream
+  const AVCodec *codec = avcodec_find_decoder(codecParams->codec_id);
+  if (!codec) {
+    SDL_Log("Failed to find codec");
+    avformat_close_input(&formatContext);
+    return false;
+  }
 
-  mediaPlayer->play();
-  mediaPlayer->setPause(false);
-  mediaPlayer->setTime(0.0f, true);
-  //
+  AVCodecContext *codecContext = avcodec_alloc_context3(codec);
+  avcodec_parameters_to_context(codecContext, codecParams);
+  if (avcodec_open2(codecContext, codec, nullptr) < 0) {
+    SDL_Log("Failed to open codec");
+    avcodec_free_context(&codecContext);
+    avformat_close_input(&formatContext);
+    return false;
+  }
 
-  SDL_Log("Video ready");
+  // Initialize frame, packet, and scaling context
+  AVFrame *frame = av_frame_alloc();
+  AVPacket *packet = av_packet_alloc();
+  SwsContext *swsContext = sws_getContext(
+      codecContext->width, codecContext->height, codecContext->pix_fmt,
+      codecContext->width, codecContext->height, AV_PIX_FMT_YUV420P,
+      SWS_BILINEAR, nullptr, nullptr, nullptr);
+
+  // Update textures
+  updateVideoTexture(codecContext->width, codecContext->height);
+
+  // Store contexts for later use
+  this->formatContext = formatContext;
+  this->codecContext = codecContext;
+  this->frame = frame;
+  this->packet = packet;
+  this->swsContext = swsContext;
+
   return true;
 }
 
@@ -152,23 +171,103 @@ uint32_t VideoPlayer::setupFormat(char *chroma, unsigned *width,
 }
 
 void VideoPlayer::update() {
-  if (videoFrameUpdated) {
-    std::lock_guard<std::mutex> lock(videoFrameMutex);
-    videoFrameUpdated = false;
+  std::lock_guard<std::mutex> lock(videoMutex);
+  if (!isPlaying || isPaused) {
+    return; // Do nothing if playback is stopped or paused
+  }
 
-    const bgfx::Memory *memY =
-        bgfx::makeRef(videoFrameDataY, videoFrameWidth * videoFrameHeight);
-    const bgfx::Memory *memU = bgfx::makeRef(
-        videoFrameDataU, (videoFrameWidth / 2) * (videoFrameHeight / 2));
-    const bgfx::Memory *memV = bgfx::makeRef(
-        videoFrameDataV, (videoFrameWidth / 2) * (videoFrameHeight / 2));
+  if (stopRequested) {
+    // Cleanup resources for stopping
+    hasVideoFrame = false;
+    avcodec_flush_buffers(codecContext);
+    av_seek_frame(formatContext, videoStreamIndex, 0, AVSEEK_FLAG_BACKWARD);
+    stopRequested = false;
+    return;
+  }
 
-    bgfx::updateTexture2D(videoTextureY, 0, 0, 0, 0, videoFrameWidth,
-                          videoFrameHeight, memY);
-    bgfx::updateTexture2D(videoTextureU, 0, 0, 0, 0, videoFrameWidth / 2,
-                          videoFrameHeight / 2, memU);
-    bgfx::updateTexture2D(videoTextureV, 0, 0, 0, 0, videoFrameWidth / 2,
-                          videoFrameHeight / 2, memV);
+  // Handle seeking
+  if (seekPosition >= 0) {
+    avcodec_flush_buffers(codecContext);
+    int ret = av_seek_frame(
+        formatContext, videoStreamIndex,
+        seekPosition /
+            (1000 *
+             av_q2d(formatContext->streams[videoStreamIndex]->time_base)),
+        AVSEEK_FLAG_BACKWARD);
+    if (ret < 0) {
+      SDL_Log("Seek failed");
+    } else {
+      SDL_Log("Seek successful");
+      startTime = std::chrono::high_resolution_clock::now();
+    }
+    seekPosition = -1;
+  }
+
+  // Decode and render frames
+  while (true) {
+    if (av_read_frame(formatContext, packet) >= 0) {
+      if (packet->stream_index == videoStreamIndex) {
+        avcodec_send_packet(codecContext, packet);
+        if (avcodec_receive_frame(codecContext, frame) == 0) {
+          if (frame->pts == AV_NOPTS_VALUE) {
+            SDL_Log("Corrupted PTS, recalculating...");
+            AVRational timeBase =
+                formatContext->streams[videoStreamIndex]->time_base;
+            frame->pts = lastFramePTS + (1 / av_q2d(timeBase));
+          }
+          uint8_t *data[3] = {videoFrameDataY, videoFrameDataU,
+                              videoFrameDataV};
+          int linesize[3] = {videoFrameWidth, videoFrameWidth / 2,
+                             videoFrameWidth / 2};
+
+          // Convert frame to YUV420P
+          sws_scale(swsContext, frame->data, frame->linesize, 0,
+                    codecContext->height, data, linesize);
+
+          // Synchronize frame timing based on PTS
+          double frameTime =
+              frame->pts *
+              av_q2d(formatContext->streams[videoStreamIndex]->time_base);
+
+          auto now = std::chrono::high_resolution_clock::now();
+          double elapsedTime =
+              std::chrono::duration_cast<std::chrono::milliseconds>(now -
+                                                                    startTime)
+                  .count() /
+              1000.0;
+
+          if (elapsedTime < frameTime) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(
+                static_cast<int>((frameTime - elapsedTime) * 1000)));
+          } else if (elapsedTime > frameTime + 0.1) {
+            SDL_Log("Skipping frame: too late for display");
+            continue; // Skip the frame if it's too late
+          }
+
+          lastFramePTS = frameTime; // Update the last displayed frame PTS
+
+          // Upload to BGFX textures
+          bgfx::updateTexture2D(
+              videoTextureY, 0, 0, 0, 0, videoFrameWidth, videoFrameHeight,
+              bgfx::makeRef(videoFrameDataY,
+                            videoFrameWidth * videoFrameHeight));
+          bgfx::updateTexture2D(
+              videoTextureU, 0, 0, 0, 0, videoFrameWidth / 2,
+              videoFrameHeight / 2,
+              bgfx::makeRef(videoFrameDataU,
+                            (videoFrameWidth / 2) * (videoFrameHeight / 2)));
+          bgfx::updateTexture2D(
+              videoTextureV, 0, 0, 0, 0, videoFrameWidth / 2,
+              videoFrameHeight / 2,
+              bgfx::makeRef(videoFrameDataV,
+                            (videoFrameWidth / 2) * (videoFrameHeight / 2)));
+
+          hasVideoFrame = true;
+        }
+      }
+      av_packet_unref(packet);
+    }
+    break;
   }
 }
 
@@ -177,7 +276,8 @@ unsigned int VideoPlayer::getPrecisePosition() {
 }
 
 void VideoPlayer::render() {
-  //  return;
+  if (!hasVideoFrame)
+    return;
   // Submit a quad with the video texture
   bgfx::TransientVertexBuffer tvb{};
   bgfx::TransientIndexBuffer tib{};
@@ -235,28 +335,31 @@ void VideoPlayer::render() {
                            SHADER_YUVRGB));
 }
 
-void VideoPlayer::play() { mediaPlayer->play(); }
-
-void VideoPlayer::pause() { mediaPlayer->pause(); }
-
-void VideoPlayer::stop() { mediaPlayer->stopAsync(); }
-
-void *VideoPlayer::lock(void **planes) {
-  std::lock_guard<std::mutex> lock(videoFrameMutex);
-  planes[0] = videoFrameDataY; // Y
-  planes[1] = videoFrameDataU; // U
-  planes[2] = videoFrameDataV; // V
-  return nullptr;
+void VideoPlayer::play() {
+  if (!isPlaying) {
+    // Start playback
+    startTime = std::chrono::high_resolution_clock::now();
+  } else if (isPaused) {
+    // Resume playback
+    auto now = std::chrono::high_resolution_clock::now();
+    double elapsedTime =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime)
+            .count() /
+        1000.0;
+    startTime = now - std::chrono::milliseconds(static_cast<int>(
+                          (lastFramePTS - elapsedTime) * 1000));
+  }
+  isPlaying = true;
+  isPaused = false;
+  stopRequested = false;
 }
 
-void VideoPlayer::unlock(void *picture, void *const *planes) {
-  std::lock_guard<std::mutex> lock(videoFrameMutex);
-  videoFrameUpdated = true;
-}
+void VideoPlayer::pause() { isPaused = true; }
 
-void VideoPlayer::display(void *picture) {
-  // No additional processing needed here
-  currentFrame++;
+void VideoPlayer::stop() {
+  isPlaying = false;
+  stopRequested = true;
+  seekPosition = -1; // Reset seek position
 }
 
 void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
@@ -314,6 +417,8 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
   }
 }
 
-void VideoPlayer::seek(long long int micro) {
-  mediaPlayer->setTime(micro / 1000.0f, true);
+void VideoPlayer::seek(int64_t micro) {
+  if (isPlaying || isPaused) {
+    seekPosition = micro;
+  }
 }

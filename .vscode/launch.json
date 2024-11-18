@@ -8,9 +8,10 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "program": "${workspaceFolder}/build/main",
+            "program": "${workspaceFolder}/cmake-build-debug/main",
             "args": [],
-            "cwd": "${workspaceFolder}/build"
+            "cwd": "${workspaceFolder}/cmake-build-debug",
+            "preLaunchTask": "build"
         }
     ]
 }
