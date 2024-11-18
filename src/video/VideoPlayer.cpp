@@ -20,10 +20,6 @@ VideoPlayer::VideoPlayer()
 }
 
 VideoPlayer::~VideoPlayer() {
-  if (mediaPlayer) {
-    mediaPlayer->stopAsync();
-    delete mediaPlayer;
-  }
 
   bgfx::destroy(s_texY);
   bgfx::destroy(s_texU);
@@ -171,16 +167,12 @@ uint32_t VideoPlayer::setupFormat(char *chroma, unsigned *width,
 void VideoPlayer::update() {
   if (!isPlaying)
     return;
-  SDL_Log("waiting for lock");
   auto waitStart = std::chrono::high_resolution_clock::now();
 
   std::unique_lock<std::mutex> lock(frameBufferMutex);
   auto waitDuration = std::chrono::high_resolution_clock::now() - waitStart;
-  SDL_Log("waited for %lldms",
-          std::chrono::duration_cast<std::chrono::milliseconds>(waitDuration)
-              .count());
+
   if (frameBuffer.empty()) {
-    SDL_Log("frame buffer is empty");
     return;
   }
   auto now = std::chrono::high_resolution_clock::now();
@@ -192,15 +184,9 @@ void VideoPlayer::update() {
   double frameTime =
       (currentFrame->pts - startPTS) *
       av_q2d(formatContext->streams[videoStreamIndex]->time_base);
-  SDL_Log("frameTime: %f, elapsedTime: %f", frameTime, elapsedTime);
   if (elapsedTime < frameTime) {
     return;
   }
-
-  SDL_Log("update at %lld",
-          std::chrono::duration_cast<std::chrono::milliseconds>(
-              std::chrono::high_resolution_clock::now().time_since_epoch())
-              .count());
 
   frameBuffer.pop();
   frameBufferCV.notify_one();
@@ -243,10 +229,7 @@ unsigned int VideoPlayer::getPrecisePosition() {
 void VideoPlayer::render() {
   if (!hasVideoFrame)
     return;
-  SDL_Log("render at %lld",
-          std::chrono::duration_cast<std::chrono::milliseconds>(
-              std::chrono::high_resolution_clock::now().time_since_epoch())
-              .count());
+
   // Submit a quad with the video texture
   bgfx::TransientVertexBuffer tvb{};
   bgfx::TransientIndexBuffer tib{};
@@ -321,10 +304,6 @@ void VideoPlayer::play() {
   isPlaying = true;
   isPaused = false;
   stopRequested = false;
-  SDL_Log("Playing video, start time(ms): %lld",
-          std::chrono::duration_cast<std::chrono::milliseconds>(
-              startTime.time_since_epoch())
-              .count());
 }
 
 void VideoPlayer::pause() { isPaused = true; }
