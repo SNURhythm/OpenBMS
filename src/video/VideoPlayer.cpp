@@ -72,6 +72,8 @@ bool VideoPlayer::loadVideo(const std::string &videoPath,
   unloadVideo();
 
   AVFormatContext *tempFormatContext = avformat_alloc_context();
+  // genpts
+  tempFormatContext->flags |= AVFMT_FLAG_GENPTS | AVFMT_FLAG_SORT_DTS;
   if (avformat_open_input(&tempFormatContext, videoPath.c_str(), nullptr,
                           nullptr) < 0) {
     return false;
@@ -100,14 +102,31 @@ bool VideoPlayer::loadVideo(const std::string &videoPath,
     avformat_close_input(&tempFormatContext);
     return false;
   }
-
   codecContext = avcodec_alloc_context3(codec);
   avcodec_parameters_to_context(
       codecContext, tempFormatContext->streams[videoStreamIndex]->codecpar);
+
+  // Fix missing extradata (SPS/PPS)
+  if (!codecContext->extradata || codecContext->extradata_size <= 0) {
+    SDL_Log("Fixing missing SPS/PPS extradata");
+    AVCodecParameters *codecParams =
+        formatContext->streams[videoStreamIndex]->codecpar;
+    if (codecParams->extradata_size > 0 && codecParams->extradata) {
+      codecContext->extradata = (uint8_t *)av_mallocz(
+          codecParams->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+      memcpy(codecContext->extradata, codecParams->extradata,
+             codecParams->extradata_size);
+      codecContext->extradata_size = codecParams->extradata_size;
+    }
+  }
   if (avcodec_open2(codecContext, codec, nullptr) < 0) {
     avcodec_free_context(&codecContext);
     avformat_close_input(&tempFormatContext);
     return false;
+  }
+  startPTS = tempFormatContext->streams[videoStreamIndex]->start_time;
+  if (startPTS == AV_NOPTS_VALUE) {
+    startPTS = 0; // Default to 0 if start_time is not available
   }
 
   frame = av_frame_alloc();
@@ -125,7 +144,6 @@ bool VideoPlayer::loadVideo(const std::string &videoPath,
   formatContext = tempFormatContext;
   predecodingActive = true;
   predecodeThread = std::thread(&VideoPlayer::predecodeFrames, this);
-
   return true;
 }
 uint32_t VideoPlayer::setupFormat(char *chroma, unsigned *width,
@@ -153,38 +171,50 @@ uint32_t VideoPlayer::setupFormat(char *chroma, unsigned *width,
 void VideoPlayer::update() {
   if (!isPlaying)
     return;
+  SDL_Log("waiting for lock");
+  auto waitStart = std::chrono::high_resolution_clock::now();
 
   std::unique_lock<std::mutex> lock(frameBufferMutex);
+  auto waitDuration = std::chrono::high_resolution_clock::now() - waitStart;
+  SDL_Log("waited for %lldms",
+          std::chrono::duration_cast<std::chrono::milliseconds>(waitDuration)
+              .count());
   if (frameBuffer.empty()) {
+    SDL_Log("frame buffer is empty");
+    return;
+  }
+  auto now = std::chrono::high_resolution_clock::now();
+  AVFrame *currentFrame = frameBuffer.front();
+  double elapsedTime =
+      std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime)
+          .count() /
+      1000.0;
+  double frameTime =
+      (currentFrame->pts - startPTS) *
+      av_q2d(formatContext->streams[videoStreamIndex]->time_base);
+  SDL_Log("frameTime: %f, elapsedTime: %f", frameTime, elapsedTime);
+  if (elapsedTime < frameTime) {
     return;
   }
 
-  AVFrame *currentFrame = frameBuffer.front();
+  SDL_Log("update at %lld",
+          std::chrono::duration_cast<std::chrono::milliseconds>(
+              std::chrono::high_resolution_clock::now().time_since_epoch())
+              .count());
+
   frameBuffer.pop();
   frameBufferCV.notify_one();
-
+  if (elapsedTime > frameTime + 0.1) {
+    lastFramePTS = frameTime;
+    SDL_Log("Skipping frame: too late for display");
+    av_frame_free(&currentFrame);
+    return;
+  }
   uint8_t *data[3] = {videoFrameDataY, videoFrameDataU, videoFrameDataV};
   int linesize[3] = {videoFrameWidth, videoFrameWidth / 2, videoFrameWidth / 2};
 
   sws_scale(swsContext, currentFrame->data, currentFrame->linesize, 0,
             codecContext->height, data, linesize);
-
-  double frameTime =
-      currentFrame->pts *
-      av_q2d(formatContext->streams[videoStreamIndex]->time_base);
-
-  auto now = std::chrono::high_resolution_clock::now();
-  double elapsedTime =
-      std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime)
-          .count() /
-      1000.0;
-
-  if (elapsedTime < frameTime) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(
-        static_cast<int>((frameTime - elapsedTime) * 1000)));
-  } else if (elapsedTime > frameTime + 0.1) {
-    SDL_Log("Skipping frame: too late for display");
-  }
 
   lastFramePTS = frameTime; // Update the last displayed frame PTS
 
@@ -206,12 +236,17 @@ void VideoPlayer::update() {
   av_frame_free(&currentFrame);
 }
 unsigned int VideoPlayer::getPrecisePosition() {
-  return currentFrame * 1000 / fps;
+  // calculate the frame position in microseconds
+  return static_cast<unsigned int>(lastFramePTS * 1000000);
 }
 
 void VideoPlayer::render() {
   if (!hasVideoFrame)
     return;
+  SDL_Log("render at %lld",
+          std::chrono::duration_cast<std::chrono::milliseconds>(
+              std::chrono::high_resolution_clock::now().time_since_epoch())
+              .count());
   // Submit a quad with the video texture
   bgfx::TransientVertexBuffer tvb{};
   bgfx::TransientIndexBuffer tib{};
@@ -286,6 +321,10 @@ void VideoPlayer::play() {
   isPlaying = true;
   isPaused = false;
   stopRequested = false;
+  SDL_Log("Playing video, start time(ms): %lld",
+          std::chrono::duration_cast<std::chrono::milliseconds>(
+              startTime.time_since_epoch())
+              .count());
 }
 
 void VideoPlayer::pause() { isPaused = true; }
