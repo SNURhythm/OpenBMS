@@ -1,7 +1,6 @@
 #include "VideoPlayer.h"
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
-#include "VLCInstance.h"
 #include <bgfx/platform.h>
 #include <iostream>
 #include <cstring>
