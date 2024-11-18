@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL.h>
 #include <bgfx/bgfx.h>
+#include <semaphore>
 #include <vlcpp/vlc.hpp>
 #include <mutex>
 #include <future>
@@ -52,17 +53,20 @@ private:
   int videoStreamIndex = -1;
   std::mutex videoMutex;
 
-  std::queue<AVFrame *> frameBuffer;
-  std::mutex frameBufferMutex;
-  std::condition_variable frameBufferCV;
-  size_t maxBufferSize = 30;
+  std::vector<AVFrame *> frameBuffer; // Fixed-size ring buffer
+  size_t bufferHead = 0;
+  size_t bufferTail = 0;
+  static const size_t maxBufferSize = 30; // Adjust as needed
+
+  std::counting_semaphore<maxBufferSize> freeSpace{
+      maxBufferSize};     // Tracks free buffer slots
+  std::mutex bufferMutex; // Protect ring buffer operations
 
   std::chrono::high_resolution_clock::time_point
       startTime;             // Start time for playback
   double lastFramePTS = 0.0; // Last decoded frame's PTS for synchronization
 
   std::queue<AVFrame *> frameQueue; // Queue for pre-decoded frames
-  std::mutex bufferMutex;           // Protect access to the frame queue
   std::condition_variable bufferCV; // Condition variable for buffer signaling
 
   const size_t maxBufferFrames = 120; // Maximum number of frames in the buffer

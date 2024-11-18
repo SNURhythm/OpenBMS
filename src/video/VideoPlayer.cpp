@@ -17,6 +17,7 @@ VideoPlayer::VideoPlayer()
   s_texY = bgfx::createUniform("s_texY", bgfx::UniformType::Sampler);
   s_texU = bgfx::createUniform("s_texU", bgfx::UniformType::Sampler);
   s_texV = bgfx::createUniform("s_texV", bgfx::UniformType::Sampler);
+  frameBuffer.resize(maxBufferSize, nullptr);
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -167,29 +168,33 @@ uint32_t VideoPlayer::setupFormat(char *chroma, unsigned *width,
 void VideoPlayer::update() {
   if (!isPlaying)
     return;
-  auto waitStart = std::chrono::high_resolution_clock::now();
 
-  std::unique_lock<std::mutex> lock(frameBufferMutex);
-  auto waitDuration = std::chrono::high_resolution_clock::now() - waitStart;
-
-  if (frameBuffer.empty()) {
-    return;
+  AVFrame *currentFrame;
+  double elapsedTime;
+  double frameTime;
+  {
+    std::lock_guard<std::mutex> lock(bufferMutex);
+    // check if buffer is empty
+    if (bufferHead == bufferTail) {
+      SDL_Log("Buffer is empty");
+      return;
+    }
+    currentFrame = frameBuffer[bufferHead];
+    auto now = std::chrono::high_resolution_clock::now();
+    elapsedTime =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime)
+            .count() /
+        1000.0;
+    frameTime = (currentFrame->pts - startPTS) *
+                av_q2d(formatContext->streams[videoStreamIndex]->time_base);
+    if (elapsedTime < frameTime) {
+      return;
+    }
+    frameBuffer[bufferHead] = nullptr; // Clear buffer slot
+    bufferHead = (bufferHead + 1) % maxBufferSize;
   }
-  auto now = std::chrono::high_resolution_clock::now();
-  AVFrame *currentFrame = frameBuffer.front();
-  double elapsedTime =
-      std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime)
-          .count() /
-      1000.0;
-  double frameTime =
-      (currentFrame->pts - startPTS) *
-      av_q2d(formatContext->streams[videoStreamIndex]->time_base);
-  if (elapsedTime < frameTime) {
-    return;
-  }
+  freeSpace.release(); // Signal that a buffer slot is free
 
-  frameBuffer.pop();
-  frameBufferCV.notify_one();
   if (elapsedTime > frameTime + 0.1) {
     lastFramePTS = frameTime;
     SDL_Log("Skipping frame: too late for display");
@@ -370,7 +375,6 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
 }
 
 void VideoPlayer::seek(int64_t micro) {
-  // TODO: seek is not tested yet
   if (!formatContext || !codecContext || videoStreamIndex < 0)
     return;
 
@@ -380,15 +384,20 @@ void VideoPlayer::seek(int64_t micro) {
                    formatContext->streams[videoStreamIndex]->time_base);
 
   {
-    // Stop playback and clear the frame buffer
-    std::lock_guard<std::mutex> lock(frameBufferMutex);
+    // Stop playback and clear the ring buffer
+    std::lock_guard<std::mutex> lock(bufferMutex);
     avcodec_flush_buffers(codecContext);
-    while (!frameBuffer.empty()) {
-      AVFrame *frame = frameBuffer.front();
-      av_frame_free(&frame);
-      frameBuffer.pop();
+
+    // Free all frames in the ring buffer
+    for (size_t i = 0; i < maxBufferSize; ++i) {
+      if (frameBuffer[i] != nullptr) {
+        av_frame_free(&frameBuffer[i]);
+        frameBuffer[i] = nullptr;
+      }
     }
-    frameBufferCV.notify_all();
+    bufferHead = bufferTail = 0; // Reset buffer indices
+
+    freeSpace.release(maxBufferSize); // Reset freeSpace
   }
 
   // Perform the seek operation
@@ -402,34 +411,28 @@ void VideoPlayer::seek(int64_t micro) {
   lastFramePTS = 0;
   startTime = std::chrono::high_resolution_clock::now();
 
-  // Restart pre-decoding from the new position
-  frameBufferCV.notify_all();
+  // Notify predecoding thread to continue from the new position
   SDL_Log("Seeked to %lld microseconds", micro);
 }
+
 void VideoPlayer::predecodeFrames() {
   while (predecodingActive) {
-    {
-      std::unique_lock<std::mutex> lock(frameBufferMutex);
-      frameBufferCV.wait(lock, [this] {
-        return frameBuffer.size() < maxBufferSize || !predecodingActive;
-      });
-    }
+    freeSpace.acquire(); // Wait for free space in the buffer
 
     if (!predecodingActive)
       break;
 
-    // Read and decode frames
     AVPacket *packet = av_packet_alloc();
     if (av_read_frame(formatContext, packet) >= 0) {
       if (packet->stream_index == videoStreamIndex) {
         avcodec_send_packet(codecContext, packet);
         AVFrame *decodedFrame = av_frame_alloc();
         if (avcodec_receive_frame(codecContext, decodedFrame) == 0) {
-          // Push the frame into the buffer
+          // Add frame to ring buffer
           {
-            std::unique_lock<std::mutex> lock(frameBufferMutex);
-            frameBuffer.push(decodedFrame);
-            frameBufferCV.notify_one();
+            std::lock_guard<std::mutex> lock(bufferMutex);
+            frameBuffer[bufferTail] = decodedFrame;
+            bufferTail = (bufferTail + 1) % maxBufferSize;
           }
         } else {
           av_frame_free(&decodedFrame);
@@ -443,14 +446,23 @@ void VideoPlayer::predecodeFrames() {
 
 void VideoPlayer::stopPredecoding() {
   predecodingActive = false;
-  frameBufferCV.notify_all();
+
+  // Release all semaphores to unblock any waiting threads
+  freeSpace.release(maxBufferSize); // Release all free space
+
   if (predecodeThread.joinable()) {
     predecodeThread.join();
   }
-  std::lock_guard<std::mutex> lock(frameBufferMutex);
-  while (!frameBuffer.empty()) {
-    AVFrame *frame = frameBuffer.front();
-    av_frame_free(&frame);
-    frameBuffer.pop();
+
+  // Clear the buffer
+  {
+    std::lock_guard<std::mutex> lock(bufferMutex);
+    for (size_t i = 0; i < maxBufferSize; ++i) {
+      if (frameBuffer[i] != nullptr) {
+        av_frame_free(&frameBuffer[i]);
+        frameBuffer[i] = nullptr;
+      }
+    }
+    bufferHead = bufferTail = 0; // Reset buffer indices
   }
 }
