@@ -71,6 +71,10 @@ int rendering::window_height = 600;
 Camera *rendering::main_camera = nullptr;
 Camera rendering::game_camera{rendering::main_view};
 int main(int argv, char **args) {
+#ifdef _WIN32
+  // search dll in ./lib
+  SetDllDirectoryA("lib");
+#endif
   rendering::main_camera = &rendering::game_camera;
   sol::state lua;
   int x = 0;

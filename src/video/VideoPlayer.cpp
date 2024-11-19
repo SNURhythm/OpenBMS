@@ -386,7 +386,7 @@ void VideoPlayer::seek(int64_t micro) {
 
   // Convert microseconds to stream time base
   int64_t seekTarget =
-      av_rescale_q(micro, AV_TIME_BASE_Q,
+      av_rescale_q(micro, {1, AV_TIME_BASE},
                    formatContext->streams[videoStreamIndex]->time_base);
 
   {
@@ -402,9 +402,10 @@ void VideoPlayer::seek(int64_t micro) {
       }
     }
     bufferHead = bufferTail = 0; // Reset buffer indices
+    freeSpace.release(bufferSize); // Reset freeSpace
     bufferSize = 0;
 
-    freeSpace.release(maxBufferSize); // Reset freeSpace
+
   }
 
   // Perform the seek operation
@@ -467,11 +468,7 @@ void VideoPlayer::stopPredecoding() {
   predecodingActive = false;
 
   // Release all semaphores to unblock any waiting threads
-  freeSpace.release(maxBufferSize); // Release all free space
-
-  if (predecodeThread.joinable()) {
-    predecodeThread.join();
-  }
+  freeSpace.release(bufferSize);
 
   // Clear the buffer
   {
@@ -485,4 +482,8 @@ void VideoPlayer::stopPredecoding() {
     bufferHead = bufferTail = 0; // Reset buffer indices
     bufferSize = 0;
   }
+  // join predecoding thread
+  if (predecodeThread.joinable())
+    predecodeThread.join();
+
 }

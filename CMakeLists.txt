@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.21)
 
 include(ExternalProject)
 project(OpenBMS VERSION 1.0 LANGUAGES C CXX)
@@ -6,8 +6,18 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 #find_package(bgfx CONFIG REQUIRED)
 set(BUILD_PROGRAMS OFF)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
+
+
+# Clear configuration-specific output settings
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,8 +25,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Compiler options
-add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedantic -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -g)
-
+#add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedantic -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -g)
+# for msvc
+add_compile_options(/Zc:__cplusplus)
 # Include directories
 include_directories(include)
 include_directories(bgfx/bgfx/include)
@@ -66,6 +77,8 @@ set(FFMPEG_LIBS
 )
 # Platform-specific settings
 if (WIN32)
+
+    add_definitions(-DSTBI_WINDOWS_UTF8)
     find_package(SndFile CONFIG REQUIRED)
     set(CP_ASSETS "xcopy /s /i assets ${BUILD_DIR}\\assets /Y")
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -75,11 +88,18 @@ if (WIN32)
     endif ()
     link_directories(${LIB_DIR}/win32)
 
-    find_library(SDL2_LIB SDL2 PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
+    find_library(SDL2_LIB SDL2 PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH REQUIRED)
+    # add dll
+    add_library(SDL2 SHARED IMPORTED GLOBAL)
+    # set IMPORTED_LOCATION and IMPORTED_IMPLIB:
+    set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${LIB_DIR}/win32/SDL2.dll IMPORTED_IMPLIB ${LIB_DIR}/win32/SDL2.lib)
     find_library(SDL2MAIN_LIB SDL2main PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
+    add_library(SDL2main SHARED IMPORTED)
+    set_target_properties(SDL2main PROPERTIES IMPORTED_LOCATION ${LIB_DIR}/win32/SDL2main.dll IMPORTED_IMPLIB ${LIB_DIR}/win32/SDL2main.lib)
     find_library(SDL2_TFF_LIB SDL2_ttf PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
-    find_library(LUAJIT_LIB luajit PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH)
-    set(MINGW32_LIB mingw32)
+    find_library(LUA_LIB lua51 PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH REQUIRED)
+    find_library(LUAJIT_LIB luajit PATHS ${LIB_DIR}/win32 NO_DEFAULT_PATH REQUIRED)
+    #set(MINGW32_LIB mingw32)
 
     # glob all the dlls
     file(GLOB DLLS ${LIB_DIR}/win32/*.dll)
@@ -139,13 +159,20 @@ elseif (IOS)
     target_link_libraries(main PRIVATE ${UIKIT} ${FOUNDATION})
 endif ()
 
+if(WIN32)
+    string(REPLACE ".lib" ".dll" SDL2_LIB_DLL ${SDL2_LIB})
+    set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIB_DLL} IMPORTED_IMPLIB ${SDL2_LIB})
+else(WIN32)
+    set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIB})
+endif(WIN32)
+
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
 add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 
 # Main executable
 add_executable(main)
 
-target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${FFMPEG_LIBS} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
+target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${FFMPEG_LIBS} ${LUA_LIB} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
 
 # Custom target for copying assets
 add_custom_command(
@@ -157,9 +184,15 @@ add_custom_command(
 if (NOT "${DLLS}" STREQUAL "")
     add_custom_command(
             TARGET main PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+            COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
     )
 endif ()
+
+# print $<TARGET_RUNTIME_DLLS:main> to console
+#file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/dlls.txt" CONTENT "$<TARGET_RUNTIME_DLLS:main>")
+
+#install(FILES $<TARGET_RUNTIME_DLLS:main> TYPE BIN)
+
 
 
 # Copy shaders
@@ -170,7 +203,7 @@ add_custom_command(
 
 # Installation rules
 install(TARGETS main DESTINATION bin)
-install(DIRECTORY assets DESTINATION ${BUILD_DIR})
+install(DIRECTORY assets DESTINATION bin)
 
 # Additional targets for different build types like Debug, Release, etc.
 
