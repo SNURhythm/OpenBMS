@@ -54,14 +54,12 @@ int GamePlayScene::pressLane(int lane, double inputDelay) {
 int GamePlayScene::pressLane(int mainLane, int compensateLane,
                              double inputDelay) {
   std::vector<int> candidates;
-  SDL_Log("Pressing lane %d; %d", mainLane, compensateLane);
   if (lanePressed.contains(mainLane) && !lanePressed[mainLane]) {
     candidates.push_back(mainLane);
   }
   if (lanePressed.contains(compensateLane) && !lanePressed[compensateLane]) {
     candidates.push_back(compensateLane);
   }
-  SDL_Log("%zu candidates", candidates.size());
   if (candidates.empty()) {
     return mainLane;
   }
