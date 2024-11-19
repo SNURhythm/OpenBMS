@@ -38,3 +38,5 @@ cmake-build-*/
 *.app
 !lib/**
 lib/**/.DS_Store
+!ios/Xcode/OpenBMS/lib/**
+ios/Xcode/OpenBMS/lib/**/.DS_Store

@@ -90,7 +90,6 @@
 		B7FA8B0D2C7D06D800B7EAAF /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FA8B0C2C7D06D700B7EAAF /* GLKit.framework */; };
 		B7FA8B0F2C7D06F200B7EAAF /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FA8B0E2C7D06F200B7EAAF /* OpenGLES.framework */; };
 		B7FA8B142C7D0A2600B7EAAF /* libcompat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D27AF12C7CE2FA00189ED7 /* libcompat.a */; };
-		B7FA8B152C7D0BF900B7EAAF /* libvlc-full-static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FA8B022C7D065C00B7EAAF /* libvlc-full-static.a */; };
 		B7FFC2C32BF7D834000C838E /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B7FFC39F2BFAAFA7000C838E /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E222BF7C48700945F27 /* CoreFoundation.framework */; };
 		B7FFC3A12BFAAFE7000C838E /* libbgfx.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3132BFAAF67000C838E /* libbgfx.a */; };
@@ -770,36 +769,6 @@
 		B71B9EDF2BFDA40900D789A5 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		B71B9EE12BFDA44500D789A5 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../../../assets; sourceTree = "<group>"; };
 		B7459F6A2BFC2A58002C5A6F /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shaders; path = ../../../../shaders; sourceTree = "<group>"; };
-		B77B0D552BF7B15900945F27 /* libvlc_dialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_dialog.h; sourceTree = "<group>"; };
-		B77B0D562BF7B15900945F27 /* libvlc_renderer_discoverer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_renderer_discoverer.h; sourceTree = "<group>"; };
-		B77B0D572BF7B15900945F27 /* libvlc_media.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_media.h; sourceTree = "<group>"; };
-		B77B0D582BF7B15900945F27 /* libvlc_media_list_player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_media_list_player.h; sourceTree = "<group>"; };
-		B77B0D592BF7B15900945F27 /* libvlc_media_player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_media_player.h; sourceTree = "<group>"; };
-		B77B0D5A2BF7B15900945F27 /* libvlc_events.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_events.h; sourceTree = "<group>"; };
-		B77B0D5B2BF7B15900945F27 /* vlc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vlc.h; sourceTree = "<group>"; };
-		B77B0D5C2BF7B15900945F27 /* libvlc_media_discoverer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_media_discoverer.h; sourceTree = "<group>"; };
-		B77B0D5D2BF7B15900945F27 /* deprecated.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = deprecated.h; sourceTree = "<group>"; };
-		B77B0D5E2BF7B15900945F27 /* libvlc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc.h; sourceTree = "<group>"; };
-		B77B0D5F2BF7B15900945F27 /* libvlc_media_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_media_list.h; sourceTree = "<group>"; };
-		B77B0D602BF7B15900945F27 /* libvlc_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_version.h; sourceTree = "<group>"; };
-		B77B0D612BF7B15900945F27 /* libvlc_vlm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_vlm.h; sourceTree = "<group>"; };
-		B77B0D622BF7B15900945F27 /* libvlc_media_library.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libvlc_media_library.h; sourceTree = "<group>"; };
-		B77B0D642BF7B15900945F27 /* Instance.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Instance.hpp; sourceTree = "<group>"; };
-		B77B0D652BF7B15900945F27 /* MediaList.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MediaList.hpp; sourceTree = "<group>"; };
-		B77B0D662BF7B15900945F27 /* vlc.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vlc.hpp; sourceTree = "<group>"; };
-		B77B0D672BF7B15900945F27 /* Internal.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Internal.hpp; sourceTree = "<group>"; };
-		B77B0D682BF7B15900945F27 /* MediaLibrary.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MediaLibrary.hpp; sourceTree = "<group>"; };
-		B77B0D692BF7B15900945F27 /* structures.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = structures.hpp; sourceTree = "<group>"; };
-		B77B0D6A2BF7B15900945F27 /* Dialog.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Dialog.hpp; sourceTree = "<group>"; };
-		B77B0D6B2BF7B15900945F27 /* EventManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = EventManager.hpp; sourceTree = "<group>"; };
-		B77B0D6C2BF7B15900945F27 /* RendererDiscoverer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = RendererDiscoverer.hpp; sourceTree = "<group>"; };
-		B77B0D6D2BF7B15900945F27 /* MediaDiscoverer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MediaDiscoverer.hpp; sourceTree = "<group>"; };
-		B77B0D6E2BF7B15900945F27 /* Media.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Media.hpp; sourceTree = "<group>"; };
-		B77B0D6F2BF7B15900945F27 /* MediaListPlayer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MediaListPlayer.hpp; sourceTree = "<group>"; };
-		B77B0D702BF7B15900945F27 /* common.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = common.hpp; sourceTree = "<group>"; };
-		B77B0D712BF7B15900945F27 /* Equalizer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Equalizer.hpp; sourceTree = "<group>"; };
-		B77B0D722BF7B15900945F27 /* MediaPlayer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MediaPlayer.hpp; sourceTree = "<group>"; };
-		B77B0D732BF7B15900945F27 /* Picture.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Picture.hpp; sourceTree = "<group>"; };
 		B77B0D752BF7B15900945F27 /* SDL_misc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_misc.h; sourceTree = "<group>"; };
 		B77B0D762BF7B15900945F27 /* SDL_opengles2_gl2ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_opengles2_gl2ext.h; sourceTree = "<group>"; };
 		B77B0D772BF7B15900945F27 /* SDL_test_random.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_test_random.h; sourceTree = "<group>"; };
@@ -998,7 +967,6 @@
 				B77B0E1C2BF7BDC400945F27 /* SDL2_ttf.framework in Frameworks */,
 				B7FFC3A82BFAAFF3000C838E /* libbimg_encode.a in Frameworks */,
 				B77B0E202BF7C46D00945F27 /* Foundation.framework in Frameworks */,
-				B7FA8B152C7D0BF900B7EAAF /* libvlc-full-static.a in Frameworks */,
 				B77B0DFD2BF7BD3900945F27 /* SDL2.framework in Frameworks */,
 				B7FFC3A92BFAAFF3000C838E /* libbimg.a in Frameworks */,
 				B7FFC3A62BFAAFF3000C838E /* libbgfx.a in Frameworks */,
@@ -1296,56 +1264,10 @@
 		B77B0D532BF7B15900945F27 /* include */ = {
 			isa = PBXGroup;
 			children = (
-				B77B0D542BF7B15900945F27 /* vlc */,
-				B77B0D632BF7B15900945F27 /* vlcpp */,
 				B77B0D742BF7B15900945F27 /* SDL2 */,
 			);
 			name = include;
 			path = ../../../../include;
-			sourceTree = "<group>";
-		};
-		B77B0D542BF7B15900945F27 /* vlc */ = {
-			isa = PBXGroup;
-			children = (
-				B77B0D552BF7B15900945F27 /* libvlc_dialog.h */,
-				B77B0D562BF7B15900945F27 /* libvlc_renderer_discoverer.h */,
-				B77B0D572BF7B15900945F27 /* libvlc_media.h */,
-				B77B0D582BF7B15900945F27 /* libvlc_media_list_player.h */,
-				B77B0D592BF7B15900945F27 /* libvlc_media_player.h */,
-				B77B0D5A2BF7B15900945F27 /* libvlc_events.h */,
-				B77B0D5B2BF7B15900945F27 /* vlc.h */,
-				B77B0D5C2BF7B15900945F27 /* libvlc_media_discoverer.h */,
-				B77B0D5D2BF7B15900945F27 /* deprecated.h */,
-				B77B0D5E2BF7B15900945F27 /* libvlc.h */,
-				B77B0D5F2BF7B15900945F27 /* libvlc_media_list.h */,
-				B77B0D602BF7B15900945F27 /* libvlc_version.h */,
-				B77B0D612BF7B15900945F27 /* libvlc_vlm.h */,
-				B77B0D622BF7B15900945F27 /* libvlc_media_library.h */,
-			);
-			path = vlc;
-			sourceTree = "<group>";
-		};
-		B77B0D632BF7B15900945F27 /* vlcpp */ = {
-			isa = PBXGroup;
-			children = (
-				B77B0D642BF7B15900945F27 /* Instance.hpp */,
-				B77B0D652BF7B15900945F27 /* MediaList.hpp */,
-				B77B0D662BF7B15900945F27 /* vlc.hpp */,
-				B77B0D672BF7B15900945F27 /* Internal.hpp */,
-				B77B0D682BF7B15900945F27 /* MediaLibrary.hpp */,
-				B77B0D692BF7B15900945F27 /* structures.hpp */,
-				B77B0D6A2BF7B15900945F27 /* Dialog.hpp */,
-				B77B0D6B2BF7B15900945F27 /* EventManager.hpp */,
-				B77B0D6C2BF7B15900945F27 /* RendererDiscoverer.hpp */,
-				B77B0D6D2BF7B15900945F27 /* MediaDiscoverer.hpp */,
-				B77B0D6E2BF7B15900945F27 /* Media.hpp */,
-				B77B0D6F2BF7B15900945F27 /* MediaListPlayer.hpp */,
-				B77B0D702BF7B15900945F27 /* common.hpp */,
-				B77B0D712BF7B15900945F27 /* Equalizer.hpp */,
-				B77B0D722BF7B15900945F27 /* MediaPlayer.hpp */,
-				B77B0D732BF7B15900945F27 /* Picture.hpp */,
-			);
-			path = vlcpp;
 			sourceTree = "<group>";
 		};
 		B77B0D742BF7B15900945F27 /* SDL2 */ = {
