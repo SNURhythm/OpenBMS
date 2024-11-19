@@ -148,7 +148,7 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
     return false;
   }
   std::filesystem::path path = chartMeta.BmsPath;
-  sqlite3_bind_text(stmt, 1, ToRelativePath(path).string().c_str(), -1,
+  sqlite3_bind_text(stmt, 1, path_t_to_utf8(fspath_to_path_t( ToRelativePath(path))).c_str(), -1,
                     SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 2, (chartMeta.MD5).c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 3, (chartMeta.SHA256).c_str(), -1, SQLITE_TRANSIENT);
@@ -159,7 +159,7 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
   sqlite3_bind_text(stmt, 7, (chartMeta.Artist).c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 8, (chartMeta.SubArtist).c_str(), -1,
                     SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 9, ToRelativePath(chartMeta.Folder).string().c_str(),
+  sqlite3_bind_text(stmt, 9, path_t_to_utf8(fspath_to_path_t(ToRelativePath(chartMeta.Folder))).c_str(),
                     -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 10, chartMeta.StageFile.string().c_str(), -1,
                     SQLITE_TRANSIENT);
@@ -345,8 +345,13 @@ bool ChartDBHelper::ClearChartMeta(sqlite3 *db) {
 bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
   int idx = 0;
   bms_parser::ChartMeta chartMeta;
-  std::filesystem::path path = std::filesystem::path(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
+#ifdef _WIN32
+  const wchar_t* t = reinterpret_cast<const wchar_t *>(sqlite3_column_text16(stmt, idx++));
+#else
+  const char* t = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+#endif
+  std::filesystem::path path = std::filesystem::path(t
+      );
   chartMeta.BmsPath = ToAbsolutePath(path);
   chartMeta.MD5 = std::string(
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
@@ -362,8 +367,12 @@ bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
   chartMeta.SubArtist = std::string(
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  std::filesystem::path folder = std::filesystem::path(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
+#ifdef _WIN32
+  const wchar_t* folder_char = reinterpret_cast<const wchar_t *>(sqlite3_column_text16(stmt, idx++));
+#else
+  const char* folder_char = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+#endif
+  std::filesystem::path folder = std::filesystem::path(folder_char);
   chartMeta.Folder = ToAbsolutePath(folder);
   chartMeta.StageFile = std::filesystem::path(
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));

@@ -263,7 +263,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
                                   {
                                       .startPosition = 0,
                                       .autoKeySound = false,
-                                      .autoPlay = false,
+                                      .autoPlay = true,
                                   }));
             return false;
           },
