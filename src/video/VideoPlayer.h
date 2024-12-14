@@ -56,8 +56,7 @@ private:
   std::atomic<size_t> bufferTail = 0;
   static const int maxBufferSize = 10; // Adjust as needed
   std::atomic<size_t> bufferSize = 0;
-  std::counting_semaphore<maxBufferSize> freeSpace{
-      maxBufferSize};     // Tracks free buffer slots
+  std::condition_variable freeSpace;
   std::mutex bufferMutex; // Protect ring buffer operations
 
   std::chrono::high_resolution_clock::time_point

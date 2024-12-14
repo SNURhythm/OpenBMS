@@ -22,6 +22,7 @@ void GamePlayScene::init() {
   laneStateText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   laneStateText->setPosition(100, 100);
   for (const auto &lane : chart->Meta.GetTotalLaneIndices()) {
+    SDL_Log("Setting lane %d to false", lane);
     lanePressed[lane] = false;
   }
   context.jukebox.onTick([this](long long time) {
@@ -53,14 +54,11 @@ int GamePlayScene::pressLane(int lane, double inputDelay) {
 int GamePlayScene::pressLane(int mainLane, int compensateLane,
                              double inputDelay) {
   std::vector<int> candidates;
-
-  for (auto Lane : mainLane == compensateLane
-                       ? std::initializer_list<int>{mainLane}
-                       : std::initializer_list<int>{mainLane, compensateLane}) {
-    if (!lanePressed.contains(Lane) || lanePressed[Lane]) {
-      continue;
-    }
-    candidates.push_back(Lane);
+  if (lanePressed.contains(mainLane) && !lanePressed[mainLane]) {
+    candidates.push_back(mainLane);
+  }
+  if (lanePressed.contains(compensateLane) && !lanePressed[compensateLane]) {
+    candidates.push_back(compensateLane);
   }
   if (candidates.empty()) {
     return mainLane;
