@@ -106,7 +106,7 @@ void BMSRenderer::onJudge(JudgeResult judgeResult, int combo, int score) {
   latestCombo = combo;
   latestScore = score;
 }
-void BMSRenderer::drawLongNote(RenderContext context, float headY, float tailY,
+void BMSRenderer::drawLongNote(RenderContext context, const float headY, float tailY,
                                bms_parser::LongNote *const &head) {
   // assert head
   assert(!head->IsTail() && "head is tail");
@@ -115,15 +115,15 @@ void BMSRenderer::drawLongNote(RenderContext context, float headY, float tailY,
   float startY = head->IsPlayed ? judgeY : headY;
   const float bodyHeight = tailY - startY;
   const float bodyWidth = noteRenderWidth;
-  if (state.noteObjectMap.find(head) == state.noteObjectMap.end()) {
+  if (!state.noteObjectMap.contains(head)) {
     state.noteObjectMap[head] =
         dynamic_cast<SpriteObject *>(getInstance(ObjectType::Note));
   }
-  if (state.noteObjectMap.find(head->Tail) == state.noteObjectMap.end()) {
+  if (!state.noteObjectMap.contains(head->Tail)) {
     state.noteObjectMap[head->Tail] =
         dynamic_cast<SpriteObject *>(getInstance(ObjectType::Note));
   }
-  if (state.longBodyObjectMap.find(head) == state.longBodyObjectMap.end()) {
+  if (!state.longBodyObjectMap.contains(head)) {
     state.longBodyObjectMap[head] =
         dynamic_cast<SpriteObject *>(getInstance(ObjectType::LongBody));
   }
@@ -168,7 +168,7 @@ void BMSRenderer::drawNormalNote(RenderContext &context, float y,
                                  bms_parser::Note *const &note) {
   if (note->IsPlayed)
     return;
-  if (state.noteObjectMap.find(note) == state.noteObjectMap.end()) {
+  if (!state.noteObjectMap.contains(note)) {
     state.noteObjectMap[note] =
         dynamic_cast<SpriteObject *>(getInstance(ObjectType::Note));
   }
@@ -180,7 +180,7 @@ void BMSRenderer::drawNormalNote(RenderContext &context, float y,
   noteObject->transform.position = {x, y, 0.0f};
   noteObject->transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
   noteObject->visible = true;
-  auto &texture = isScratch(note->Lane)
+  const auto &texture = isScratch(note->Lane)
                       ? scratchTexture
                       : (note->Lane % 2 == 0 ? noteTexture : noteTexture2);
 
@@ -198,13 +198,13 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
   // render timeline
   for (size_t i = state.currentTimelineIndex;
        i < timelines.size() && y < upperBound; i++) {
-    auto &timeLine = timelines[i];
+    const auto &timeLine = timelines[i];
     if (timeLine->Timing >= micro) {
       if (y < judgeY)
         y = judgeY;
       if (i > 0) {
-        auto &prevTimeLine = timelines[i - 1];
-        if (prevTimeLine->Timing + prevTimeLine->GetStopDuration() > micro) {
+        if (const auto &prevTimeLine = timelines[i - 1];
+            prevTimeLine->Timing + prevTimeLine->GetStopDuration() > micro) {
           y += (timeLine->BeatPosition - prevTimeLine->BeatPosition) *
                prevTimeLine->Scroll * 10.0f;
         } else {
@@ -239,11 +239,11 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
           }
           // render note
           if (note->IsLongNote()) {
-            auto *longNote = dynamic_cast<bms_parser::LongNote *>(note);
-            if (longNote->IsTail()) {
+            if (auto *longNote = dynamic_cast<bms_parser::LongNote *>(note);
+                longNote->IsTail()) {
               // find head's y
-              auto it = longNoteLookahead.find(longNote->Head);
-              if (it != longNoteLookahead.end()) {
+              if (auto it = longNoteLookahead.find(longNote->Head);
+                  it != longNoteLookahead.end()) {
                 drawLongNote(context, it->second, y, longNote->Head);
                 // remove from lookahead
                 longNoteLookahead.erase(longNote->Head);
@@ -284,6 +284,7 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
 
   // render leftover long notes
   for (const auto &pair : longNoteLookahead) {
+    if (pair.first->Timeline->Timing < micro - latePoorTiming) continue;
     drawLongNote(context, pair.second, upperBound, pair.first);
   }
   // render lane beams
@@ -406,7 +407,7 @@ GameObject *BMSRenderer::getInstance(ObjectType type) {
 }
 void BMSRenderer::recycleInstance(ObjectType type, GameObject *object) {
   object->visible = false;
-  if (state.objectPool.find(type) == state.objectPool.end()) {
+  if (!state.objectPool.contains(type)) {
     state.objectPool[type] = std::queue<GameObject *>();
   }
   state.objectPool[type].push(object);
