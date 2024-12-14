@@ -198,7 +198,7 @@ void VideoPlayer::update() {
     bufferHead = (bufferHead + 1) % maxBufferSize;
     --bufferSize;
   }
-  freeSpace.release(); // Signal that a buffer slot is free
+  freeSpace.notify_one(); // Signal that a buffer slot is free
 
   if (elapsedTime > frameTime + 0.1) {
     lastFramePTS = frameTime;
@@ -404,7 +404,9 @@ void VideoPlayer::seek(int64_t micro) {
     bufferHead = bufferTail = 0; // Reset buffer indices
     bufferSize = 0;
 
-    freeSpace.release(maxBufferSize); // Reset freeSpace
+    // Reset freeSpace
+    bufferSize = 0;
+    freeSpace.notify_all();
   }
 
   // Perform the seek operation
@@ -425,10 +427,14 @@ void VideoPlayer::seek(int64_t micro) {
 void VideoPlayer::predecodeFrames() {
 
   while (predecodingActive) {
-    freeSpace.acquire(); // Wait for free space in the buffer
+    {
+      std::unique_lock<std::mutex> lock(bufferMutex);
+      freeSpace.wait(lock, [this] { return bufferSize < maxBufferSize; });
+    }
 
-    if (!predecodingActive)
+    if (!predecodingActive) {
       break;
+    }
     {
       std::lock_guard<std::mutex> videoLock(videoMutex);
       if (!formatContext || !codecContext || videoStreamIndex < 0) {
@@ -459,6 +465,7 @@ void VideoPlayer::predecodeFrames() {
       }
     }
     av_packet_free(&packet);
+
   }
   SDL_Log("VideoPlayer::predecodeFrames exited");
 }
@@ -467,7 +474,8 @@ void VideoPlayer::stopPredecoding() {
   predecodingActive = false;
 
   // Release all semaphores to unblock any waiting threads
-  freeSpace.release(maxBufferSize); // Release all free space
+  bufferSize = 0;
+  freeSpace.notify_all(); // Release all free space
 
   if (predecodeThread.joinable()) {
     predecodeThread.join();
