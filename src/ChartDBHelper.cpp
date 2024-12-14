@@ -25,6 +25,9 @@ sqlite3 *ChartDBHelper::Connect() {
     sqlite3_close(db);
     return nullptr;
   }
+  // wal
+  sqlite3_exec(db, "PRAGMA journal_mode=WAL", nullptr, nullptr, nullptr);
+  sqlite3_exec(db, "PRAGMA synchronous=NORMAL", nullptr, nullptr, nullptr);
   return db;
 }
 
