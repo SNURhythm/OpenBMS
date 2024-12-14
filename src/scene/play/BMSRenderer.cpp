@@ -262,6 +262,8 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
                 longNote->IsTail()) {
               // remove from orphan long note
               state.orphanLongNotes.remove(longNote->Head);
+              // and from long note lookahead
+              longNoteLookahead.erase(longNote->Head);
             } else {
               // add to orphan long note
               state.orphanLongNotes.push_back(longNote);
@@ -284,7 +286,6 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
 
   // render leftover long notes
   for (const auto &pair : longNoteLookahead) {
-    if (pair.first->Timeline->Timing < micro - latePoorTiming) continue;
     drawLongNote(context, pair.second, upperBound, pair.first);
   }
   // render lane beams
