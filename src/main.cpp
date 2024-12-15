@@ -178,7 +178,7 @@ void run() {
   // SDL_RenderCopy(ren, tex, nullptr, nullptr);
   // SDL_RenderPresent(ren);
   SDL_Event e;
-  bool quit = false;
+
   auto lastFrameTime = std::chrono::high_resolution_clock::now();
 
   // Initialize bgfx
@@ -247,7 +247,7 @@ void run() {
   //  videoPlayer.play();
   resetViewTransform();
   TextView fpsText("assets/fonts/notosanscjkjp.ttf", 24);
-  while (!quit) {
+  while (!context.quitFlag) {
 
     // SDL_RenderCopy(ren, tex, nullptr, nullptr);
     auto currentFrameTime = std::chrono::high_resolution_clock::now();
@@ -259,11 +259,11 @@ void run() {
 
     while (SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) {
-        quit = true;
+        context.quitFlag = true;
       }
       auto result = sceneManager.handleEvents(e);
       if (result.quit) {
-        quit = true;
+        context.quitFlag = true;
       }
 
       // on window resize
