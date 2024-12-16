@@ -4,8 +4,10 @@
 #ifdef _WIN32
 #include <windows.h>
 typedef std::wstring path_t;
+#define PATH(x) L##x
 #else
 typedef std::string path_t;
+#define PATH(x) x
 #endif
 
 #ifdef _WIN32
