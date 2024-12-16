@@ -82,7 +82,7 @@ void TextInputBox::handleEvents(SDL_Event &event) {
       std::string clipboard = SDL_GetClipboardText();
       editingText.insert(cursorPos, clipboard);
       cursorPos += clipboard.size();
-    } else if (event.key.keysym.sym == SDLK_RETURN) {
+    } else if (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_KP_ENTER) {
       isSubmit = true;
     }
 

@@ -9,6 +9,7 @@
 #include "../../rendering/common.h"
 #include "../../rendering/ShaderManager.h"
 #include "stb_image.h"
+#include "../../utils/SpriteLoader.h"
 
 #include <assert.h>
 #include <sstream>
@@ -23,40 +24,66 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
       timelines.push_back(timeLine);
     }
   }
-  int width, height, channels;
-  unsigned char *data =
-      stbi_load("assets/img/note.png", &width, &height, &channels, 4);
+  SpriteLoader spriteLoader(PATH("assets/img/piano_b.png"));
+  if (!spriteLoader.load()) {
+    throw std::runtime_error("Failed to load piano_b.png");
+  }
+
+
+
+  // int width, height, channels;
+  // unsigned char *data =
+  //     stbi_load("assets/img/note.png", &width, &height, &channels, 4);
+  // if (!data) {
+  //   SDL_Log("Failed to load note texture");
+  //   throw std::runtime_error("Failed to load note texture");
+  // }
+  int width = 128;
+  int height = 40;
+  auto data = spriteLoader.crop(0, 0, width, height);
   if (!data) {
     SDL_Log("Failed to load note texture");
     throw std::runtime_error("Failed to load note texture");
   }
+
+  int channels = spriteLoader.getChannels();
   noteImageHeight = height;
   noteImageWidth = width;
   noteRenderHeight = static_cast<float>(noteImageHeight) /
                      static_cast<float>(noteImageWidth) * noteRenderWidth;
   noteTexture =
       bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
-                            0, bgfx::copy(data, width * height * 4));
-  stbi_image_free(data);
-  data = stbi_load("assets/img/note2.png", &width, &height, &channels, 4);
+                            0, bgfx::copy(data, width * height * channels));
+  SDL_free(data);
+  SpriteLoader spriteLoader2(PATH("assets/img/piano_w.png"));
+  if (!spriteLoader2.load()) {
+    throw std::runtime_error("Failed to load piano_w.png");
+  }
+  channels = spriteLoader2.getChannels();
+  data = spriteLoader2.crop(0, 0, width, height);
   if (!data) {
     SDL_Log("Failed to load note texture");
     throw std::runtime_error("Failed to load note texture");
   }
   noteTexture2 =
       bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
-                            0, bgfx::copy(data, width * height * 4));
-  stbi_image_free(data);
-  data = stbi_load("assets/img/scratch.png", &width, &height, &channels, 4);
+                            0, bgfx::copy(data, width * height * channels));
+  SDL_free(data);
+  SpriteLoader spriteLoader3(PATH("assets/img/orange.png"));
+  if (!spriteLoader3.load()) {
+    throw std::runtime_error("Failed to load orange.png");
+  }
+  channels = spriteLoader3.getChannels();
+  data = spriteLoader3.crop(0, 0, width, height);
   if (!data) {
     SDL_Log("Failed to load note texture");
     throw std::runtime_error("Failed to load note texture");
   }
-  scratchTexture =
-      bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
-                            0, bgfx::copy(data, width * height * 4));
-  stbi_image_free(data);
 
+  scratchTexture =
+      bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, width * height * channels));
+  SDL_free(data);
   judgeText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   judgeText->setPosition(rendering::window_width / 2,
                          rendering::window_height / 2);
