@@ -9,6 +9,10 @@
 #include "bgfx/bgfx.h"
 class SpriteObject : public GameObject {
 public:
+  ~SpriteObject() override {
+    bgfx::destroy(s_texColor);
+    bgfx::destroy(texture);
+  }
   float width = 0.1f;
   float height = 0.1f;
   float tileU = 1.0f;
