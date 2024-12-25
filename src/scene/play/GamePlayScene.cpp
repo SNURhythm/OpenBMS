@@ -29,7 +29,7 @@ void GamePlayScene::init() {
     if (state != nullptr && state->isPlaying) {
       checkPassedTimeline(time);
       if (state->passedMeasureCount == chart->Measures.size()) {
-        SDL_Log("All measures passed");
+//        SDL_Log("All measures passed");
       }
     }
   });

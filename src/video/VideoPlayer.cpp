@@ -110,7 +110,7 @@ bool VideoPlayer::loadVideo(const std::string &videoPath,
     if (!codecContext->extradata || codecContext->extradata_size <= 0) {
       SDL_Log("Fixing missing SPS/PPS extradata");
       AVCodecParameters *codecParams =
-        tempFormatContext->streams[videoStreamIndex]->codecpar;
+          tempFormatContext->streams[videoStreamIndex]->codecpar;
       if (codecParams->extradata_size > 0 && codecParams->extradata) {
         codecContext->extradata = (uint8_t *)av_mallocz(
             codecParams->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
@@ -461,11 +461,10 @@ void VideoPlayer::predecodeFrames() {
             av_frame_free(&decodedFrame);
           }
         }
-        av_packet_unref(packet);
       }
+      av_packet_unref(packet);
+      av_packet_free(&packet);
     }
-    av_packet_free(&packet);
-
   }
   SDL_Log("VideoPlayer::predecodeFrames exited");
 }
