@@ -174,7 +174,7 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
     SDL_Log("Failed to load note texture");
     throw std::runtime_error("Failed to load note texture");
   }
-  scratchLongBodyTextureOn =
+  scratchLongBodyTextureOff =
       bgfx::createTexture2D(128, 12, false, 1, bgfx::TextureFormat::RGBA8, 0,
                             bgfx::copy(data, 128 * 12 * channels));
   SDL_free(data);
@@ -183,7 +183,7 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
     SDL_Log("Failed to load note texture");
     throw std::runtime_error("Failed to load note texture");
   }
-  scratchLongBodyTextureOff =
+  scratchLongBodyTextureOn =
       bgfx::createTexture2D(128, 24, false, 1, bgfx::TextureFormat::RGBA8, 0,
                             bgfx::copy(data, 128 * 24 * channels));
   SDL_free(data);
@@ -306,6 +306,7 @@ void BMSRenderer::drawLongNote(RenderContext context, const float headY, float t
   tailObject->setTexture(tailTexture);
 
   bodyObject->render(context);
+  // TODO: render tail only in Charge Note mode.
   tailObject->render(context);
 
   if (head->IsPlayed)
