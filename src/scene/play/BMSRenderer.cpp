@@ -24,7 +24,7 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
       timelines.push_back(timeLine);
     }
   }
-  SpriteLoader spriteLoader(PATH("assets/img/piano_b.png"));
+  SpriteLoader spriteLoader(PATH("assets/img/piano_w.png"));
   if (!spriteLoader.load()) {
     throw std::runtime_error("Failed to load piano_b.png");
   }
@@ -51,11 +51,55 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   noteImageWidth = width;
   noteRenderHeight = static_cast<float>(noteImageHeight) /
                      static_cast<float>(noteImageWidth) * noteRenderWidth;
+  float offImageHeight = 12.0f;
+  float onImageHeight = 24.0f;
+
+  longBodyRenderHeightOff = static_cast<float>(offImageHeight) /
+                     static_cast<float>(width) * noteRenderWidth;
+  longBodyRenderHeightOn = static_cast<float>(onImageHeight) /
+                     static_cast<float>(width) * noteRenderWidth;
   noteTexture =
       bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
                             0, bgfx::copy(data, width * height * channels));
   SDL_free(data);
-  SpriteLoader spriteLoader2(PATH("assets/img/piano_w.png"));
+  data = spriteLoader.crop(0, 80, 128, 40);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  longHeadTexture =
+      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 40 * channels));
+  SDL_free(data);
+  data = spriteLoader.crop(0, 120, 128, 12);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  longBodyTextureOff =
+      bgfx::createTexture2D(128, 12, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 12 * channels));
+  SDL_free(data);
+  data = spriteLoader.crop(0, 132, 128, 24);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  longBodyTextureOn =
+      bgfx::createTexture2D(128, 24, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 24 * channels));
+  SDL_free(data);
+  data = spriteLoader.crop(0, 40, 128, 40);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  longTailTexture =
+      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 40 * channels));
+  SDL_free(data);
+
+  SpriteLoader spriteLoader2(PATH("assets/img/piano_b.png"));
   if (!spriteLoader2.load()) {
     throw std::runtime_error("Failed to load piano_w.png");
   }
@@ -68,6 +112,38 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   noteTexture2 =
       bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
                             0, bgfx::copy(data, width * height * channels));
+  SDL_free(data);
+  data = spriteLoader2.crop(0, 80, 128, 40);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  longHeadTexture2 =
+      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 40 * channels));
+  SDL_free(data);
+  data = spriteLoader2.crop(0, 120, 128, 12);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  longBodyTextureOff2 =
+      bgfx::createTexture2D(128, 12, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 12 * channels));
+  SDL_free(data);
+  data = spriteLoader2.crop(0, 132, 128, 24);
+  longBodyTextureOn2 =
+      bgfx::createTexture2D(128, 24, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 24 * channels));
+  SDL_free(data);
+  data = spriteLoader2.crop(0, 40, 128, 40);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  longTailTexture2 =
+      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 40 * channels));
   SDL_free(data);
   SpriteLoader spriteLoader3(PATH("assets/img/orange.png"));
   if (!spriteLoader3.load()) {
@@ -83,6 +159,42 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   scratchTexture =
       bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8, 0,
                             bgfx::copy(data, width * height * channels));
+  SDL_free(data);
+  data = spriteLoader3.crop(0, 80, 128, 40);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  scratchLongHeadTexture =
+      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 40 * channels));
+  SDL_free(data);
+  data = spriteLoader3.crop(0, 120, 128, 12);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  scratchLongBodyTextureOn =
+      bgfx::createTexture2D(128, 12, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 12 * channels));
+  SDL_free(data);
+  data = spriteLoader3.crop(0, 132, 128, 24);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  scratchLongBodyTextureOff =
+      bgfx::createTexture2D(128, 24, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 24 * channels));
+  SDL_free(data);
+  data = spriteLoader3.crop(0, 40, 128, 40);
+  if (!data) {
+    SDL_Log("Failed to load note texture");
+    throw std::runtime_error("Failed to load note texture");
+  }
+  scratchLongTailTexture =
+      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
+                            bgfx::copy(data, 128 * 40 * channels));
   SDL_free(data);
   judgeText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   judgeText->setPosition(rendering::window_width / 2,
@@ -158,7 +270,7 @@ void BMSRenderer::drawLongNote(RenderContext context, const float headY, float t
   SpriteObject *bodyObject = state.longBodyObjectMap[head];
   bodyObject->width = bodyWidth;
   bodyObject->height = bodyHeight;
-  bodyObject->tileV = bodyHeight / noteRenderHeight;
+  bodyObject->tileV = bodyHeight / (head->IsHolding ? longBodyRenderHeightOn : longBodyRenderHeightOff);
   bodyObject->transform.position = {laneToX(head->Lane), startY, 0.0f};
   bodyObject->transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
   bodyObject->visible = true;
@@ -169,12 +281,29 @@ void BMSRenderer::drawLongNote(RenderContext context, const float headY, float t
   tailObject->transform.position = {laneToX(head->Tail->Lane), tailY, 0.0f};
   tailObject->transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
   tailObject->visible = true;
-  auto &texture = isScratch(head->Lane)
-                      ? scratchTexture
-                      : (head->Lane % 2 == 0 ? noteTexture : noteTexture2);
+  bgfx::TextureHandle bodyTexture{};
+  bgfx::TextureHandle tailTexture{};
+  bgfx::TextureHandle headTexture{};
+  if (isScratch(head->Lane)) {
+    headTexture = scratchLongHeadTexture;
+    tailTexture = scratchLongTailTexture;
+    if (head->IsHolding) {
+      bodyTexture = scratchLongBodyTextureOn;
+    } else {
+      bodyTexture = scratchLongBodyTextureOff;
+    }
+  } else {
+    headTexture = head->Lane % 2 == 0 ? longHeadTexture : longHeadTexture2;
+    tailTexture = head->Lane % 2 == 0 ? longTailTexture : longTailTexture2;
+    if (head->IsHolding) {
+      bodyTexture = head->Lane % 2 == 0 ? longBodyTextureOn : longBodyTextureOn2;
+    } else {
+      bodyTexture = head->Lane % 2 == 0 ? longBodyTextureOff : longBodyTextureOff2;
+    }
+  }
 
-  bodyObject->setTexture(texture);
-  tailObject->setTexture(texture);
+  bodyObject->setTexture(bodyTexture);
+  tailObject->setTexture(tailTexture);
 
   bodyObject->render(context);
   tailObject->render(context);
@@ -188,7 +317,7 @@ void BMSRenderer::drawLongNote(RenderContext context, const float headY, float t
   headObject->transform.position = {laneToX(head->Lane), startY, 0.0f};
   headObject->transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
   headObject->visible = true;
-  headObject->setTexture(texture);
+  headObject->setTexture(headTexture);
   headObject->render(context);
 }
 void BMSRenderer::drawNormalNote(RenderContext &context, float y,
@@ -454,6 +583,45 @@ BMSRenderer::~BMSRenderer() {
   }
   if (bgfx::isValid(noteTexture2)) {
     bgfx::destroy(noteTexture2);
+  }
+  if (bgfx::isValid(longHeadTexture)) {
+    bgfx::destroy(longHeadTexture);
+  }
+  if (bgfx::isValid(longBodyTextureOn)) {
+    bgfx::destroy(longBodyTextureOn);
+  }
+  if (bgfx::isValid(longBodyTextureOff)) {
+    bgfx::destroy(longBodyTextureOff);
+  }
+  if (bgfx::isValid(longTailTexture)) {
+    bgfx::destroy(longTailTexture);
+  }
+  if (bgfx::isValid(longHeadTexture2)) {
+    bgfx::destroy(longHeadTexture2);
+  }
+  if (bgfx::isValid(longBodyTextureOn2)) {
+    bgfx::destroy(longBodyTextureOn2);
+  }
+  if (bgfx::isValid(longBodyTextureOff2)) {
+    bgfx::destroy(longBodyTextureOff2);
+  }
+  if (bgfx::isValid(longTailTexture2)) {
+    bgfx::destroy(longTailTexture2);
+  }
+  if (bgfx::isValid(scratchTexture)) {
+    bgfx::destroy(scratchTexture);
+  }
+  if (bgfx::isValid(scratchLongHeadTexture)) {
+    bgfx::destroy(scratchLongHeadTexture);
+  }
+  if (bgfx::isValid(scratchLongBodyTextureOn)) {
+    bgfx::destroy(scratchLongBodyTextureOn);
+  }
+  if (bgfx::isValid(scratchLongBodyTextureOff)) {
+    bgfx::destroy(scratchLongBodyTextureOff);
+  }
+  if (bgfx::isValid(scratchLongTailTexture)) {
+    bgfx::destroy(scratchLongTailTexture);
   }
   delete judgeText;
   delete scoreText;

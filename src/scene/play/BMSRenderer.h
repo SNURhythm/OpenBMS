@@ -50,6 +50,9 @@ private:
   BMSRendererState state;
   float noteRenderWidth = 1.0f;
   float noteRenderHeight = 1.0f;
+
+  float longBodyRenderHeightOff = 1.0f;
+  float longBodyRenderHeightOn = 1.0f;
   float lowerBound = -1.0f;
   float upperBound = 20.0f;
   float judgeY = 0.0f;
@@ -71,7 +74,21 @@ private:
   float laneToX(int lane);
   bgfx::TextureHandle noteTexture = BGFX_INVALID_HANDLE;
   bgfx::TextureHandle noteTexture2 = BGFX_INVALID_HANDLE;
-  bgfx::TextureHandle scratchTexture;
+  bgfx::TextureHandle longHeadTexture = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longBodyTextureOn = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longBodyTextureOff = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longTailTexture = BGFX_INVALID_HANDLE;
+
+  bgfx::TextureHandle longHeadTexture2 = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longBodyTextureOn2 = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longBodyTextureOff2 = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longTailTexture2 = BGFX_INVALID_HANDLE;
+
+  bgfx::TextureHandle scratchTexture = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle scratchLongHeadTexture = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle scratchLongBodyTextureOn = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle scratchLongBodyTextureOff = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle scratchLongTailTexture = BGFX_INVALID_HANDLE;
   bms_parser::Chart *chart;
 
 public:
