@@ -177,7 +177,11 @@ int main(int argv, char **args) {
   setup_bgfx_platform_data(pd, wmi);
 
   bgfx::Init bgfx_init;
+#ifdef _WIN32
+  bgfx_init.type = bgfx::RendererType::Vulkan;
+#else
   bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
+#endif
   bgfx_init.resolution.width = rendering::window_width;
   bgfx_init.resolution.height = rendering::window_height;
   bgfx_init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X2;
@@ -215,12 +219,13 @@ void run() {
   rendering::PosTexVertex::init();
   rendering::PosTexCoord0Vertex::init();
   createFrameBuffers(rendering::window_width, rendering::window_height);
-  s_ProgBlurH =
-      rendering::ShaderManager::getInstance().getProgram("blur", "blurH");
-  s_ProgBlurV =
-      rendering::ShaderManager::getInstance().getProgram("blur", "blurV");
-  s_ProgRect =
-      rendering::ShaderManager::getInstance().getProgram("blur", "rect_tint");
+
+  s_ProgBlurH = rendering::ShaderManager::getInstance().getProgram(
+      "blur/vs_blur.bin", "blur/fs_blurH.bin");
+  s_ProgBlurV = rendering::ShaderManager::getInstance().getProgram(
+      "blur/vs_blur.bin", "blur/fs_blurV.bin");
+  s_ProgRect = rendering::ShaderManager::getInstance().getProgram(
+      "blur/vs_blur.bin", "fs_rect_tint.bin");
   s_uTexColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
   s_uTexelSize = bgfx::createUniform("u_texelSize", bgfx::UniformType::Vec4);
   s_uTintColor = bgfx::createUniform("u_tintColor", bgfx::UniformType::Vec4);

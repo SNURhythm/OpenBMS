@@ -1,6 +1,6 @@
 // fs_blurH.sc
 $input v_texcoord0
-#include "bgfx_shader.sh"
+#include "../bgfx_shader.sh"
 
 SAMPLER2D(s_texColor, 0);
 uniform vec4 u_texelSize; // x=1/width, y=1/height
