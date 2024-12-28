@@ -73,6 +73,16 @@ public:
     return programMap[name];
   }
 
+  bgfx::ProgramHandle getProgram(const std::string &vs, const std::string &fs) {
+    std::string name = vs + "_" + fs;
+    if (programMap.find(name) == programMap.end()) {
+      bgfx::ShaderHandle vsh = loadShader(("vs_" + vs + ".bin").c_str());
+      bgfx::ShaderHandle fsh = loadShader(("fs_" + fs + ".bin").c_str());
+      programMap[name] = bgfx::createProgram(vsh, fsh, true);
+    }
+    return programMap[name];
+  }
+
   void preloadProgram(const std::string &name) { getProgram(name); }
 
   void release() {
