@@ -3,9 +3,9 @@ class Camera;
 #include <SDL2/SDL.h>
 #include <bgfx/bgfx.h>
 #include <string>
-#define SHADER_SIMPLE "simple"
-#define SHADER_TEXT "text"
-#define SHADER_YUVRGB "yuvrgb"
+#define SHADER_SIMPLE "vs_simple.bin", "fs_simple.bin"
+#define SHADER_TEXT "vs_text.bin", "fs_text.bin"
+#define SHADER_YUVRGB "vs_yuvrgb.bin", "fs_yuvrgb.bin"
 namespace rendering {
 struct PosTexCoord0Vertex {
   static bgfx::VertexLayout ms_decl;
@@ -74,8 +74,7 @@ static PosTexCoord0Vertex s_quadVertices[] = {
     {1.0f, -1.0f, 0.0f, 1.0f, 1.0f},
 };
 static const uint16_t s_quadIndices[] = {0, 1, 2, 1, 3, 2};
-inline void screenSpaceQuad()
-{
+inline void screenSpaceQuad() {
   bgfx::TransientVertexBuffer tvb{};
   bgfx::TransientIndexBuffer tib{};
 

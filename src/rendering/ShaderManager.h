@@ -64,26 +64,19 @@ public:
   ShaderManager(const ShaderManager &) = delete;
   void operator=(const ShaderManager &) = delete;
 
-  bgfx::ProgramHandle getProgram(const std::string &name) {
-    if (programMap.find(name) == programMap.end()) {
-      bgfx::ShaderHandle vsh = loadShader(("vs_" + name + ".bin").c_str());
-      bgfx::ShaderHandle fsh = loadShader(("fs_" + name + ".bin").c_str());
-      programMap[name] = bgfx::createProgram(vsh, fsh, true);
-    }
-    return programMap[name];
-  }
-
   bgfx::ProgramHandle getProgram(const std::string &vs, const std::string &fs) {
     std::string name = vs + "_" + fs;
     if (programMap.find(name) == programMap.end()) {
-      bgfx::ShaderHandle vsh = loadShader(("vs_" + vs + ".bin").c_str());
-      bgfx::ShaderHandle fsh = loadShader(("fs_" + fs + ".bin").c_str());
+      bgfx::ShaderHandle vsh = loadShader(vs.c_str());
+      bgfx::ShaderHandle fsh = loadShader(fs.c_str());
       programMap[name] = bgfx::createProgram(vsh, fsh, true);
     }
     return programMap[name];
   }
 
-  void preloadProgram(const std::string &name) { getProgram(name); }
+  void preloadProgram(const std::string &vs, const std::string &fs) {
+    getProgram(vs, fs);
+  }
 
   void release() {
     for (auto &program : programMap) {

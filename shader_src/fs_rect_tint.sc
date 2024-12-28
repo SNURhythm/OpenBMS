@@ -8,6 +8,6 @@ uniform vec4 u_tintColor;
 
 void main()
 {
-    vec3 blurred = vec3(texture2D(s_texColor, v_texcoord0).rgb);
-    gl_FragColor = vec4(blurred * u_tintColor.rgb, 1.0);
+    vec3 color = vec3(texture2D(s_texColor, v_texcoord0).rgb);
+    gl_FragColor = vec4(color * u_tintColor.rgb, 1.0);
 }
