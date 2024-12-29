@@ -180,7 +180,7 @@ void VideoPlayer::update() {
     std::lock_guard<std::mutex> lock(bufferMutex);
     // check if buffer is empty
     if (bufferSize == 0) {
-      SDL_Log("Buffer is empty");
+      // SDL_Log("Buffer is empty");
       return;
     }
     currentFrame = frameBuffer[bufferHead];
