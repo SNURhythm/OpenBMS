@@ -19,11 +19,12 @@ void main()
         0.15, 0.12, 0.09, 0.05
     };
     vec2 uv = v_texcoord0;
-    vec3 c  = vec3(0.0);
+    vec3 c  = vec3(0.0, 0.0, 0.0);
 
     for (int i = 0; i < 9; i++)
     {
-        c += vec3(texture2D(s_texColor, uv + vec2(0.0, offsets[i]*u_texelSize.y)).rgb * weights[i]);
+        float4 sampleColor = bgfxTexture2D(s_texColor, uv + vec2(0.0, offsets[i]*u_texelSize.y));
+        c += sampleColor.rgb * weights[i];
     }
     gl_FragColor = vec4(c, 1.0);
 }

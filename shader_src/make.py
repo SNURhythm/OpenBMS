@@ -43,6 +43,9 @@ def compile_all_shaders():
         dst = "../shaders/spirv/" + fs_shader.replace(".sc", ".bin")
         if should_recompile_shader(fs_shader, dst):
             compile_shader(fs_shader, dst, "f", "windows", "spirv")
+        dst = "../shaders/dx11/" + fs_shader.replace(".sc", ".bin")
+        if should_recompile_shader(fs_shader, dst):
+            compile_shader(fs_shader, dst, "f", "windows", "s_5_0")
 
     for vs_shader in vs_shaders:
         if vs_shader.endswith("def.sc"):
@@ -54,6 +57,9 @@ def compile_all_shaders():
         dst = "../shaders/spirv/" + vs_shader.replace(".sc", ".bin")
         if should_recompile_shader(vs_shader, dst):
             compile_shader(vs_shader, dst, "v", "windows", "spirv")
+        dst = "../shaders/dx11/" + vs_shader.replace(".sc", ".bin")
+        if should_recompile_shader(vs_shader, dst):
+            compile_shader(vs_shader, dst, "v", "windows", "s_5_0")
 
 
 if __name__ == "__main__":
