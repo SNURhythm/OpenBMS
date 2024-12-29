@@ -8,9 +8,9 @@
 
 #include <thread>
 #include <future>
-VideoPlayer::VideoPlayer()
-    : videoFrameWidth(0), videoFrameHeight(0), hasVideoFrame(false),
-      videoFrameDataY(nullptr), videoFrameDataU(nullptr),
+VideoPlayer::VideoPlayer(Stopwatch *stopwatch)
+    : stopwatch(stopwatch), videoFrameWidth(0), videoFrameHeight(0),
+      hasVideoFrame(false), videoFrameDataY(nullptr), videoFrameDataU(nullptr),
       videoFrameDataV(nullptr) {
 
   s_texY = bgfx::createUniform("s_texY", bgfx::UniformType::Sampler);
@@ -184,11 +184,8 @@ void VideoPlayer::update() {
       return;
     }
     currentFrame = frameBuffer[bufferHead];
-    auto now = std::chrono::high_resolution_clock::now();
-    elapsedTime =
-        std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime)
-            .count() /
-        1000.0;
+    long long now = stopwatch->elapsedMicros();
+    elapsedTime = (now - startTime) / 1000000.0;
     frameTime = (currentFrame->pts - startPTS) *
                 av_q2d(formatContext->streams[videoStreamIndex]->time_base);
     if (elapsedTime < frameTime) {
@@ -300,16 +297,13 @@ void VideoPlayer::render() {
 void VideoPlayer::play() {
   if (!isPlaying) {
     // Start playback
-    startTime = std::chrono::high_resolution_clock::now();
+    startTime = stopwatch->elapsedMicros();
   } else if (isPaused) {
     // Resume playback
-    auto now = std::chrono::high_resolution_clock::now();
-    double elapsedTime =
-        std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime)
-            .count() /
-        1000.0;
-    startTime = now - std::chrono::milliseconds(static_cast<int>(
-                          (lastFramePTS - elapsedTime) * 1000));
+    long long now = stopwatch->elapsedMicros();
+    double elapsedTime = (now - startTime) / 1000000.0;
+    startTime =
+        now - static_cast<long long>((lastFramePTS - elapsedTime) * 1000000);
   }
   isPlaying = true;
   isPaused = false;
@@ -418,7 +412,7 @@ void VideoPlayer::seek(int64_t micro) {
 
   // Reinitialize timing
   lastFramePTS = 0;
-  startTime = std::chrono::high_resolution_clock::now();
+  startTime = stopwatch->elapsedMicros();
 
   // Notify predecoding thread to continue from the new position
   SDL_Log("Seeked to %lld microseconds", micro);

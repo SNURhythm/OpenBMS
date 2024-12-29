@@ -29,8 +29,6 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
     throw std::runtime_error("Failed to load piano_b.png");
   }
 
-
-
   // int width, height, channels;
   // unsigned char *data =
   //     stbi_load("assets/img/note.png", &width, &height, &channels, 4);
@@ -55,9 +53,9 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   float onImageHeight = 24.0f;
 
   longBodyRenderHeightOff = static_cast<float>(offImageHeight) /
-                     static_cast<float>(width) * noteRenderWidth;
+                            static_cast<float>(width) * noteRenderWidth;
   longBodyRenderHeightOn = static_cast<float>(onImageHeight) /
-                     static_cast<float>(width) * noteRenderWidth;
+                           static_cast<float>(width) * noteRenderWidth;
   noteTexture =
       bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
                             0, bgfx::copy(data, width * height * channels));
@@ -157,8 +155,8 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   }
 
   scratchTexture =
-      bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, width * height * channels));
+      bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
+                            0, bgfx::copy(data, width * height * channels));
   SDL_free(data);
   data = spriteLoader3.crop(0, 80, 128, 40);
   if (!data) {
@@ -245,8 +243,8 @@ void BMSRenderer::onJudge(JudgeResult judgeResult, int combo, int score) {
   latestCombo = combo;
   latestScore = score;
 }
-void BMSRenderer::drawLongNote(RenderContext context, const float headY, float tailY,
-                               bms_parser::LongNote *const &head) {
+void BMSRenderer::drawLongNote(RenderContext context, const float headY,
+                               float tailY, bms_parser::LongNote *const &head) {
   // assert head
   assert(!head->IsTail() && "head is tail");
   if (head->Tail->IsPlayed)
@@ -270,7 +268,8 @@ void BMSRenderer::drawLongNote(RenderContext context, const float headY, float t
   SpriteObject *bodyObject = state.longBodyObjectMap[head];
   bodyObject->width = bodyWidth;
   bodyObject->height = bodyHeight;
-  bodyObject->tileV = bodyHeight / (head->IsHolding ? longBodyRenderHeightOn : longBodyRenderHeightOff);
+  bodyObject->tileV = bodyHeight / (head->IsHolding ? longBodyRenderHeightOn
+                                                    : longBodyRenderHeightOff);
   bodyObject->transform.position = {laneToX(head->Lane), startY, 0.0f};
   bodyObject->transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
   bodyObject->visible = true;
@@ -296,9 +295,11 @@ void BMSRenderer::drawLongNote(RenderContext context, const float headY, float t
     headTexture = head->Lane % 2 == 0 ? longHeadTexture : longHeadTexture2;
     tailTexture = head->Lane % 2 == 0 ? longTailTexture : longTailTexture2;
     if (head->IsHolding) {
-      bodyTexture = head->Lane % 2 == 0 ? longBodyTextureOn : longBodyTextureOn2;
+      bodyTexture =
+          head->Lane % 2 == 0 ? longBodyTextureOn : longBodyTextureOn2;
     } else {
-      bodyTexture = head->Lane % 2 == 0 ? longBodyTextureOff : longBodyTextureOff2;
+      bodyTexture =
+          head->Lane % 2 == 0 ? longBodyTextureOff : longBodyTextureOff2;
     }
   }
 
@@ -337,9 +338,10 @@ void BMSRenderer::drawNormalNote(RenderContext &context, float y,
   noteObject->transform.position = {x, y, 0.0f};
   noteObject->transform.rotation = Quaternion::fromEuler(0.0f, 0.0f, 0.0f);
   noteObject->visible = true;
-  const auto &texture = isScratch(note->Lane)
-                      ? scratchTexture
-                      : (note->Lane % 2 == 0 ? noteTexture : noteTexture2);
+  const auto &texture =
+      isScratch(note->Lane)
+          ? scratchTexture
+          : (note->Lane % 2 == 0 ? noteTexture : noteTexture2);
 
   noteObject->setTexture(texture);
   noteObject->render(context);
@@ -398,6 +400,10 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
           if (note->IsLongNote()) {
             if (auto *longNote = dynamic_cast<bms_parser::LongNote *>(note);
                 longNote->IsTail()) {
+              if (longNote->Head == nullptr) {
+                // ignore malformed chart: long note is not terminated
+                continue;
+              }
               // find head's y
               if (auto it = longNoteLookahead.find(longNote->Head);
                   it != longNoteLookahead.end()) {
@@ -417,6 +423,10 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
           if (note->IsLongNote()) {
             if (auto *longNote = dynamic_cast<bms_parser::LongNote *>(note);
                 longNote->IsTail()) {
+              if (longNote->Head == nullptr) {
+                // ignore malformed chart: long note is not terminated
+                continue;
+              }
               // remove from orphan long note
               state.orphanLongNotes.remove(longNote->Head);
               // and from long note lookahead
@@ -457,6 +467,7 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
   drawJudgement(context);
   drawScore(context);
 }
+void BMSRenderer::reset() { state.reset(); }
 void BMSRenderer::drawRect(RenderContext &context, float width, float height,
                            float x, float y, Color color) {
   // draw judge line
@@ -577,6 +588,10 @@ BMSRendererState::~BMSRendererState() {
       pair.second.pop();
     }
   }
+}
+void BMSRendererState::reset() {
+  orphanLongNotes.clear();
+  currentTimelineIndex = 0;
 }
 BMSRenderer::~BMSRenderer() {
   if (bgfx::isValid(noteTexture)) {

@@ -14,7 +14,7 @@ struct BMPData {
 };
 class Jukebox {
 public:
-  Jukebox();
+  Jukebox(Stopwatch *stopwatch);
   ~Jukebox();
 
   void loadChart(bms_parser::Chart &chart, bool scheduleNotes,
@@ -31,6 +31,9 @@ public:
   std::function<void(long long)> onTickCb;
   void onTick(const std::function<void(long long)> &cb) { onTickCb = cb; }
   void removeOnTick() { onTickCb = nullptr; }
+  void pause();
+  void resume();
+  bool isPaused();
 
 private:
   // seek lock
@@ -39,7 +42,7 @@ private:
   void loadBMPs(bms_parser::Chart &chart, std::atomic_bool &isCancelled);
   std::atomic_bool isPlaying = false;
   std::thread playThread;
-  Stopwatch stopwatch;
+  Stopwatch *stopwatch;
   AudioWrapper audio;
   std::vector<std::pair<long long, int>> audioList;
   size_t audioCursor = 0;

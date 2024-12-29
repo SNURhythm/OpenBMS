@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bgfx/bgfx.h"
 #include <SDL2/SDL.h>
 struct Scissor {
   int x, y, width, height;
@@ -13,10 +14,18 @@ public:
       : x(x), y(y), width(width), height(height), isVisible(true) {}
 
   virtual ~View() = default;
+  void render(RenderContext &context) {
+    if (!isVisible)
+      return;
+    renderImpl(context);
+  }
+  void handleEvents(SDL_Event &event) {
+    if (!isVisible)
+      return;
+    handleEventsImpl(event);
+  }
 
-  virtual void render(RenderContext &context) = 0;
   virtual inline void onLayout() {};
-  virtual inline void handleEvents(SDL_Event &event) {}
 
   inline void setSize(int newWidth, int newHeight) {
     bool isResized = width != newWidth || height != newHeight;
@@ -43,6 +52,8 @@ public:
   virtual void onUnselected() {}
 
 protected:
+  virtual void renderImpl(RenderContext &context) = 0;
+  virtual inline void handleEventsImpl(SDL_Event &event) {};
   // onResize
   virtual void onResize(int newWidth, int newHeight) {}
   // onMove

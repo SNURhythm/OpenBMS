@@ -16,7 +16,7 @@ public:
   std::map<Uint64, std::pair<Uint64, std::vector<std::function<bool()>>>>
       deferred;
   virtual void init() = 0; // Initialize the scene
-  EventHandleResult handleEvents(SDL_Event &event) {
+  virtual EventHandleResult handleEvents(SDL_Event &event) {
     for (auto view : views) {
       view->handleEvents(event);
     }
@@ -42,7 +42,8 @@ public:
         if (it->second.first <= context.currentFrame) {
           SDL_Log("Handling deferred");
           for (const auto &func : it->second.second) {
-            if(!func()) return;
+            if (!func())
+              return;
             if (isDead) {
               return;
             }

@@ -33,6 +33,7 @@ public:
   std::list<bms_parser::LongNote *>
       orphanLongNotes; // long note whose head is dead but tail is alive
   size_t currentTimelineIndex = 0;
+  void reset();
 };
 class BMSRenderer {
 private:
@@ -98,4 +99,5 @@ public:
   explicit BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming);
 
   void render(RenderContext &context, long long micro);
+  void reset();
 };

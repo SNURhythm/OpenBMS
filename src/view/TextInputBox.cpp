@@ -28,7 +28,7 @@ size_t TextInputBox::getPrevUnicodePos(size_t pos) {
   }
   return cp - editingText.data();
 }
-void TextInputBox::handleEvents(SDL_Event &event) {
+void TextInputBox::handleEventsImpl(SDL_Event &event) {
   bool shouldUpdate = false;
   bool isSubmit = false;
   switch (event.type) {
@@ -82,7 +82,8 @@ void TextInputBox::handleEvents(SDL_Event &event) {
       std::string clipboard = SDL_GetClipboardText();
       editingText.insert(cursorPos, clipboard);
       cursorPos += clipboard.size();
-    } else if (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_KP_ENTER) {
+    } else if (event.key.keysym.sym == SDLK_RETURN ||
+               event.key.keysym.sym == SDLK_KP_ENTER) {
       isSubmit = true;
     }
 
@@ -176,8 +177,8 @@ void TextInputBox::onResize(int newWidth, int newHeight) {
   SDL_SetTextInputRect(&viewRect);
 }
 
-void TextInputBox::render(RenderContext &context) {
-  TextView::render(context);
+void TextInputBox::renderImpl(RenderContext &context) {
+  TextView::renderImpl(context);
   if (isSelected) {
     // Caret blink interval
     Uint32 blinkInterval = 500;
