@@ -8,8 +8,8 @@
 #include "../../bms_parser.hpp"
 #include "../../input/IRhythmControl.h"
 #include "../../view/TextView.h"
-#include "../../view/LinearLayout.h"
-
+class Button;
+class LinearLayout;
 struct StartOptions {
   unsigned long long startPosition = 0;
   bool autoKeySound = false;
@@ -44,7 +44,8 @@ public:
 
 private:
   void reset();
-  LinearLayout *rootLayout = nullptr;
+  LinearLayout *pauseLayout = nullptr;
+  Button *pauseButton = nullptr;
   Judge judge;
   StartOptions options;
   void checkPassedTimeline(long long time);

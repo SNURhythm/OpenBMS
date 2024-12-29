@@ -8,9 +8,10 @@
 #include "../../input/RhythmInputHandler.h"
 #include "../../view/Button.h"
 #include "../../scene/MainMenuScene.h"
+#include "../../view/LinearLayout.h"
 void GamePlayScene::init() {
   auto chartNameText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
-  chartNameText->setText("Selected: " + chart->Meta.Title);
+  chartNameText->setText(chart->Meta.Title);
   chartNameText->setPosition(10, 10);
   addView(chartNameText);
   renderer = new BMSRenderer(chart, judge.timingWindows[Bad].second);
@@ -34,13 +35,13 @@ void GamePlayScene::init() {
   });
 
   /* pause screen */
-  rootLayout =
+  pauseLayout =
       new LinearLayout(0, 0, rendering::window_width, rendering::window_height,
                        Orientation::VERTICAL);
-  rootLayout->setAlign(LinearLayout::CENTER);
+  pauseLayout->setAlign(LinearLayout::CENTER);
   {
     auto spacer1 = new LinearLayout(0, 0, 0, 0, Orientation::VERTICAL);
-    rootLayout->addView(spacer1, {0, 0, 1});
+    pauseLayout->addView(spacer1, {0, 0, 1});
     auto pauseScreen = new LinearLayout(0, 0, 0, 0, Orientation::VERTICAL);
     pauseScreen->setAlign(LinearLayout::CENTER);
     {
@@ -55,7 +56,7 @@ void GamePlayScene::init() {
       resumeButton->setContentView(resumeText);
       resumeButton->setOnClickListener([this]() {
         context.jukebox.resume();
-        rootLayout->setVisible(false);
+        pauseLayout->setVisible(false);
       });
       pauseScreen->addView(resumeButton, {0, 0, 1});
       auto restartButton = new Button(0, 0, 0, 0);
@@ -64,7 +65,7 @@ void GamePlayScene::init() {
       restartText->setAlign(TextView::CENTER);
       restartButton->setContentView(restartText);
       restartButton->setOnClickListener([this]() {
-        rootLayout->setVisible(false);
+        pauseLayout->setVisible(false);
         defer(
             [this]() {
               reset();
@@ -90,12 +91,24 @@ void GamePlayScene::init() {
       pauseScreen->addView(exitButton, {0, 0, 1});
     }
 
-    rootLayout->addView(pauseScreen, {200, 200, 0});
+    pauseLayout->addView(pauseScreen, {200, 200, 0});
     auto spacer2 = new LinearLayout(0, 0, 200, 0, Orientation::VERTICAL);
-    rootLayout->addView(spacer2, {0, 0, 1});
+    pauseLayout->addView(spacer2, {0, 0, 1});
   }
-  rootLayout->setVisible(false);
-  addView(rootLayout);
+  pauseLayout->setVisible(false);
+  addView(pauseLayout);
+
+  /* pause button */
+  pauseButton = new Button(rendering::window_width - 40, 10, 40, 40);
+  auto pauseText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
+  pauseText->setText("| |");
+  pauseText->setAlign(TextView::CENTER);
+  pauseButton->setContentView(pauseText);
+  pauseButton->setOnClickListener([this]() {
+    context.jukebox.pause();
+    pauseLayout->setVisible(true);
+  });
+  addView(pauseButton);
 }
 
 void GamePlayScene::reset() {
@@ -125,7 +138,8 @@ void GamePlayScene::update(float dt) {}
 
 void GamePlayScene::renderScene() {
   RenderContext renderContext;
-  rootLayout->setSize(rendering::window_width, rendering::window_height);
+  pauseLayout->setSize(rendering::window_width, rendering::window_height);
+  pauseButton->setPosition(rendering::window_width - 40, 10);
   renderer->render(renderContext, context.jukebox.getTimeMicros());
   context.jukebox.render();
   std::string str;
@@ -434,11 +448,12 @@ EventHandleResult GamePlayScene::handleEvents(SDL_Event &event) {
     if (event.key.keysym.sym == SDLK_ESCAPE) {
       if (context.jukebox.isPaused()) {
         context.jukebox.resume();
-        rootLayout->setVisible(false);
+        pauseLayout->setVisible(false);
       } else {
         context.jukebox.pause();
-        rootLayout->setVisible(true);
+        pauseLayout->setVisible(true);
       }
     }
   }
+  return {};
 }
