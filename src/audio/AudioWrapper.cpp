@@ -13,7 +13,11 @@ void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
   if (userData == nullptr) {
     return;
   }
+
   std::lock_guard<std::mutex> lock(*userData->mutex);
+  if (!userData->stopwatch->isRunning()) {
+    return;
+  }
   auto *soundDataList = userData->soundDataList;
   if (soundDataList == nullptr) {
     return;
@@ -66,9 +70,10 @@ void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
     }
   }
 }
-AudioWrapper::AudioWrapper() {
+AudioWrapper::AudioWrapper(Stopwatch *stopwatch) : stopwatch(stopwatch) {
   userData.mutex = &soundDataListMutex;
   userData.soundDataList = &soundDataList;
+  userData.stopwatch = stopwatch;
   ma_device_config deviceConfig =
       ma_device_config_init(ma_device_type_playback);
   deviceConfig.playback.format = ma_format_s16;

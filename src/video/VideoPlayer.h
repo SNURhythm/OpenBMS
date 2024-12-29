@@ -4,6 +4,7 @@
 #include <bgfx/bgfx.h>
 #include <semaphore>
 #include <mutex>
+#include "../utils/Stopwatch.h"
 #include "../rendering/common.h"
 #include <queue>
 #include <thread>
@@ -18,7 +19,7 @@ extern "C" {
 
 class VideoPlayer {
 public:
-  VideoPlayer();
+  VideoPlayer(Stopwatch *stopwatch);
   ~VideoPlayer();
 
   bool loadVideo(const std::string &videoPath, std::atomic<bool> &isCancelled);
@@ -36,6 +37,7 @@ public:
   float fps = 60.0f;
 
 private:
+  Stopwatch *stopwatch;
   std::atomic<bool> isPlaying;
   std::atomic<bool> isPaused;
   std::atomic<bool> stopRequested;
@@ -59,8 +61,7 @@ private:
   std::condition_variable freeSpace;
   std::mutex bufferMutex; // Protect ring buffer operations
 
-  std::chrono::high_resolution_clock::time_point
-      startTime;             // Start time for playback
+  long long startTime;       // Start time for playback
   double lastFramePTS = 0.0; // Last decoded frame's PTS for synchronization
 
   std::queue<AVFrame *> frameQueue; // Queue for pre-decoded frames

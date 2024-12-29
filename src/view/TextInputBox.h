@@ -14,12 +14,11 @@ public:
   TextInputBox(const std::string &fontPath, int fontSize);
   ~TextInputBox() override;
 
-  void handleEvents(SDL_Event &event) override;
   void onSelected() override;
   void onUnselected() override;
   void onMove(int newX, int newY) override;
   void onResize(int newWidth, int newHeight) override;
-  void render(RenderContext &context) override;
+
   size_t onTextChanged(std::function<void(const std::string &)> callback);
   void removeOnTextChanged(std::function<void(const std::string &)> callback);
   size_t onSubmit(std::function<void(const std::string &)> callback);
@@ -30,6 +29,8 @@ public:
   [[nodiscard]] inline bool getSelected() const { return isSelected; }
 
 private:
+  void handleEventsImpl(SDL_Event &event) override;
+  void renderImpl(RenderContext &context) override;
   std::string editingText;
   std::string composition;
   int compositionX = 0;

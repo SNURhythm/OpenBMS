@@ -55,7 +55,7 @@ void ChartListItemView::setBanner(const path_t &path) {
 
 void ChartListItemView::unsetBanner() { bannerImage->freeImage(); }
 
-void ChartListItemView::render(RenderContext &context) {
+void ChartListItemView::renderImpl(RenderContext &context) {
   // SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   // SDL_SetRenderDrawColor(renderer, 0, 0, 0, 128);
   // SDL_Rect rect = {getX(), getY(), getWidth(), getHeight()};

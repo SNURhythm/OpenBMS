@@ -2,9 +2,10 @@
 #include <SDL2/SDL.h>
 #include <thread>
 #include "../Utils.h"
-#include "../video/transcode.h"
+#include "../game/GameState.h"
 #include "../rendering/common.h"
-Jukebox::Jukebox() {}
+Jukebox::Jukebox(Stopwatch *stopwatch)
+    : audio(stopwatch), stopwatch(stopwatch) {}
 
 Jukebox::~Jukebox() {
   isPlaying = false;
@@ -103,7 +104,7 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart,
         //   }
         // }
         // new video player
-        auto videoPlayer = new VideoPlayer();
+        auto videoPlayer = new VideoPlayer(stopwatch);
         path_t p = fspath_to_path_t(path);
 
         if (videoPlayer->loadVideo(path_t_to_utf8(p), isCancelled)) {
@@ -220,15 +221,19 @@ void Jukebox::play() {
     playThread.join();
   audio.startDevice();
   isPlaying = true;
-  stopwatch.reset();
-  stopwatch.start();
+  stopwatch->reset();
+  stopwatch->start();
   auto hz = 8000;
   playThread = std::thread([this, hz] {
     while (isPlaying) {
+      if (!stopwatch->isRunning()) {
+        std::this_thread::sleep_for(std::chrono::microseconds(1000000 / hz));
+        continue;
+      }
       // lock seek
       std::lock_guard<std::mutex> lock(seekLock);
       auto now = std::chrono::high_resolution_clock::now();
-      auto positionMicro = stopwatch.elapsedMicros();
+      auto positionMicro = stopwatch->elapsedMicros();
       if (onTickCb) {
         onTickCb(positionMicro);
       }
@@ -271,8 +276,13 @@ void Jukebox::play() {
   });
 }
 
-long long Jukebox::getTimeMicros() { return stopwatch.elapsedMicros(); }
-
+long long Jukebox::getTimeMicros() { return stopwatch->elapsedMicros(); }
+void Jukebox::pause() {
+  SDL_Log("Pausing");
+  stopwatch->pause();
+}
+void Jukebox::resume() { stopwatch->resume(); }
+bool Jukebox::isPaused() { return !stopwatch->isRunning(); }
 void Jukebox::stop() {
   isPlaying = false;
   if (playThread.joinable())
@@ -283,7 +293,7 @@ void Jukebox::seek(long long micro) {
   /* TODO: should also play audio/video which starts earlier than seek but
       ends later than seek */
   std::lock_guard<std::mutex> lock(seekLock);
-  stopwatch.seek(micro);
+  stopwatch->seek(micro);
   audio.stopSounds();
   // move cursors to micro
   audioCursor = 0;

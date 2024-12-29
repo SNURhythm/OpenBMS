@@ -41,3 +41,4 @@ void Stopwatch::seek(long long int micro) {
   elapsed_time = micro;
   start_time = std::chrono::high_resolution_clock::now();
 }
+bool Stopwatch::isRunning() const { return running; }

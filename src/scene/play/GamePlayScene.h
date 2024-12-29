@@ -8,6 +8,7 @@
 #include "../../bms_parser.hpp"
 #include "../../input/IRhythmControl.h"
 #include "../../view/TextView.h"
+#include "../../view/LinearLayout.h"
 
 struct StartOptions {
   unsigned long long startPosition = 0;
@@ -39,8 +40,11 @@ public:
   int pressLane(int lane, double inputDelay) override;
   int pressLane(int mainLane, int compensateLane, double inputDelay) override;
   void releaseLane(int lane, double inputDelay) override;
+  EventHandleResult handleEvents(SDL_Event &event) override;
 
 private:
+  void reset();
+  LinearLayout *rootLayout = nullptr;
   Judge judge;
   StartOptions options;
   void checkPassedTimeline(long long time);
