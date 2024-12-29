@@ -177,11 +177,7 @@ int main(int argv, char **args) {
   setup_bgfx_platform_data(pd, wmi);
 
   bgfx::Init bgfx_init;
-#ifdef _WIN32
-  bgfx_init.type = bgfx::RendererType::Vulkan;
-#else
   bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
-#endif
   bgfx_init.resolution.width = rendering::window_width;
   bgfx_init.resolution.height = rendering::window_height;
   bgfx_init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X2;
