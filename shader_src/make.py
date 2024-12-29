@@ -16,9 +16,13 @@ def should_recompile_shader(src, dst):
 
 def compile_shader(src, dst, type, platform, profile):
     os.makedirs(os.path.dirname(dst), exist_ok=True)
-    subprocess.run(
+    result = subprocess.run(
         [shaderc, "-f", src, "-o", dst, "--platform", platform, "--type", type, "--profile", profile, "-O 3", "-i", "."]
     )
+    if result.returncode != 0:
+        print(f"Failed to compile shader {src} to {dst}")
+        print(result.stderr)
+        exit(1)
 
 
 def compile_all_shaders():
