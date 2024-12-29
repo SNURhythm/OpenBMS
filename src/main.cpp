@@ -473,8 +473,7 @@ void blurHorizontal() {
   texelSize[2] = 0.0f;
   texelSize[3] = 0.0f;
   bgfx::setUniform(s_uTexelSize, texelSize);
-  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
-                 BGFX_STATE_DEPTH_TEST_LESS);
+  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
   bgfx::submit(rendering::blur_view_h, s_ProgBlurH);
 }
 
@@ -494,8 +493,7 @@ void blurVertical() {
   texelSize[2] = 0.0f;
   texelSize[3] = 0.0f;
   bgfx::setUniform(s_uTexelSize, texelSize);
-  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
-                 BGFX_STATE_DEPTH_TEST_LESS);
+  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
   bgfx::submit(rendering::blur_view_v, s_ProgBlurV);
 }
 
@@ -534,8 +532,7 @@ void drawFinal(uint16_t windowW, uint16_t windowH) {
   // Frosted tint
   float tintColor[4] = {1.0f, 1.0f, 1.0f, 0.60f}; // 60% alpha
   bgfx::setUniform(s_uTintColor, tintColor);
-  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
-                 BGFX_STATE_DEPTH_TEST_LESS);
+  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
   // Full-screen quad geometry (but scissored now)
   rendering::screenSpaceQuad();
   bgfx::submit(rendering::final_view, s_ProgRect);
