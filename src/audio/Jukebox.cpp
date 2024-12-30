@@ -197,6 +197,7 @@ void Jukebox::loadChart(bms_parser::Chart &chart, bool scheduleNotes,
   audio.unloadSounds();
   wavTableAbs.clear();
   currentBga = -1;
+  currentBmpLayer = -1;
   for (auto &videoPlayer : videoPlayerTable) {
     delete videoPlayer.second;
   }
@@ -414,6 +415,8 @@ void Jukebox::pause() {
 void Jukebox::resume() { stopwatch->resume(); }
 bool Jukebox::isPaused() { return !stopwatch->isRunning(); }
 void Jukebox::stop() {
+  currentBga = -1;
+  currentBmpLayer = -1;
   isPlaying = false;
   if (playThread.joinable())
     playThread.join();

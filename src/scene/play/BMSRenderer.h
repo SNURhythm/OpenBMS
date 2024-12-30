@@ -33,6 +33,10 @@ public:
   std::list<bms_parser::LongNote *>
       orphanLongNotes; // long note whose head is dead but tail is alive
   size_t currentTimelineIndex = 0;
+  JudgeResult latestJudgeResult = JudgeResult(None, 0);
+  std::chrono::system_clock::time_point latestJudgeResultTime;
+  int latestCombo = 0;
+  int latestScore = 0;
   void reset();
 };
 class BMSRenderer {
@@ -41,10 +45,7 @@ private:
   TextView *judgeText = nullptr;
   TextView *scoreText = nullptr;
   std::map<int, LaneState> laneStates;
-  JudgeResult latestJudgeResult = JudgeResult(None, 0);
-  std::chrono::system_clock::time_point latestJudgeResultTime;
-  int latestCombo = 0;
-  int latestScore = 0;
+
   float noteImageHeight = 0;
   float noteImageWidth = 0;
   std::vector<bms_parser::TimeLine *> timelines;
