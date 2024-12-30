@@ -350,6 +350,9 @@ void Jukebox::play() {
   });
 }
 void Jukebox::renderImage(ImageData &image, int viewId) {
+  // TODO: adjust x-coordinate
+  // TODO: support canvas extension (See "spread canvas" in
+  // https://hitkey.nekokan.dyndns.info/cmds.htm#BMPXX-ADJUSTMENT)
   if (!bgfx::isValid(image.texture)) {
     return;
   }
