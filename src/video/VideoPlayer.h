@@ -67,6 +67,9 @@ private:
   std::queue<AVFrame *> frameQueue; // Queue for pre-decoded frames
   std::condition_variable bufferCV; // Condition variable for buffer signaling
 
+  std::mutex eofMutex;
+  std::condition_variable eofCV; // Condition variable for eof signaling
+
   const size_t maxBufferFrames = 120; // Maximum number of frames in the buffer
   bool isBuffering = false;           // Indicates if buffering is in progress
 

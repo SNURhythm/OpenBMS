@@ -311,6 +311,7 @@ void VideoPlayer::play() {
   isPlaying = true;
   isPaused = false;
   stopRequested = false;
+  eofCV.notify_all();
 }
 
 void VideoPlayer::pause() { isPaused = true; }
@@ -419,6 +420,7 @@ void VideoPlayer::seek(int64_t micro) {
 
   // Notify predecoding thread to continue from the new position
   SDL_Log("Seeked to %lld microseconds", micro);
+  eofCV.notify_all();
 }
 
 void VideoPlayer::predecodeFrames() {
@@ -432,6 +434,7 @@ void VideoPlayer::predecodeFrames() {
     if (!predecodingActive) {
       break;
     }
+    bool readFailed = false;
     {
       std::lock_guard<std::mutex> videoLock(videoMutex);
       if (!formatContext || !codecContext || videoStreamIndex < 0) {
@@ -458,9 +461,30 @@ void VideoPlayer::predecodeFrames() {
             av_frame_free(&decodedFrame);
           }
         }
+
+      } else {
+        readFailed = true;
       }
       av_packet_unref(packet);
       av_packet_free(&packet);
+    } // outside of videoLock
+    if (readFailed) {
+      // check eof
+      if (formatContext->pb->eof_reached) {
+
+        SDL_Log("VideoPlayer::predecodeFrames reached end of file");
+        // wait until eof is reset
+        std::unique_lock<std::mutex> lock(eofMutex);
+        eofCV.wait(lock, [this] {
+          return !formatContext->pb->eof_reached || !predecodingActive;
+        });
+      } else {
+        char error[1024];
+        av_strerror(formatContext->pb->error, error, sizeof(error));
+        SDL_Log("VideoPlayer::predecodeFrames failed to read frame: %s", error);
+        // prevent busy loop
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      }
     }
   }
   SDL_Log("VideoPlayer::predecodeFrames exited");
@@ -489,4 +513,5 @@ void VideoPlayer::stopPredecoding() {
     bufferHead = bufferTail = 0; // Reset buffer indices
     bufferSize = 0;
   }
+  eofCV.notify_all();
 }
