@@ -203,14 +203,14 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   scoreText->setAlign(TextView::LEFT);
 }
 void BMSRenderer::drawJudgement(RenderContext context) const {
-  if (latestJudgeResult.judgement == None) {
+  if (state.latestJudgeResult.judgement == None) {
     return;
   }
   std::stringstream ss;
-  ss << latestJudgeResult.toString();
+  ss << state.latestJudgeResult.toString();
   ss << " ";
-  if (latestCombo > 0) {
-    ss << latestCombo;
+  if (state.latestCombo > 0) {
+    ss << state.latestCombo;
   }
   judgeText->setText(ss.str());
 
@@ -218,7 +218,7 @@ void BMSRenderer::drawJudgement(RenderContext context) const {
 }
 void BMSRenderer::drawScore(RenderContext &context) const {
   std::stringstream ss;
-  ss << "Score: " << latestScore;
+  ss << "Score: " << state.latestScore;
   scoreText->setText(ss.str());
   scoreText->render(context);
 }
@@ -238,10 +238,10 @@ void BMSRenderer::onJudge(JudgeResult judgeResult, int combo, int score) {
   if (judgeResult.judgement == None) {
     return;
   }
-  latestJudgeResult = judgeResult;
-  latestJudgeResultTime = std::chrono::system_clock::now();
-  latestCombo = combo;
-  latestScore = score;
+  state.latestJudgeResult = judgeResult;
+  state.latestJudgeResultTime = std::chrono::system_clock::now();
+  state.latestCombo = combo;
+  state.latestScore = score;
 }
 void BMSRenderer::drawLongNote(RenderContext context, const float headY,
                                float tailY, bms_parser::LongNote *const &head) {
@@ -592,6 +592,10 @@ BMSRendererState::~BMSRendererState() {
 void BMSRendererState::reset() {
   orphanLongNotes.clear();
   currentTimelineIndex = 0;
+  latestJudgeResult = JudgeResult(None, 0);
+  latestJudgeResultTime = std::chrono::system_clock::now();
+  latestCombo = 0;
+  latestScore = 0;
 }
 BMSRenderer::~BMSRenderer() {
   if (bgfx::isValid(noteTexture)) {
