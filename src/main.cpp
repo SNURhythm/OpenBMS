@@ -232,10 +232,8 @@ void run() {
   bgfx::setViewClear(rendering::clear_view, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
                      0x00000000);
   bgfx::setViewClear(rendering::ui_view, BGFX_CLEAR_DEPTH, 0x00000000);
-  bgfx::setViewClear(rendering::bga_view, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
-                     0x00000000);
-  bgfx::setViewClear(rendering::bga_layer_view,
-                     BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00000000);
+  bgfx::setViewClear(rendering::bga_view, BGFX_CLEAR_COLOR, 0x00000000);
+  bgfx::setViewClear(rendering::bga_layer_view, BGFX_CLEAR_NONE, 0x00000000);
   bgfx::setViewFrameBuffer(rendering::bga_view, s_FbScene);
   bgfx::setViewFrameBuffer(rendering::bga_layer_view, s_FbScene);
   bgfx::setViewClear(rendering::main_view, BGFX_CLEAR_DEPTH, 0x00000000, 1.0f,
