@@ -6,6 +6,7 @@ class Camera;
 #define SHADER_SIMPLE "vs_simple.bin", "fs_simple.bin"
 #define SHADER_TEXT "vs_text.bin", "fs_text.bin"
 #define SHADER_YUVRGB "vs_yuvrgb.bin", "fs_yuvrgb.bin"
+#define SHADER_BGALAYER "vs_text.bin", "fs_bgalayer.bin"
 namespace rendering {
 struct PosTexCoord0Vertex {
   static bgfx::VertexLayout ms_decl;

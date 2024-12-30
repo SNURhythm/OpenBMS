@@ -199,7 +199,7 @@ int main(int argv, char **args) {
 
 void run() {
   ApplicationContext context;
-  bgfx::setViewMode(0, bgfx::ViewMode::Sequential);
+  bgfx::setViewMode(rendering::ui_view, bgfx::ViewMode::Sequential);
   SceneManager sceneManager(context);
   sceneManager.changeScene(new MainMenuScene(context));
 
@@ -232,8 +232,12 @@ void run() {
   bgfx::setViewClear(rendering::clear_view, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
                      0x00000000);
   bgfx::setViewClear(rendering::ui_view, BGFX_CLEAR_DEPTH, 0x00000000);
-  bgfx::setViewClear(rendering::bga_view, BGFX_CLEAR_DEPTH, 0x00000000);
+  bgfx::setViewClear(rendering::bga_view, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH,
+                     0x00000000);
+  bgfx::setViewClear(rendering::bga_layer_view,
+                     BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00000000);
   bgfx::setViewFrameBuffer(rendering::bga_view, s_FbScene);
+  bgfx::setViewFrameBuffer(rendering::bga_layer_view, s_FbScene);
   bgfx::setViewClear(rendering::bga_layer_view, BGFX_CLEAR_DEPTH, 0x00000000);
   bgfx::setViewClear(rendering::main_view, BGFX_CLEAR_DEPTH, 0x00000000, 1.0f,
                      0);
@@ -309,8 +313,6 @@ void run() {
     bgfx::touch(rendering::blur_view_v);
     bgfx::submit(rendering::clear_view, program);
 
-    bgfx::setViewFrameBuffer(rendering::bga_view, s_FbScene);
-    bgfx::setViewTransform(rendering::bga_view, nullptr, ortho);
     sceneManager.render();
     blurHorizontal();
     blurVertical();

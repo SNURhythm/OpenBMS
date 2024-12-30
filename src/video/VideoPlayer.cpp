@@ -236,6 +236,9 @@ unsigned int VideoPlayer::getPrecisePosition() {
 void VideoPlayer::render() {
   if (!hasVideoFrame)
     return;
+  if (!isPlaying) {
+    return;
+  }
 
   // Submit a quad with the video texture
   bgfx::TransientVertexBuffer tvb{};
