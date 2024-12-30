@@ -10,7 +10,7 @@
 #include <atomic>
 // Custom data structure to hold PCM data and playback state
 struct SoundData {
-  std::vector<short> pcmData;
+
   size_t currentFrame;
   int channels;
   int originalSampleRate;

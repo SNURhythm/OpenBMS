@@ -94,9 +94,10 @@ AudioWrapper::~AudioWrapper() { unloadSounds(); }
 
 bool AudioWrapper::loadSound(const path_t &path,
                              std::atomic<bool> &isCancelled) {
+  std::vector<short> pcmData;
   SF_INFO sfInfo;
   auto soundData = std::make_shared<SoundData>();
-  bool result = decodeAudioToPCM(path, soundData->pcmData, sfInfo, isCancelled);
+  bool result = decodeAudioToPCM(path, pcmData, sfInfo, isCancelled);
   if (!result) {
     SDL_Log("Failed to decode audio file %ls", path.c_str());
     return false;
@@ -124,15 +125,15 @@ bool AudioWrapper::loadSound(const path_t &path,
   // Resample the audio data to 44100 Hz
 
   ma_uint64 resampledFrameCount =
-      (ma_uint64)((double)soundData->pcmData.size() / sfInfo.channels * 44100 /
+      (ma_uint64)((double)pcmData.size() / sfInfo.channels * 44100 /
                   sfInfo.samplerate);
   soundData->resampledData.resize(resampledFrameCount * sfInfo.channels);
-  ma_uint64 size = (ma_uint64)soundData->pcmData.size();
+  ma_uint64 size = (ma_uint64)pcmData.size();
   if (isCancelled)
     return false;
-  ma_resampler_process_pcm_frames(
-      &soundData->resampler, soundData->pcmData.data(), &size,
-      soundData->resampledData.data(), &resampledFrameCount);
+  ma_resampler_process_pcm_frames(&soundData->resampler, pcmData.data(), &size,
+                                  soundData->resampledData.data(),
+                                  &resampledFrameCount);
   if (isCancelled)
     return false;
   soundData->resampledFrameCount = resampledFrameCount;
@@ -152,6 +153,7 @@ void AudioWrapper::preloadSounds(const std::vector<path_t> &paths,
 }
 
 bool AudioWrapper::playSound(const path_t &path) {
+  // TODO: support multiplexing with same sound
   std::lock_guard<std::mutex> lock(soundDataListMutex);
   if (!ma_device_is_started(&device)) {
     ma_device_start(&device);
