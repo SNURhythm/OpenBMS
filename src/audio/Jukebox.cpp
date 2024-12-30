@@ -350,9 +350,7 @@ void Jukebox::play() {
   });
 }
 void Jukebox::renderImage(ImageData &image, int viewId) {
-  // TODO: adjust x-coordinate
-  // TODO: support canvas extension (See "spread canvas" in
-  // https://hitkey.nekokan.dyndns.info/cmds.htm#BMPXX-ADJUSTMENT)
+
   if (!bgfx::isValid(image.texture)) {
     return;
   }
@@ -368,23 +366,25 @@ void Jukebox::renderImage(ImageData &image, int viewId) {
   bgfx::allocTransientVertexBuffer(&tvb, 4, layout);
   bgfx::allocTransientIndexBuffer(&tib, 6);
   auto *vertex = (rendering::PosTexCoord0Vertex *)tvb.data;
-  vertex[0].x = 0;
-  vertex[0].y = image.height;
+  // canvas extension (See "spread canvas" in
+  // https://hitkey.nekokan.dyndns.info/cmds.htm#BMPXX-ADJUSTMENT)
+  vertex[0].x = rendering::window_width / 2.0f - image.width / 2.0f;
+  vertex[0].y = rendering::window_height / 2.0f - 256.0f / 2.0f + image.height;
   vertex[0].z = 0.0f;
   vertex[0].u = 0.0f;
   vertex[0].v = 1.0f;
-  vertex[1].x = image.width;
-  vertex[1].y = image.height;
+  vertex[1].x = rendering::window_width / 2.0f + image.width / 2.0f;
+  vertex[1].y = rendering::window_height / 2.0f - 256.0f / 2.0f + image.height;
   vertex[1].z = 0.0f;
   vertex[1].u = 1.0f;
   vertex[1].v = 1.0f;
-  vertex[2].x = 0;
-  vertex[2].y = 0;
+  vertex[2].x = rendering::window_width / 2.0f - image.width / 2.0f;
+  vertex[2].y = rendering::window_height / 2.0f - 256.0f / 2.0f;
   vertex[2].z = 0.0f;
   vertex[2].u = 0.0f;
   vertex[2].v = 0.0f;
-  vertex[3].x = image.width;
-  vertex[3].y = 0;
+  vertex[3].x = rendering::window_width / 2.0f + image.width / 2.0f;
+  vertex[3].y = rendering::window_height / 2.0f - 256.0f / 2.0f;
   vertex[3].z = 0.0f;
   vertex[3].u = 1.0f;
   vertex[3].v = 0.0f;
