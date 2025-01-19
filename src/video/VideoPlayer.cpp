@@ -312,6 +312,7 @@ void VideoPlayer::play() {
   isPlaying = true;
   isPaused = false;
   stopRequested = false;
+  isEOF = false;
   eofCV.notify_all();
 }
 
@@ -421,6 +422,7 @@ void VideoPlayer::seek(int64_t micro) {
 
   // Notify predecoding thread to continue from the new position
   SDL_Log("Seeked to %lld microseconds", micro);
+  isEOF = false;
   eofCV.notify_all();
 }
 
@@ -445,7 +447,8 @@ void VideoPlayer::predecodeFrames() {
         continue;
       }
       AVPacket *packet = av_packet_alloc();
-      if (av_read_frame(formatContext, packet) >= 0) {
+      int ret = av_read_frame(formatContext, packet);
+      if (ret >= 0) {
         if (packet->stream_index == videoStreamIndex) {
           avcodec_send_packet(codecContext, packet);
           AVFrame *decodedFrame = av_frame_alloc();
@@ -464,6 +467,7 @@ void VideoPlayer::predecodeFrames() {
         }
 
       } else {
+        isEOF = ret == AVERROR_EOF;
         readFailed = true;
       }
       av_packet_unref(packet);
@@ -471,15 +475,14 @@ void VideoPlayer::predecodeFrames() {
     } // outside of videoLock
     if (readFailed) {
       // check eof
-      if (formatContext->pb->eof_reached) {
-
+      if (isEOF) {
         SDL_Log("VideoPlayer::predecodeFrames reached end of file");
         // wait until eof is reset
         std::unique_lock<std::mutex> lock(eofMutex);
         eofCV.wait(lock, [this] {
-          return !formatContext->pb->eof_reached || !predecodingActive;
+          return !isEOF || !predecodingActive;
         });
-      } else {
+      } else if (formatContext->pb->error != 0) {
         char error[1024];
         av_strerror(formatContext->pb->error, error, sizeof(error));
         SDL_Log("VideoPlayer::predecodeFrames failed to read frame: %s", error);
@@ -497,7 +500,7 @@ void VideoPlayer::stopPredecoding() {
   // Release all semaphores to unblock any waiting threads
   bufferSize = 0;
   freeSpace.notify_all(); // Release all free space
-
+  eofCV.notify_all();
   if (predecodeThread.joinable()) {
     predecodeThread.join();
   }
@@ -514,5 +517,4 @@ void VideoPlayer::stopPredecoding() {
     bufferHead = bufferTail = 0; // Reset buffer indices
     bufferSize = 0;
   }
-  eofCV.notify_all();
 }

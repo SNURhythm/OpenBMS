@@ -37,6 +37,7 @@ public:
   float fps = 60.0f;
 
 private:
+  std::atomic<bool> isEOF = false;
   Stopwatch *stopwatch;
   std::atomic<bool> isPlaying;
   std::atomic<bool> isPaused;
