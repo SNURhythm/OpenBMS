@@ -176,34 +176,35 @@ void VideoPlayer::update() {
   AVFrame *currentFrame;
   double elapsedTime;
   double frameTime;
-  {
-    std::lock_guard<std::mutex> lock(bufferMutex);
-    // check if buffer is empty
-    if (bufferSize == 0) {
-      // SDL_Log("Buffer is empty");
-      return;
+  while(true){
+    {
+      std::lock_guard<std::mutex> lock(bufferMutex);
+      // check if buffer is empty
+      if (bufferSize == 0) {
+        // SDL_Log("Buffer is empty");
+        return;
+      }
+      currentFrame = frameBuffer[bufferHead];
+      long long now = stopwatch->elapsedMicros();
+      elapsedTime = (now - startTime) / 1000000.0;
+      frameTime = (currentFrame->pts - startPTS) *
+                  av_q2d(formatContext->streams[videoStreamIndex]->time_base);
+      if (elapsedTime < frameTime) {
+        return;
+      }
+      frameBuffer[bufferHead] = nullptr; // Clear buffer slot
+      bufferHead = (bufferHead + 1) % maxBufferSize;
+      --bufferSize;
     }
-    currentFrame = frameBuffer[bufferHead];
-    long long now = stopwatch->elapsedMicros();
-    elapsedTime = (now - startTime) / 1000000.0;
-    frameTime = (currentFrame->pts - startPTS) *
-                av_q2d(formatContext->streams[videoStreamIndex]->time_base);
-    if (elapsedTime < frameTime) {
-      return;
-    }
-    frameBuffer[bufferHead] = nullptr; // Clear buffer slot
-    bufferHead = (bufferHead + 1) % maxBufferSize;
-    --bufferSize;
-  }
-  freeSpace.notify_one(); // Signal that a buffer slot is free
+    freeSpace.notify_one(); // Signal that a buffer slot is free
 
-  if (elapsedTime > frameTime + 0.1) {
-    lastFramePTS = frameTime;
-    // FIXME: This would not catch up with the video if the video's frame rate
-    // is higher than the display's frame rate.
-    SDL_Log("Skipping frame: too late for display");
-    av_frame_free(&currentFrame);
-    return;
+    if (elapsedTime > frameTime + 0.1) {
+      lastFramePTS = frameTime;
+      SDL_Log("Skipping frame: too late for display");
+      av_frame_free(&currentFrame);
+      continue;
+    }
+    break;
   }
   uint8_t *data[3] = {videoFrameDataY, videoFrameDataU, videoFrameDataV};
   int linesize[3] = {videoFrameWidth, videoFrameWidth / 2, videoFrameWidth / 2};
