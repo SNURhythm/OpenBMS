@@ -222,11 +222,11 @@ void MainMenuScene::initView(ApplicationContext &context) {
     if (text.empty()) {
       std::vector<bms_parser::ChartMeta> chartMetas;
       dbHelper.SelectAllChartMeta(db, chartMetas);
-      recyclerView->setItems(chartMetas);
+      recyclerView->setItems(std::move(chartMetas));
     } else {
       std::vector<bms_parser::ChartMeta> chartMetas;
       dbHelper.SearchChartMeta(db, text, chartMetas);
-      recyclerView->setItems(chartMetas);
+      recyclerView->setItems(std::move(chartMetas));
     }
   });
   left->addView(searchBox, {0, 50, 0});
@@ -276,7 +276,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
   addView(rootLayout);
   std::vector<bms_parser::ChartMeta> chartMetas;
   dbHelper.SelectAllChartMeta(db, chartMetas);
-  recyclerView->setItems(chartMetas);
+  recyclerView->setItems(std::move(chartMetas));
 }
 
 void MainMenuScene::update(float dt) {
@@ -379,7 +379,7 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
   chartMetas.clear();
   dbHelper.SelectAllChartMeta(db, chartMetas);
 
-  scene.recyclerView->setItems(chartMetas);
+  scene.recyclerView->setItems(std::move(chartMetas));
 }
 
 #ifdef _WIN32

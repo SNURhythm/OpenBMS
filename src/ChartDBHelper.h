@@ -48,8 +48,8 @@ public:
   bool DeleteEntry(sqlite3 *db, std::filesystem::path &path);
   bool ClearEntries(sqlite3 *db);
 
-  static std::filesystem::path ToRelativePath(std::filesystem::path &path);
-  static std::filesystem::path ToAbsolutePath(std::filesystem::path &path);
+  static void ToRelativePath(std::filesystem::path &path);
+  static void ToAbsolutePath(std::filesystem::path &path);
 
 private:
   bms_parser::ChartMeta ReadChartMeta(sqlite3_stmt *stmt);
