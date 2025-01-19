@@ -9,6 +9,8 @@
 #include "../video/VideoPlayer.h"
 #include "../utils/Stopwatch.h"
 
+#include <cassert>
+
 struct ImageData {
   bgfx::TextureHandle texture;
   int width;
@@ -32,7 +34,10 @@ public:
   long long getTimeMicros();
   void seek(long long micro);
   std::function<void(long long)> onTickCb;
-  void onTick(const std::function<void(long long)> &cb) { onTickCb = cb; }
+  void onTick(const std::function<void(long long)> &cb) {
+    assert(!isPlaying && "onTick callback should be set before playing");
+    onTickCb = cb;
+  }
   void removeOnTick() { onTickCb = nullptr; }
   void pause();
   void resume();
