@@ -359,6 +359,15 @@ public:
   int topMargin;    // Number of items to keep ready above the visible area
   int bottomMargin; // Number of items to keep ready below the visible area
 
+  inline void setItems(const std::vector<T> &&items) {
+    this->items = std::move(items);
+    // reset selected index
+    selectedIndex = -1;
+    // reset scroll offset
+    scrollOffset = 0;
+    updateVisibleItems();
+  }
+
   inline void setItems(const std::vector<T> &items) {
     this->items = items;
     // reset selected index

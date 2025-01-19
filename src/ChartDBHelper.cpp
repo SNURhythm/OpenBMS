@@ -151,7 +151,8 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
     return false;
   }
   std::filesystem::path path = chartMeta.BmsPath;
-  sqlite3_bind_text(stmt, 1, ToRelativePath(path).string().c_str(), -1,
+  ToRelativePath(path);
+  sqlite3_bind_text(stmt, 1, path.string().c_str(), -1,
                     SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 2, (chartMeta.MD5).c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 3, (chartMeta.SHA256).c_str(), -1, SQLITE_TRANSIENT);
@@ -162,8 +163,9 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
   sqlite3_bind_text(stmt, 7, (chartMeta.Artist).c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 8, (chartMeta.SubArtist).c_str(), -1,
                     SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 9, ToRelativePath(chartMeta.Folder).string().c_str(),
-                    -1, SQLITE_TRANSIENT);
+  std::filesystem::path folder = chartMeta.Folder;
+  ToRelativePath(folder);
+  sqlite3_bind_text(stmt, 9, folder.string().c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 10, chartMeta.StageFile.string().c_str(), -1,
                     SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 11, chartMeta.Banner.string().c_str(), -1,
@@ -240,8 +242,7 @@ void ChartDBHelper::SelectAllChartMeta(
   chartMetas.reserve(sqlite3_column_count(stmt));
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-    auto chartMeta = ReadChartMeta(stmt);
-    chartMetas.push_back(chartMeta);
+    chartMetas.push_back(std::move(ReadChartMeta(stmt)));
   }
   sqlite3_finalize(stmt);
 }
@@ -296,14 +297,13 @@ void ChartDBHelper::SearchChartMeta(
   chartMetas.reserve(sqlite3_column_count(stmt));
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-    auto chartMeta = ReadChartMeta(stmt);
-    chartMetas.push_back(chartMeta);
+    chartMetas.push_back(std::move(ReadChartMeta(stmt)));
   }
   sqlite3_finalize(stmt);
 }
 
 bool ChartDBHelper::DeleteChartMeta(sqlite3 *db, std::filesystem::path &path) {
-  std::filesystem::path pathRel = ToRelativePath(path);
+  ToRelativePath(path);
   auto query = "DELETE FROM chart_meta WHERE path = @path";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
@@ -313,7 +313,7 @@ bool ChartDBHelper::DeleteChartMeta(sqlite3 *db, std::filesystem::path &path) {
     sqlite3_free(stmt);
     return false;
   }
-  sqlite3_bind_text(stmt, 1, pathRel.string().c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 1, path.string().c_str(), -1, SQLITE_TRANSIENT);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) {
     std::cerr << "SQL error while deleting a chart: " << sqlite3_errmsg(db)
@@ -348,26 +348,23 @@ bool ChartDBHelper::ClearChartMeta(sqlite3 *db) {
 bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
   int idx = 0;
   bms_parser::ChartMeta chartMeta;
-  std::filesystem::path path = std::filesystem::path(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.BmsPath = ToAbsolutePath(path);
-  chartMeta.MD5 = std::string(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.SHA256 = std::string(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.Title = std::string(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.SubTitle = std::string(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.Genre = std::string(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.Artist = std::string(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.SubArtist = std::string(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  std::filesystem::path folder = std::filesystem::path(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.Folder = ToAbsolutePath(folder);
+  
+  std::filesystem::path path =
+      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  ToAbsolutePath(path);
+  chartMeta.BmsPath = path;
+  chartMeta.MD5 = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.SHA256 = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.Title = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.SubTitle = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.Genre = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.Artist = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.SubArtist = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  
+  std::filesystem::path folder =
+      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  ToAbsolutePath(folder);
+  chartMeta.Folder = folder;
   chartMeta.StageFile = std::filesystem::path(
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
   chartMeta.Banner = std::filesystem::path(
@@ -376,6 +373,7 @@ bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
   chartMeta.Preview = std::filesystem::path(
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
+  
   chartMeta.PlayLevel = sqlite3_column_double(stmt, idx++);
   chartMeta.Difficulty = sqlite3_column_int(stmt, idx++);
   chartMeta.Total = sqlite3_column_double(stmt, idx++);
@@ -390,6 +388,7 @@ bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
   chartMeta.TotalLongNotes = sqlite3_column_int(stmt, idx++);
   chartMeta.TotalScratchNotes = sqlite3_column_int(stmt, idx++);
   chartMeta.TotalBackSpinNotes = sqlite3_column_int(stmt, idx++);
+  
   return chartMeta;
 }
 
@@ -501,27 +500,24 @@ bool ChartDBHelper::ClearEntries(sqlite3 *db) {
   return true;
 }
 
-std::filesystem::path
-ChartDBHelper::ToRelativePath(std::filesystem::path &path) {
+void ChartDBHelper::ToRelativePath(
+    [[maybe_unused]] std::filesystem::path &path) {
   // for iOS, remove Documents
 #if TARGET_OS_IOS
-  std::filesystem::path Documents = Utils::GetDocumentsPath("BMS/");
+  static std::filesystem::path Documents = Utils::GetDocumentsPath("BMS/");
   if (path.string().find(Documents.string()) != std::string::npos) {
-    return path.string().substr(Documents.string().length());
+    path = path.string().substr(Documents.string().length());
   }
 
 #endif
   // otherwise, noop
-  return path;
 }
 
-std::filesystem::path
-ChartDBHelper::ToAbsolutePath(std::filesystem::path &path) {
-  // for iOS, add Documents
+void ChartDBHelper::ToAbsolutePath(
+    [[maybe_unused]] std::filesystem::path &path) {
 #if TARGET_OS_IOS
-  std::filesystem::path Documents = Utils::GetDocumentsPath("BMS/");
-  return Documents / path;
+  static std::filesystem::path Documents = Utils::GetDocumentsPath("BMS/");
+  path = Documents / path;
 #endif
   // otherwise, noop
-  return path;
 }
