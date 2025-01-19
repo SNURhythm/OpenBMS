@@ -199,6 +199,7 @@ void VideoPlayer::update() {
 
   if (elapsedTime > frameTime + 0.1) {
     lastFramePTS = frameTime;
+    // FIXME: This would not catch up with the video if the video's frame rate is higher than the display's frame rate.
     SDL_Log("Skipping frame: too late for display");
     av_frame_free(&currentFrame);
     return;
