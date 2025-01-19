@@ -152,8 +152,7 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
   }
   std::filesystem::path path = chartMeta.BmsPath;
   ToRelativePath(path);
-  sqlite3_bind_text(stmt, 1, path.string().c_str(), -1,
-                    SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 1, path.string().c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 2, (chartMeta.MD5).c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 3, (chartMeta.SHA256).c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 4, (chartMeta.Title).c_str(), -1, SQLITE_TRANSIENT);
@@ -348,19 +347,26 @@ bool ChartDBHelper::ClearChartMeta(sqlite3 *db) {
 bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
   int idx = 0;
   bms_parser::ChartMeta chartMeta;
-  
+
   std::filesystem::path path =
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
   ToAbsolutePath(path);
   chartMeta.BmsPath = path;
-  chartMeta.MD5 = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
-  chartMeta.SHA256 = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
-  chartMeta.Title = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
-  chartMeta.SubTitle = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
-  chartMeta.Genre = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
-  chartMeta.Artist = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
-  chartMeta.SubArtist = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
-  
+  chartMeta.MD5 =
+      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.SHA256 =
+      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.Title =
+      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.SubTitle =
+      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.Genre =
+      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.Artist =
+      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+  chartMeta.SubArtist =
+      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
+
   std::filesystem::path folder =
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
   ToAbsolutePath(folder);
@@ -373,7 +379,7 @@ bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
   chartMeta.Preview = std::filesystem::path(
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  
+
   chartMeta.PlayLevel = sqlite3_column_double(stmt, idx++);
   chartMeta.Difficulty = sqlite3_column_int(stmt, idx++);
   chartMeta.Total = sqlite3_column_double(stmt, idx++);
@@ -388,7 +394,7 @@ bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
   chartMeta.TotalLongNotes = sqlite3_column_int(stmt, idx++);
   chartMeta.TotalScratchNotes = sqlite3_column_int(stmt, idx++);
   chartMeta.TotalBackSpinNotes = sqlite3_column_int(stmt, idx++);
-  
+
   return chartMeta;
 }
 

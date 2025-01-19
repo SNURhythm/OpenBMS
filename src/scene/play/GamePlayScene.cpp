@@ -16,7 +16,8 @@ void GamePlayScene::init() {
   addView(chartNameText);
   renderer = new BMSRenderer(chart, judge.timingWindows[Bad].second);
   context.jukebox.stop();
-  // NOTE: should be set before "reset" call to avoid race condition with onTick callback call
+  // NOTE: should be set before "reset" call to avoid race condition with onTick
+  // callback call
   context.jukebox.onTick([this](long long time) {
     if (state != nullptr && state->isPlaying) {
       checkPassedTimeline(time);
@@ -35,7 +36,6 @@ void GamePlayScene::init() {
     SDL_Log("Setting lane %d to false", lane);
     lanePressed[lane] = false;
   }
-
 
   /* pause screen */
   pauseLayout =
