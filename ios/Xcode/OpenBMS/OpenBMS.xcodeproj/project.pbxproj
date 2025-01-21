@@ -54,11 +54,6 @@
 		B7FA8B142C7D0A2600B7EAAF /* libcompat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D27AF12C7CE2FA00189ED7 /* libcompat.a */; };
 		B7FFC2C32BF7D834000C838E /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B7FFC39F2BFAAFA7000C838E /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E222BF7C48700945F27 /* CoreFoundation.framework */; };
-		B7FFC3A12BFAAFE7000C838E /* libbgfx.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3132BFAAF67000C838E /* libbgfx.a */; };
-		B7FFC3A22BFAAFE7000C838E /* libbimg.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3152BFAAF67000C838E /* libbimg.a */; };
-		B7FFC3A32BFAAFE7000C838E /* libbimg_decode.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3172BFAAF67000C838E /* libbimg_decode.a */; };
-		B7FFC3A42BFAAFE7000C838E /* libbimg_encode.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3192BFAAF67000C838E /* libbimg_encode.a */; };
-		B7FFC3A52BFAAFE7000C838E /* libbx.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC31D2BFAAF67000C838E /* libbx.a */; };
 		B7FFC3A72BFAAFF3000C838E /* libbimg_decode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3172BFAAF67000C838E /* libbimg_decode.a */; };
 		B7FFC3A82BFAAFF3000C838E /* libbimg_encode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3192BFAAF67000C838E /* libbimg_encode.a */; };
 		B7FFC3A92BFAAFF3000C838E /* libbimg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3152BFAAF67000C838E /* libbimg.a */; };
@@ -607,11 +602,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				B7FFC3A12BFAAFE7000C838E /* libbgfx.a in Embed Frameworks */,
-				B7FFC3A22BFAAFE7000C838E /* libbimg.a in Embed Frameworks */,
-				B7FFC3A32BFAAFE7000C838E /* libbimg_decode.a in Embed Frameworks */,
-				B7FFC3A42BFAAFE7000C838E /* libbimg_encode.a in Embed Frameworks */,
-				B7FFC3A52BFAAFE7000C838E /* libbx.a in Embed Frameworks */,
 				B77B0E1D2BF7BDC400945F27 /* SDL2_ttf.framework in Embed Frameworks */,
 				B7FFC2C32BF7D834000C838E /* SDL2.framework in Embed Frameworks */,
 			);
@@ -1908,6 +1898,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -1963,6 +1954,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1977,6 +1969,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4U66W7TDBL;
@@ -1993,6 +1986,7 @@
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
 				);
 				INFOPLIST_FILE = OpenBMS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenBMS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music-games";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -2012,9 +2006,11 @@
 					"$(PROJECT_DIR)/lib",
 					"$(SDKROOT)/usr/lib/swift",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.snurhythm.OpenBMS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -2025,6 +2021,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4U66W7TDBL;
@@ -2037,6 +2034,7 @@
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
 				);
 				INFOPLIST_FILE = OpenBMS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenBMS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music-games";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -2056,9 +2054,11 @@
 					"$(PROJECT_DIR)/lib",
 					"$(SDKROOT)/usr/lib/swift",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.snurhythm.OpenBMS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
