@@ -1,9 +1,7 @@
 #include "ChartListItemView.h"
 
-ChartListItemView::ChartListItemView(int x, int y, int width, int height,
-                                     const std::string &title,
-                                     const std::string &artist,
-                                     const std::string &level)
+ChartListItemView::ChartListItemView(int x, int y, int width, int height, const bms_parser::ChartMeta &meta
+                                     )
     : View(x, y, width, height) {
   rootLayout = new LinearLayout(x, y, width, height, Orientation::HORIZONTAL);
   textLayout = new LinearLayout(x, y, width, height, Orientation::VERTICAL);
@@ -22,12 +20,9 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
   artistConfig.width = 0;
   artistConfig.height = 0;
   artistConfig.weight = 1;
-  titleView->setText(title);
-  artistView->setText(artist);
   textLayout->addView(titleView, titleConfig);
   textLayout->addView(artistView, artistConfig);
   levelView = new TextView("assets/fonts/notosanscjkjp.ttf", 16);
-  levelView->setText(level);
   levelView->setAlign(TextView::TextAlign::RIGHT);
   levelView->setVAlign(TextView::TextVAlign::MIDDLE);
   rootLayout->addView(
@@ -35,25 +30,39 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
   rootLayout->addView(textLayout, {0, 0, 1});
   rootLayout->addView(levelView, {100, 20, 0});
   rootLayout->setPadding({0, 0, 0, 0});
-}
 
-void ChartListItemView::setTitle(const std::string &title) {
-  titleView->setText(title);
-}
+  keyModeOverlay = new TextView("assets/fonts/notosanscjkjp.ttf", 16);
+  keyModeOverlay->setColor({255, 0, 0, 255});
+  keyModeOverlay->setAlign(TextView::TextAlign::LEFT);
+  keyModeOverlay->setVAlign(TextView::TextVAlign::MIDDLE);
 
-void ChartListItemView::setArtist(const std::string &artist) {
-  artistView->setText(artist);
 }
+void ChartListItemView::setMeta(const bms_parser::ChartMeta &meta){
+  titleView->setText(meta.Title);
+  artistView->setText(meta.Artist);
+  levelView->setText(std::to_string(meta.PlayLevel));
+  std::string keyModeDesc;
+  switch(meta.KeyMode){
+    case 5:
+      keyModeDesc = "5K";
+      break;
+    case 7:
+      keyModeDesc = "7K";
+      break;
+    case 10:
+      keyModeDesc = "5KDP";
+      break;
+    case 14:
+      keyModeDesc = "7KDP";
+      break;
+  }
+  keyModeOverlay->setText(keyModeDesc);
+  if(!meta.Banner.empty())
+    bannerImage->setImage(meta.Folder / meta.Banner);
+  else
+    bannerImage->freeImage();
 
-void ChartListItemView::setLevel(const std::string &level) {
-  levelView->setText(level);
 }
-
-void ChartListItemView::setBanner(const path_t &path) {
-  bannerImage->setImage(path);
-}
-
-void ChartListItemView::unsetBanner() { bannerImage->freeImage(); }
 
 void ChartListItemView::renderImpl(RenderContext &context) {
   // SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -61,6 +70,7 @@ void ChartListItemView::renderImpl(RenderContext &context) {
   // SDL_Rect rect = {getX(), getY(), getWidth(), getHeight()};
   // SDL_RenderFillRect(renderer, &rect);
   rootLayout->render(context);
+  keyModeOverlay->render(context);
 }
 
 void ChartListItemView::onSelected() {

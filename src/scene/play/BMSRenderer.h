@@ -50,6 +50,7 @@ private:
   float noteImageWidth = 0;
   std::vector<bms_parser::TimeLine *> timelines;
   BMSRendererState state;
+  int keyLaneCount;
   float noteRenderWidth = 1.0f;
   float noteRenderHeight = 1.0f;
 
