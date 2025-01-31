@@ -157,6 +157,7 @@ int main(int argv, char **args) {
       win, -1,
       SDL_RENDERER_ACCELERATED |
           SDL_RENDERER_PRESENTVSYNC); // Intentionally discarding return value
+    SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
 #endif
 #if !BX_PLATFORM_EMSCRIPTEN
   SDL_SysWMinfo wmi;

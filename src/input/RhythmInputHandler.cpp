@@ -77,10 +77,11 @@ int RhythmInputHandler::touchToLane(Vector3 location) {
   float z = distance - sin(atan2(0.5, 2.1)) * 2;
   bx::Vec3 position =
       rendering::game_camera.deproject(location.x, location.y, z);
-  int line = (int)position.x - 1;
+  int line = (int)(position.x * totalLaneCount / 8.0f) - 1;
+  if(isDP && line >= 7) line++; // skip left scratch index (7), since 7 is already placed in the leftmost
   if (line < 0) {
     line = 7;
-  } else if (line > keyMode - 1) {
+  } else if (line > totalLaneCount - 1) {
     if (keyMode >= 10) {
       line = 15;
     } else {
@@ -153,4 +154,6 @@ RhythmInputHandler::RhythmInputHandler(IRhythmControl *control,
         {SDL_KeyCode::SDLK_RSHIFT, 15}}}};
   keyMap = DefaultKeyMap[meta.KeyMode];
   keyMode = meta.KeyMode;
+  totalLaneCount = meta.GetTotalLaneCount();
+  isDP = meta.IsDP;
 }
