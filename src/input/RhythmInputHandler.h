@@ -13,6 +13,8 @@ private:
   IInputSource *sdlInputSource = nullptr;
   IInputSource *touchInputSource = nullptr;
   int keyMode;
+  int totalLaneCount;
+  bool isDP;
   std::map<int, int> fingerToLane;
 
 public:
