@@ -45,6 +45,7 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   }
 
   int channels = spriteLoader.getChannels();
+  keyLaneCount = chart->Meta.GetKeyLaneCount();
   noteRenderWidth = 1.0f * 8.0f / chart->Meta.GetTotalLaneCount();
   noteImageHeight = height;
   noteImageWidth = width;
@@ -556,7 +557,7 @@ inline float BMSRenderer::laneToX(int lane) {
     return 0.0f;
   }
   if(lane >= 8){
-    lane -= 1; // skip left scratch index (7), since 7 is already placed in the leftmost
+    lane -= keyLaneCount == 14 ? 1 : (isRightScratch(lane) ? 5 : 3); // skip left scratch index (7), since 7 is already placed in the leftmost
   }
 
   return (lane + 1) * noteRenderWidth;

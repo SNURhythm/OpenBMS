@@ -117,20 +117,13 @@ void MainMenuScene::initView(ApplicationContext &context) {
   auto dbHelper = ChartDBHelper::GetInstance();
 
   recyclerView->onCreateView = [this](const bms_parser::ChartMeta &item) {
-    return new ChartListItemView(0, 0, rendering::window_width, 100, item.Title,
-                                 item.Artist, std::to_string(item.PlayLevel));
+    return new ChartListItemView(0, 0, rendering::window_width, 100, item);
   };
   recyclerView->itemHeight = 100;
   recyclerView->onBind = [this](View *view, const bms_parser::ChartMeta &item,
                                 int idx, bool isSelected) {
     auto *chartListItemView = dynamic_cast<ChartListItemView *>(view);
-    chartListItemView->setTitle(item.Title);
-    chartListItemView->setArtist(item.Artist);
-    chartListItemView->setLevel(std::to_string(item.PlayLevel));
-    if (!item.Banner.empty())
-      chartListItemView->setBanner(item.Folder / item.Banner);
-    else
-      chartListItemView->unsetBanner();
+    chartListItemView->setMeta(item);
     if (isSelected) {
       chartListItemView->onSelected();
     } else {

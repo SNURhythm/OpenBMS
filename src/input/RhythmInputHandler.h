@@ -12,10 +12,11 @@ class RhythmInputHandler : public IInputHandler {
 private:
   IInputSource *sdlInputSource = nullptr;
   IInputSource *touchInputSource = nullptr;
-  int keyMode;
+  int keyLaneCount;
   int totalLaneCount;
   bool isDP;
   std::map<int, int> fingerToLane;
+  int clampLane(int lane) const;
 
 public:
   IRhythmControl *control;
