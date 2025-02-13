@@ -157,7 +157,7 @@ int main(int argv, char **args) {
       win, -1,
       SDL_RENDERER_ACCELERATED |
           SDL_RENDERER_PRESENTVSYNC); // Intentionally discarding return value
-    SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
+  SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
 #endif
 #if !BX_PLATFORM_EMSCRIPTEN
   SDL_SysWMinfo wmi;
@@ -235,8 +235,7 @@ void run() {
   bgfx::setViewClear(rendering::ui_view, BGFX_CLEAR_DEPTH, 0x00000000);
   bgfx::setViewClear(rendering::bga_view, BGFX_CLEAR_COLOR, 0x00000000);
   bgfx::setViewClear(rendering::bga_layer_view, BGFX_CLEAR_NONE, 0x00000000);
-  bgfx::setViewFrameBuffer(rendering::bga_view, s_FbScene);
-  bgfx::setViewFrameBuffer(rendering::bga_layer_view, s_FbScene);
+
   bgfx::setViewClear(rendering::main_view, BGFX_CLEAR_DEPTH, 0x00000000, 1.0f,
                      0);
   bgfx::setViewClear(rendering::blur_view_h, BGFX_CLEAR_COLOR, 0x00000000, 1.0f,
@@ -256,9 +255,7 @@ void run() {
   auto program =
       rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
   resetViewTransform();
-  float ortho[16];
-  bx::mtxOrtho(ortho, 0.0f, rendering::window_width, rendering::window_height,
-               0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
+
   TextView fpsText("assets/fonts/notosanscjkjp.ttf", 24);
   while (!context.quitFlag) {
 
@@ -430,6 +427,8 @@ void createFrameBuffers(uint16_t windowW, uint16_t windowH) {
       bgfx::createTexture2D(s_SceneWidth, s_SceneHeight, false, 1,
                             bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_RT);
   s_FbBlurB = bgfx::createFrameBuffer(1, &s_TexBlurB, true);
+  bgfx::setViewFrameBuffer(rendering::bga_view, s_FbScene);
+  bgfx::setViewFrameBuffer(rendering::bga_layer_view, s_FbScene);
 }
 
 void destroyFrameBuffers() {
