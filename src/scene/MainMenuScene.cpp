@@ -388,7 +388,6 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
   if (hFind != INVALID_HANDLE_VALUE) {
     do {
       if (isCancelled) {
-        FindClose(hFind);
         break;
       }
       if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
