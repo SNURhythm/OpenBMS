@@ -21,6 +21,7 @@ def compile_shader(src, dst, type, platform, profile):
     )
     if result.returncode != 0:
         print(f"Failed to compile shader {src} to {dst}")
+        print(result.stdout)
         print(result.stderr)
         exit(1)
 

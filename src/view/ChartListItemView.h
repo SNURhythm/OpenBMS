@@ -1,11 +1,12 @@
 #pragma once
-#include "LinearLayout.h"
+#include "YogaLayout.h"
 #include "TextView.h"
 #include "View.h"
 #include "ImageView.h"
 #include <SDL2/SDL.h>
 #include <string>
 #include "../bms_parser.hpp"
+
 class ChartListItemView : public View {
 public:
   ChartListItemView(int x, int y, int width, int height,
@@ -21,8 +22,8 @@ public:
 
 private:
   void renderImpl(RenderContext &context) override;
-  LinearLayout *textLayout;
-  LinearLayout *rootLayout;
+  YogaLayout *textLayout;
+  YogaLayout *rootLayout;
   TextView *titleView;
   TextView *artistView;
   TextView *levelView;

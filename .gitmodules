@@ -12,3 +12,6 @@
 	path = bgfx
 	url = https://github.com/bkaradzic/bgfx.cmake.git
 	shallow = true
+[submodule "yoga"]
+	path = yoga
+	url = https://github.com/facebook/yoga.git
