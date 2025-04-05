@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bgfx/bgfx.h"
+
 #include <SDL2/SDL.h>
 struct Scissor {
   int x, y, width, height;

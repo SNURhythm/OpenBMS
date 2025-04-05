@@ -1,10 +1,8 @@
 #include "VideoPlayer.h"
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
-#include <bgfx/platform.h>
 #include <iostream>
 #include <cstring>
-#include "../rendering/common.h"
 
 #include <thread>
 #include <future>
@@ -176,7 +174,7 @@ void VideoPlayer::update() {
   AVFrame *currentFrame;
   double elapsedTime;
   double frameTime;
-  while(true){
+  while (true) {
     {
       std::lock_guard<std::mutex> lock(bufferMutex);
       // check if buffer is empty

@@ -44,6 +44,10 @@ if (MSVC)
     include_directories(bgfx/bx/include/compat/msvc)
 endif ()
 
+# Add Yoga include directories
+include_directories(yoga)
+include_directories(yoga/lib)
+
 # Source directory
 set(SRC_DIR src)
 
@@ -145,7 +149,7 @@ add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 # Main executable
 add_executable(main)
 
-target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${FFMPEG_LIBS} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
+target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${FFMPEG_LIBS} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx yogacore)
 
 # Custom target for copying assets
 add_custom_command(
@@ -162,12 +166,18 @@ if (NOT "${DLLS}" STREQUAL "")
 endif ()
 
 
-# Copy shaders
-add_custom_command(
-        TARGET main POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
+file(GLOB_RECURSE SHADER_FILES 
+    "${CMAKE_SOURCE_DIR}/shaders/*.*"
 )
 
+# Add a custom target that depends on all shader files
+add_custom_target(copy_shaders ALL
+    DEPENDS ${SHADER_FILES}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
+)
+
+# Make the main target depend on shader copying
+add_dependencies(main copy_shaders)
 # Installation rules
 install(TARGETS main DESTINATION bin)
 install(DIRECTORY assets DESTINATION ${BUILD_DIR})
@@ -176,6 +186,7 @@ install(DIRECTORY assets DESTINATION ${BUILD_DIR})
 
 add_subdirectory(bgfx)
 add_subdirectory(src)
+add_subdirectory(yoga)
 #add_subdirectory(libsndfile)
 # # Add pre-generated Xcode projects as subprojects
 # set_property(GLOBAL PROPERTY USE_FOLDERS ON)
