@@ -64,6 +64,7 @@ public:
   void render(RenderContext &context) {
     if (!isVisible)
       return;
+#if DEBUG
     if (drawBoundingBox) {
       float x = getX();
       float y = getY();
@@ -108,6 +109,7 @@ public:
           rendering::ui_view,
           rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE));
     }
+#endif
     for (auto view : children) {
       view->render(context);
     }

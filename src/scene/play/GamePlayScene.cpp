@@ -43,7 +43,6 @@ void GamePlayScene::init() {
   pauseLayout->setAlignItems(YGAlignCenter);
   {
     auto pauseScreen = new View();
-    pauseScreen->drawBoundingBox = true;
     pauseScreen->setFlex(1);
     pauseScreen->setFlexDirection(FlexDirection::Column);
     pauseScreen->setAlignItems(YGAlignCenter);
