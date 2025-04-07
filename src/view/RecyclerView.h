@@ -18,7 +18,6 @@
 template <typename T> class RecyclerView : public View {
 private:
   void renderImpl(RenderContext &context) override {
-
     if (!touchDragging && touchDragged) {
       touchScrollSpeed *= 0.98;
       if (touchScrollSpeedReal > 0.01f || touchScrollSpeedReal < -0.01f) {
@@ -476,8 +475,11 @@ private:
         }
       }
       // update the position of the view
+      SDL_Log("itemHeight: %d, scrollOffset: %f", itemHeight,
+              this->getY() + (i * itemHeight) - scrollOffset);
       view->setPosition(this->getX(),
-                        this->getY() + (i * itemHeight) - scrollOffset);
+                        this->getY() + (i * itemHeight) - scrollOffset,
+                        YGPositionType::YGPositionTypeAbsolute);
       view->setSize(this->getWidth(), itemHeight);
       //   SDL_Log("View position: %d, %d", view->x, view->y);
 

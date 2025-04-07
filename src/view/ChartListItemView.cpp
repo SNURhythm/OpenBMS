@@ -3,8 +3,7 @@
 ChartListItemView::ChartListItemView(int x, int y, int width, int height,
                                      const bms_parser::ChartMeta &meta)
     : View(x, y, width, height) {
-  rootLayout = new YogaLayout(x, y, width, height);
-  textLayout = new YogaLayout(x, y, width, height);
+  textLayout = new View(x, y, width, height);
   bannerImage = new ImageView(x, y, width, height);
   titleView = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   titleView->setVAlign(TextView::TextVAlign::BOTTOM);
@@ -12,42 +11,34 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
   artistView->setVAlign(TextView::TextVAlign::TOP);
 
   // Configure root layout
-  rootLayout->setFlexDirection(YGFlexDirectionRow);
-  rootLayout->setAlignItems(YGAlignStretch);
+  this->setFlexDirection(FlexDirection::Row)->setAlignItems(YGAlignStretch);
 
   // Configure text layout
-  textLayout->setFlexDirection(YGFlexDirectionColumn);
+  textLayout->setFlexDirection(FlexDirection::Column);
 
-  // Create and configure nodes for views
-  YGNodeRef bannerNode = YGNodeNew();
-  YGNodeStyleSetWidth(bannerNode, static_cast<float>(height) / 80.0f * 300.0f);
-  YGNodeStyleSetHeight(bannerNode, static_cast<float>(height));
-  YGNodeStyleSetMargin(bannerNode, YGEdgeEnd, 8);
+  // Add banner image with configuration
+  bannerImage->setWidth(static_cast<float>(height) / 80.0f * 300.0f)
+      ->setHeight(static_cast<float>(height))
+      ->setMargin(Edge::End, 8);
+  this->addView(bannerImage);
 
-  YGNodeRef textLayoutNode = YGNodeNew();
-  YGNodeStyleSetFlex(textLayoutNode, 1);
+  // Add text layout with configuration
+  textLayout->setFlex(1);
+  this->addView(textLayout);
 
-  YGNodeRef titleNode = YGNodeNew();
-  YGNodeStyleSetFlexGrow(titleNode, 1.5f);
+  // Add title and artist views to text layout
+  titleView->setFlexGrow(1.5f);
+  textLayout->addView(titleView);
 
-  YGNodeRef artistNode = YGNodeNew();
-  YGNodeStyleSetFlexGrow(artistNode, 1);
+  artistView->setFlexGrow(1);
+  textLayout->addView(artistView);
 
-  YGNodeRef levelNode = YGNodeNew();
-  YGNodeStyleSetWidth(levelNode, 100);
-  YGNodeStyleSetHeight(levelNode, 20);
-
-  // Add views with their nodes
-  rootLayout->addView(bannerImage, bannerNode);
-  rootLayout->addView(textLayout, textLayoutNode);
-
-  textLayout->addView(titleView, titleNode);
-  textLayout->addView(artistView, artistNode);
-
+  // Add level view
   levelView = new TextView("assets/fonts/notosanscjkjp.ttf", 16);
   levelView->setAlign(TextView::TextAlign::RIGHT);
   levelView->setVAlign(TextView::TextVAlign::MIDDLE);
-  rootLayout->addView(levelView, levelNode);
+  levelView->setWidth(100)->setHeight(20);
+  this->addView(levelView);
 
   keyModeOverlay = new TextView("assets/fonts/notosanscjkjp.ttf", 16);
   keyModeOverlay->setColor({255, 0, 0, 255});
@@ -86,7 +77,14 @@ void ChartListItemView::setMeta(const bms_parser::ChartMeta &meta) {
 }
 
 void ChartListItemView::renderImpl(RenderContext &context) {
-  rootLayout->render(context);
+  // print view size/position
+  SDL_Log("view size: %d, %d", getWidth(), getHeight());
+  SDL_Log("view position: %d, %d", getX(), getY());
+  // print textlayout size/position
+  SDL_Log("textlayout size: %d, %d", textLayout->getWidth(),
+          textLayout->getHeight());
+  SDL_Log("textlayout position: %d, %d", textLayout->getX(),
+          textLayout->getY());
   keyModeOverlay->render(context);
 }
 
