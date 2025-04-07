@@ -1,0 +1,21 @@
+PODS:
+  - Yoga (0.0.0)
+
+DEPENDENCIES:
+  - Yoga (from `https://github.com/facebook/yoga.git`)
+
+EXTERNAL SOURCES:
+  Yoga:
+    :git: https://github.com/facebook/yoga.git
+
+CHECKOUT OPTIONS:
+  Yoga:
+    :commit: 51e6095005fd713dbfcbaf2c6296009de782d966
+    :git: https://github.com/facebook/yoga.git
+
+SPEC CHECKSUMS:
+  Yoga: a893f4cd81e540349394d2468d77b93610792261
+
+PODFILE CHECKSUM: 5801616cb25b726a4ba2487c83f93877d99d7f70
+
+COCOAPODS: 1.14.3
