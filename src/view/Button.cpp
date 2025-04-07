@@ -4,9 +4,6 @@
 
 #include "Button.h"
 
-Button::Button(int x, int y, int width, int height)
-    : View(x, y, width, height) {}
-
 void Button::renderImpl(RenderContext &context) {
   context.scissor.x = getX();
   context.scissor.y = getY();

@@ -482,7 +482,6 @@ private:
                         this->getY() + (i * itemHeight) - scrollOffset,
                         YGPositionType::YGPositionTypeAbsolute);
       view->setSize(this->getWidth(), itemHeight);
-      SDL_Log("View size: %d, %d", view->getWidth(), view->getHeight());
 
       newVisibleItems.push_back(std::make_pair(view, item));
     }
