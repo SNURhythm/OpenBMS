@@ -16,7 +16,8 @@ private:
   View *contentView;
 
 public:
-  Button(int x, int y, int width, int height);
+  Button() : View() {}
+  Button(int x, int y, int width, int height) : View(x, y, width, height) {}
   ~Button() override;
 
   void onLayout() override;

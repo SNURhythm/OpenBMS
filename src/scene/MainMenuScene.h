@@ -1,6 +1,5 @@
 #pragma once
 #include "../view/RecyclerView.h"
-#include "../view/LinearLayout.h"
 #include "Scene.h"
 #include "../ChartDBHelper.h"
 #include "../path.h"
