@@ -31,6 +31,8 @@ protected:
     keyModeOverlay->setPosition(newX, newY);
   }
   inline void onResize(int newWidth, int newHeight) override {
+    View::onResize(newWidth, newHeight);
+    SDL_Log("ChartListItemView::onResize: %d, %d", newWidth, newHeight);
     keyModeOverlay->setSize(newWidth, newHeight);
   }
 };

@@ -1,7 +1,5 @@
 #include "View.h"
 
-
-
 View *View::setWidth(float width) {
   YGNodeStyleSetWidth(node, width);
   return this;
@@ -100,18 +98,35 @@ View *View::addView(View *view) {
 }
 
 void View::applyYogaLayout() {
-  YGNodeCalculateLayout(node, YGUndefined, YGUndefined, YGDirectionLTR);
-  // Update absolute position
+  auto prevWidth = YGNodeLayoutGetWidth(node);
+  auto prevHeight = YGNodeLayoutGetHeight(node);
+  // Only calculate layout from root node
+  if (YGNodeGetParent(node) == nullptr) {
+    YGNodeCalculateLayout(node, YGUndefined, YGUndefined, YGDirectionLTR);
+  }
+
+  // Update position and dimensions
   absoluteX = YGNodeLayoutGetLeft(node);
   absoluteY = YGNodeLayoutGetTop(node);
+
+  // Accumulate parent positions
   YGNodeRef parent = YGNodeGetParent(node);
   while (parent != nullptr) {
     absoluteX += YGNodeLayoutGetLeft(parent);
     absoluteY += YGNodeLayoutGetTop(parent);
     parent = YGNodeGetParent(parent);
   }
-  // Notify children to update their absolute positions
+
+  // Recursively update children positions
   for (auto child : children) {
     child->applyYogaLayout();
+  }
+
+  // Call onLayout to notify derived classes
+  onLayout();
+  auto newWidth = YGNodeLayoutGetWidth(node);
+  auto newHeight = YGNodeLayoutGetHeight(node);
+  if (prevWidth != newWidth || prevHeight != newHeight) {
+    onResize(newWidth, newHeight);
   }
 }

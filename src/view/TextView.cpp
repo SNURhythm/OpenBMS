@@ -8,7 +8,7 @@
 #include "bx/math.h"
 
 TextView::TextView(const std::string &fontPath, int fontSize)
-    : View(0, 0, 0, 0), texture(BGFX_INVALID_HANDLE) {
+    : View(), texture(BGFX_INVALID_HANDLE) {
   TTF_Init();
   font = TTF_OpenFont(fontPath.c_str(), fontSize);
   if (!font) {
