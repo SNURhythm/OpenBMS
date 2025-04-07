@@ -5,7 +5,6 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
     : View(x, y, width, height) {
   this->setFlex(1);
   textLayout = new View();
-  // textLayout->drawBoundingBox = true;
   bannerImage = new ImageView(0, 0, 0, 0);
   titleView = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   titleView->setVAlign(TextView::TextVAlign::BOTTOM);
