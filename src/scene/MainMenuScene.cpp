@@ -110,7 +110,6 @@ void MainMenuScene::initView(ApplicationContext &context) {
   // Initialize the view
 
   recyclerView = new RecyclerView<bms_parser::ChartMeta>(
-      0, 0, rendering::window_width, rendering::window_height,
       [](const bms_parser::ChartMeta &a, const bms_parser::ChartMeta &b) {
         return a.SHA256 == b.SHA256;
       });
@@ -203,10 +202,15 @@ void MainMenuScene::initView(ApplicationContext &context) {
   };
 
   rootLayout =
-      new LinearLayout(0, 0, rendering::window_width, rendering::window_height,
-                       Orientation::HORIZONTAL);
-  auto left = new LinearLayout(0, 0, 0, 0, Orientation::VERTICAL);
-  left->addView(recyclerView, {0, 0, 1});
+      new View(0, 0, rendering::window_width, rendering::window_height);
+  rootLayout->setFlexDirection(FlexDirection::Row);
+  rootLayout->setAlignItems(YGAlignStretch);
+  auto left = new View();
+  left->setFlexDirection(FlexDirection::Column);
+  left->setAlignItems(YGAlignStretch);
+  left->setFlex(1);
+  recyclerView->setFlex(1);
+  left->addView(recyclerView);
 
   auto *searchBox = new TextInputBox("assets/fonts/notosanscjkjp.ttf", 32);
   searchBox->setText("");
@@ -222,12 +226,14 @@ void MainMenuScene::initView(ApplicationContext &context) {
       recyclerView->setItems(std::move(chartMetas));
     }
   });
-  left->addView(searchBox, {0, 50, 0});
-  rootLayout->addView(left, {0, 0, 1});
+  searchBox->setHeight(50);
+  left->addView(searchBox);
+  rootLayout->addView(left);
 
-  auto right = new LinearLayout(0, 0, 0, 0, Orientation::VERTICAL);
-  right->setAlign(LinearLayout::CENTER);
-  right->setPadding({12, 12, 12, 12});
+  auto right = new View();
+  right->setFlexDirection(FlexDirection::Column);
+  right->setAlignItems(YGAlignCenter);
+  right->setPadding(Edge::All, 12);
   right->setGap(12);
 
   auto startButton = new Button(0, 0, 200, 100);
@@ -263,13 +269,17 @@ void MainMenuScene::initView(ApplicationContext &context) {
           0, true);
     }
   });
-  right->addView(jacketView, {150, 150, 0});
-  right->addView(startButton, {0, 100, 0});
-  rootLayout->addView(right, {200, 0, 0});
+  jacketView->setWidth(150)->setHeight(150);
+  startButton->setHeight(100);
+  right->addView(jacketView);
+  right->addView(startButton);
+  right->setWidth(200);
+  rootLayout->addView(right);
   addView(rootLayout);
   std::vector<bms_parser::ChartMeta> chartMetas;
   dbHelper.SelectAllChartMeta(db, chartMetas);
   recyclerView->setItems(std::move(chartMetas));
+  rootLayout->applyYogaLayout();
 }
 
 void MainMenuScene::update(float dt) {

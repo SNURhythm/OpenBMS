@@ -3,8 +3,10 @@
 ChartListItemView::ChartListItemView(int x, int y, int width, int height,
                                      const bms_parser::ChartMeta &meta)
     : View(x, y, width, height) {
-  textLayout = new View(x, y, width, height);
-  bannerImage = new ImageView(x, y, width, height);
+  this->setFlex(1);
+  textLayout = new View();
+  // textLayout->drawBoundingBox = true;
+  bannerImage = new ImageView(0, 0, 0, 0);
   titleView = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   titleView->setVAlign(TextView::TextVAlign::BOTTOM);
   artistView = new TextView("assets/fonts/notosanscjkjp.ttf", 16);
@@ -24,9 +26,11 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
 
   // Add text layout with configuration
   textLayout->setFlex(1);
+  textLayout->setFlexGrow(1.5);
   this->addView(textLayout);
 
   // Add title and artist views to text layout
+  titleView->setFlex(1);
   titleView->setFlexGrow(1.5f);
   textLayout->addView(titleView);
 
@@ -44,6 +48,7 @@ ChartListItemView::ChartListItemView(int x, int y, int width, int height,
   keyModeOverlay->setColor({255, 0, 0, 255});
   keyModeOverlay->setAlign(TextView::TextAlign::LEFT);
   keyModeOverlay->setVAlign(TextView::TextVAlign::MIDDLE);
+  this->applyYogaLayout();
 }
 
 void ChartListItemView::setMeta(const bms_parser::ChartMeta &meta) {
@@ -78,14 +83,16 @@ void ChartListItemView::setMeta(const bms_parser::ChartMeta &meta) {
 
 void ChartListItemView::renderImpl(RenderContext &context) {
   // print view size/position
-  SDL_Log("view size: %d, %d", getWidth(), getHeight());
-  SDL_Log("view position: %d, %d", getX(), getY());
+  // SDL_Log("view size: %d, %d", getWidth(), getHeight());
+  // SDL_Log("view position: %d, %d", getX(), getY());
   // print textlayout size/position
-  SDL_Log("textlayout size: %d, %d", textLayout->getWidth(),
-          textLayout->getHeight());
-  SDL_Log("textlayout position: %d, %d", textLayout->getX(),
-          textLayout->getY());
+  // SDL_Log("textlayout size: %d, %d", textLayout->getWidth(),
+  //         textLayout->getHeight());
+  // SDL_Log("textLayout position: %d, %d", textLayout->getX(),
+  //         textLayout->getY());
   keyModeOverlay->render(context);
+  // SDL_Log("textLayout size: %d, %d", textLayout->getWidth(),
+  //         textLayout->getHeight());
 }
 
 void ChartListItemView::onSelected() {

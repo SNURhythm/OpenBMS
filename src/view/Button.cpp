@@ -35,7 +35,7 @@ void Button::onLayout() {
   }
 }
 
-void Button::handleEventsImpl(SDL_Event &event) {
+bool Button::handleEventsImpl(SDL_Event &event) {
   if (contentView) {
     contentView->handleEvents(event);
   }
@@ -48,6 +48,8 @@ void Button::handleEventsImpl(SDL_Event &event) {
       if (onClickListener) {
         onClickListener();
       }
+      return false;
     }
   }
+  return true;
 }

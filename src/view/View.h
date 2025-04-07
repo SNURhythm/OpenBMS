@@ -3,6 +3,11 @@
 #include <SDL2/SDL.h>
 #include <yoga/Yoga.h>
 #include <vector>
+#include "../rendering/common.h"
+#include "../rendering/ShaderManager.h"
+#include "../rendering/Color.h"
+#include "bgfx/bgfx.h"
+#include "bgfx/defines.h"
 enum class Edge {
   Left = YGEdgeLeft,
   Top = YGEdgeTop,
@@ -27,13 +32,22 @@ struct RenderContext {
 };
 class View {
 public:
-  View() = delete;
   inline View(int x, int y, int width, int height) : isVisible(true) {
+    dbgColor = {static_cast<uint8_t>(rand() % 256),
+                static_cast<uint8_t>(rand() % 256),
+                static_cast<uint8_t>(rand() % 256), 64};
     node = YGNodeNew();
     YGNodeStyleSetPosition(node, YGEdgeLeft, x);
     YGNodeStyleSetPosition(node, YGEdgeTop, y);
     YGNodeStyleSetWidth(node, width);
     YGNodeStyleSetHeight(node, height);
+    applyYogaLayout();
+  }
+  inline View() : isVisible(true) {
+    dbgColor = {static_cast<uint8_t>(rand() % 256),
+                static_cast<uint8_t>(rand() % 256),
+                static_cast<uint8_t>(rand() % 256), 64};
+    node = YGNodeNew();
     applyYogaLayout();
   }
 
@@ -50,6 +64,50 @@ public:
   void render(RenderContext &context) {
     if (!isVisible)
       return;
+    if (drawBoundingBox) {
+      float x = getX();
+      float y = getY();
+      float width = getWidth();
+      float height = getHeight();
+      bgfx::TransientVertexBuffer tvb{};
+      bgfx::TransientIndexBuffer tib{};
+      // Define the vertex layout
+      bgfx::VertexLayout layout = rendering::PosColorVertex::ms_decl;
+
+      bgfx::allocTransientVertexBuffer(&tvb, 4, layout);
+      bgfx::allocTransientIndexBuffer(&tib, 6);
+
+      auto *vertices = (rendering::PosColorVertex *)tvb.data;
+      auto *index = (uint16_t *)tib.data;
+
+      uint32_t abgr = dbgColor.toABGR();
+      vertices[0] = {x, y, 0.0f, abgr};
+      vertices[1] = {x + width, y, 0.0f, abgr};
+      vertices[2] = {x + width, y + height, 0.0f, abgr};
+      vertices[3] = {x, y + height, 0.0f, abgr};
+
+      // Set up indices for two triangles (quad)
+      index[0] = 0;
+      index[1] = 1;
+      index[2] = 2;
+      index[3] = 2;
+      index[4] = 3;
+      index[5] = 0;
+
+      // Set up state (e.g., render state, texture, shaders)
+      uint64_t state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
+                       BGFX_STATE_BLEND_ALPHA | BGFX_STATE_MSAA;
+      bgfx::setState(state);
+
+      // Set the vertex and index buffers
+      bgfx::setVertexBuffer(0, &tvb);
+      bgfx::setIndexBuffer(&tib);
+
+      // Submit the draw call
+      bgfx::submit(
+          rendering::ui_view,
+          rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE));
+    }
     for (auto view : children) {
       view->render(context);
     }
@@ -59,6 +117,9 @@ public:
     if (!isVisible)
       return;
     handleEventsImpl(event);
+    for (auto view : children) {
+      view->handleEvents(event);
+    }
   }
 
   virtual inline void onLayout() {};
@@ -71,6 +132,7 @@ public:
     width = newWidth;
     height = newHeight;
     if (isResized) {
+      SDL_Log("View::setSize: %d, %d", newWidth, newHeight);
       onResize(newWidth, newHeight);
       YGNodeStyleSetWidth(node, width);
       YGNodeStyleSetHeight(node, height);
@@ -124,21 +186,23 @@ public:
   YGNodeRef getNode() const { return node; }
   std::vector<View *> &getChildren() { return children; }
 
+  bool drawBoundingBox = false;
+  void applyYogaLayout();
+
 protected:
   virtual void renderImpl(RenderContext &context) {};
-  virtual inline void handleEventsImpl(SDL_Event &event) {};
+  virtual inline bool handleEventsImpl(SDL_Event &event) { return true; };
   // onResize
   virtual void onResize(int newWidth, int newHeight) {}
   // onMove
   virtual void onMove(int newX, int newY) {}
 
 private:
+  Color dbgColor;
   int absoluteX;
   int absoluteY;
   bool isVisible; // Visibility of the view
   YGNodeRef node;
 
   std::vector<View *> children;
-
-  void applyYogaLayout();
 };

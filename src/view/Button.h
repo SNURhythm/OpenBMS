@@ -9,7 +9,7 @@
 class Button : public View {
 private:
   void renderImpl(RenderContext &context) override;
-  void handleEventsImpl(SDL_Event &event) override;
+  bool handleEventsImpl(SDL_Event &event) override;
 
 private:
   std::function<void()> onClickListener;

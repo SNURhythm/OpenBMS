@@ -15,10 +15,11 @@ private:
     }
   }
 
-  inline void handleEventsImpl(SDL_Event &event) override {
+  inline bool handleEventsImpl(SDL_Event &event) override {
     for (auto &view : views) {
       view->handleEvents(event);
     }
+    return true;
   }
 
 public:

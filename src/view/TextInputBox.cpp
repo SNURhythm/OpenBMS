@@ -28,13 +28,13 @@ size_t TextInputBox::getPrevUnicodePos(size_t pos) {
   }
   return cp - editingText.data();
 }
-void TextInputBox::handleEventsImpl(SDL_Event &event) {
+bool TextInputBox::handleEventsImpl(SDL_Event &event) {
   bool shouldUpdate = false;
   bool isSubmit = false;
   switch (event.type) {
   case SDL_TEXTINPUT:
     if (!isSelected)
-      return;
+      return true;
     composition.clear();
     shouldUpdate = true;
     // Add new text to the cursor position
@@ -43,7 +43,7 @@ void TextInputBox::handleEventsImpl(SDL_Event &event) {
     break;
   case SDL_KEYDOWN:
     if (!isSelected)
-      return;
+      return true;
     shouldUpdate = true;
     if (event.key.keysym.sym == SDLK_BACKSPACE && editingText.length() > 0) {
       if (!composition.empty()) {
@@ -90,7 +90,7 @@ void TextInputBox::handleEventsImpl(SDL_Event &event) {
     break;
   case SDL_TEXTEDITING:
     if (!isSelected)
-      return;
+      return true;
     SDL_Log("Text editing: %s", event.edit.text);
     // Update the composition text.
     composition = event.edit.text;
@@ -99,7 +99,7 @@ void TextInputBox::handleEventsImpl(SDL_Event &event) {
   case SDL_TEXTEDITING_EXT:
 
     if (!isSelected)
-      return;
+      return true;
     shouldUpdate = true;
     SDL_Log("Text editing: %s", event.editExt.text);
     // Update the composition text.
@@ -118,7 +118,7 @@ void TextInputBox::handleEventsImpl(SDL_Event &event) {
       SDL_StartTextInput();
       shouldUpdate = true;
       lastRenderedCaretCursor = -1;
-
+      return false;
     } else {
       onUnselected();
       SDL_StopTextInput();
@@ -161,6 +161,7 @@ void TextInputBox::handleEventsImpl(SDL_Event &event) {
     viewRect = {cursorX, cursorY, getWidth(), getHeight()};
     SDL_SetTextInputRect(&viewRect);
   }
+  return true;
 }
 void TextInputBox::onMove(int newX, int newY) {
   TextView::onMove(newX, newY);
