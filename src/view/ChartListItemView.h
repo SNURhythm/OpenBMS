@@ -11,10 +11,7 @@ class ChartListItemView : public View {
 public:
   ChartListItemView(int x, int y, int width, int height,
                     const bms_parser::ChartMeta &meta);
-  ~ChartListItemView() override{
-    delete rootLayout;
-    delete keyModeOverlay;
-  }
+  ~ChartListItemView() override { delete keyModeOverlay; }
 
   void setMeta(const bms_parser::ChartMeta &meta);
   void onSelected() override;
@@ -22,8 +19,7 @@ public:
 
 private:
   void renderImpl(RenderContext &context) override;
-  YogaLayout *textLayout;
-  YogaLayout *rootLayout;
+  View *textLayout;
   TextView *titleView;
   TextView *artistView;
   TextView *levelView;
@@ -32,11 +28,9 @@ private:
 
 protected:
   inline void onMove(int newX, int newY) override {
-    rootLayout->setPosition(newX, newY);
     keyModeOverlay->setPosition(newX, newY);
   }
   inline void onResize(int newWidth, int newHeight) override {
-    rootLayout->setSize(newWidth, newHeight);
     keyModeOverlay->setSize(newWidth, newHeight);
   }
 };
