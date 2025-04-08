@@ -9,3 +9,10 @@ xcuserdata/
 Pods/
 
 vendor/
+
+.env
+
+## fastlane outputs
+*.ipa
+*.dSYM.zip
+fastlane/report.xml
