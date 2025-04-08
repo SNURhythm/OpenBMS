@@ -1,0 +1,34 @@
+name: Build & Deploy iOS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  appstore:
+    name: Deploy to TestFlight
+    runs-on: [mba]
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        ruby: ["3.1.2"]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.1.2"
+          bundler-cache: true
+          self-hosted: true
+      - uses: actions/cache@v3
+        with:
+          path: ios/Xcode/OpenBMS/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+      - run: cd ios/Xcode/OpenBMS && bundle install && bundle exec pod repo update && bundle exec pod install
+      - uses: mikehardy/buildcache-action@v2.1.0
+      - working-directory: ./ios/Xcode/OpenBMS
+        run: bundle exec fastlane ios beta
+        env:
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
