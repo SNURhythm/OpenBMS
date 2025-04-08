@@ -7,3 +7,5 @@ xcuserdata/
 
 ## cocoapods
 Pods/
+
+vendor/
