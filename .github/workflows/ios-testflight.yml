@@ -17,6 +17,7 @@ jobs:
       matrix:
         ruby: ["3.1.2"]
     steps:
+      - run: ./init_bgfx.sh
       - uses: actions/checkout@v3
         with:
           submodules: "recursive"
