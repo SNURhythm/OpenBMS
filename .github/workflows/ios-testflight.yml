@@ -37,4 +37,5 @@ jobs:
       - working-directory: ./ios/Xcode/OpenBMS
         run: bundle exec fastlane ios beta --verbose
         env:
+          GIT_BASIC_AUTHORIZATION: ${{ secrets.GIT_BASIC_AUTHORIZATION }}
           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
