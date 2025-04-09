@@ -35,6 +35,6 @@ jobs:
       - run: cd ios/Xcode/OpenBMS && bundle install && bundle exec pod repo update && bundle exec pod install
       - uses: mikehardy/buildcache-action@v2.1.0
       - working-directory: ./ios/Xcode/OpenBMS
-        run: bundle exec fastlane ios beta
+        run: bundle exec fastlane ios beta --verbose
         env:
           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
