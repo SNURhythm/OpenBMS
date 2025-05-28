@@ -1,3 +1,5 @@
+* text=auto
+
 *.lib binary
 *.hpp text
 *.h text
