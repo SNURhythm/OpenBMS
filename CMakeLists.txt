@@ -78,12 +78,14 @@ set(FFMPEG_LIBS
         x264
 )
 # Platform-specific settings
-if (NOT WIN32)
-    add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedantic -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -g)
-endif ()
-if (WIN32)
-    # for msvc
+# for msvc
+if (MSVC)
     add_compile_options(/Zc:__cplusplus /Zc:preprocessor /wd4819)
+else()
+    add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedantic -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -g)
+endif()
+if (WIN32)
+
     add_definitions(-DSTBI_WINDOWS_UTF8)
     find_package(SndFile CONFIG REQUIRED)
     set(CP_ASSETS "xcopy /s /i assets ${BUILD_DIR}\\assets /Y")
@@ -165,12 +167,12 @@ elseif (IOS)
     target_link_libraries(main PRIVATE ${UIKIT} ${FOUNDATION})
 endif ()
 
-if(WIN32)
+if (WIN32)
     string(REPLACE ".lib" ".dll" SDL2_LIB_DLL ${SDL2_LIB})
     set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIB_DLL} IMPORTED_IMPLIB ${SDL2_LIB})
-else(WIN32)
+else (WIN32)
     set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIB})
-endif(WIN32)
+endif (WIN32)
 
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
 add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
@@ -200,15 +202,14 @@ endif ()
 #install(FILES $<TARGET_RUNTIME_DLLS:main> TYPE BIN)
 
 
-
-file(GLOB_RECURSE SHADER_FILES 
-    "${CMAKE_SOURCE_DIR}/shaders/*.*"
+file(GLOB_RECURSE SHADER_FILES
+        "${CMAKE_SOURCE_DIR}/shaders/*.*"
 )
 
 # Add a custom target that depends on all shader files
 add_custom_target(copy_shaders ALL
-    DEPENDS ${SHADER_FILES}
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
+        DEPENDS ${SHADER_FILES}
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
 )
 
 # Make the main target depend on shader copying
