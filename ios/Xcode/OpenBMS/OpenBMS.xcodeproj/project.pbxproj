@@ -3,51 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		B70027142BF7A8DA000DB8EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B70027132BF7A8DA000DB8EC /* Assets.xcassets */; };
 		B70027172BF7A8DA000DB8EC /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B70027152BF7A8DA000DB8EC /* LaunchScreen.storyboard */; };
-		B71628242CD9EA470048648F /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71628172CD9EA470048648F /* Utils.cpp */; };
-		B71628252CD9EA470048648F /* VideoPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627EC2CD9EA470048648F /* VideoPlayer.cpp */; };
-		B71628262CD9EA470048648F /* transcode.c in Sources */ = {isa = PBXBuildFile; fileRef = B71627EA2CD9EA470048648F /* transcode.c */; };
-		B71628272CD9EA470048648F /* Quaternion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627C72CD9EA470048648F /* Quaternion.cpp */; };
-		B71628282CD9EA470048648F /* SceneManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627E22CD9EA470048648F /* SceneManager.cpp */; };
-		B71628292CD9EA470048648F /* Judge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627DA2CD9EA470048648F /* Judge.cpp */; };
-		B716282A2CD9EA470048648F /* ImageView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627F52CD9EA470048648F /* ImageView.cpp */; };
-		B716282B2CD9EA470048648F /* LinearLayout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627F82CD9EA470048648F /* LinearLayout.cpp */; };
-		B716282C2CD9EA470048648F /* TextInputBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627FB2CD9EA470048648F /* TextInputBox.cpp */; };
-		B716282D2CD9EA470048648F /* tinyfiledialogs.c in Sources */ = {isa = PBXBuildFile; fileRef = B71628152CD9EA470048648F /* tinyfiledialogs.c */; };
-		B716282E2CD9EA470048648F /* Vector3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627C92CD9EA470048648F /* Vector3.cpp */; };
-		B716282F2CD9EA470048648F /* iOSNatives.mm in Sources */ = {isa = PBXBuildFile; fileRef = B71628092CD9EA470048648F /* iOSNatives.mm */; };
-		B71628302CD9EA470048648F /* SDLTouchInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627C12CD9EA470048648F /* SDLTouchInputSource.cpp */; };
-		B71628312CD9EA470048648F /* RhythmInputHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627BD2CD9EA470048648F /* RhythmInputHandler.cpp */; };
-		B71628322CD9EA470048648F /* InputNormalizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627BA2CD9EA470048648F /* InputNormalizer.cpp */; };
-		B71628332CD9EA470048648F /* GamePlayScene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627D82CD9EA470048648F /* GamePlayScene.cpp */; };
-		B71628342CD9EA470048648F /* SDLInputSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627BF2CD9EA470048648F /* SDLInputSource.cpp */; };
-		B71628352CD9EA470048648F /* BMSRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627D52CD9EA470048648F /* BMSRenderer.cpp */; };
-		B71628362CD9EA470048648F /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = B71628122CD9EA470048648F /* sqlite3.c */; };
-		B71628372CD9EA470048648F /* common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627D12CD9EA470048648F /* common.cpp */; };
-		B71628382CD9EA470048648F /* SpriteObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627B42CD9EA470048648F /* SpriteObject.cpp */; };
-		B71628392CD9EA470048648F /* MainMenuScene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627DF2CD9EA470048648F /* MainMenuScene.cpp */; };
-		B716283A2CD9EA470048648F /* bgfx_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71628012CD9EA470048648F /* bgfx_helper.cpp */; };
-		B716283B2CD9EA470048648F /* Jukebox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627AE2CD9EA470048648F /* Jukebox.cpp */; };
-		B716283C2CD9EA470048648F /* ChartDBHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71628052CD9EA470048648F /* ChartDBHelper.cpp */; };
-		B716283D2CD9EA470048648F /* bms_parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71628032CD9EA470048648F /* bms_parser.cpp */; };
-		B716283E2CD9EA470048648F /* Button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627F02CD9EA470048648F /* Button.cpp */; };
-		B716283F2CD9EA470048648F /* Color.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627CF2CD9EA470048648F /* Color.cpp */; };
-		B71628402CD9EA470048648F /* Stopwatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627E62CD9EA470048648F /* Stopwatch.cpp */; };
-		B71628412CD9EA470048648F /* GameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627B22CD9EA470048648F /* GameObject.cpp */; };
-		B71628422CD9EA470048648F /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = B71628102CD9EA470048648F /* SDL_uikit_main.c */; };
-		B71628432CD9EA470048648F /* Camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627CC2CD9EA470048648F /* Camera.cpp */; };
-		B71628442CD9EA470048648F /* path.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B716280F2CD9EA470048648F /* path.cpp */; };
-		B71628452CD9EA470048648F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B716280D2CD9EA470048648F /* main.cpp */; };
-		B71628462CD9EA470048648F /* TextView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627FD2CD9EA470048648F /* TextView.cpp */; };
-		B71628472CD9EA470048648F /* decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627AC2CD9EA470048648F /* decoder.cpp */; };
-		B71628482CD9EA470048648F /* AudioWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627A92CD9EA470048648F /* AudioWrapper.cpp */; };
-		B71628492CD9EA470048648F /* ChartListItemView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B71627F22CD9EA470048648F /* ChartListItemView.cpp */; };
-		B716284A2CD9EA470048648F /* MacNatives.mm in Sources */ = {isa = PBXBuildFile; fileRef = B716280B2CD9EA470048648F /* MacNatives.mm */; };
+		B70A12672D1C839900111D5C /* libbgfx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3132BFAAF67000C838E /* libbgfx.a */; };
 		B71B9EDC2BFDA3A200D789A5 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B71B9EDB2BFDA3A200D789A5 /* CoreAudio.framework */; };
 		B71B9EDE2BFDA3DA00D789A5 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B71B9EDD2BFDA3DA00D789A5 /* AVFAudio.framework */; };
 		B71B9EE02BFDA40900D789A5 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B71B9EDF2BFDA40900D789A5 /* AudioToolbox.framework */; };
@@ -92,12 +54,6 @@
 		B7FA8B142C7D0A2600B7EAAF /* libcompat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D27AF12C7CE2FA00189ED7 /* libcompat.a */; };
 		B7FFC2C32BF7D834000C838E /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B7FFC39F2BFAAFA7000C838E /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E222BF7C48700945F27 /* CoreFoundation.framework */; };
-		B7FFC3A12BFAAFE7000C838E /* libbgfx.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3132BFAAF67000C838E /* libbgfx.a */; };
-		B7FFC3A22BFAAFE7000C838E /* libbimg.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3152BFAAF67000C838E /* libbimg.a */; };
-		B7FFC3A32BFAAFE7000C838E /* libbimg_decode.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3172BFAAF67000C838E /* libbimg_decode.a */; };
-		B7FFC3A42BFAAFE7000C838E /* libbimg_encode.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3192BFAAF67000C838E /* libbimg_encode.a */; };
-		B7FFC3A52BFAAFE7000C838E /* libbx.a in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC31D2BFAAF67000C838E /* libbx.a */; };
-		B7FFC3A62BFAAFF3000C838E /* libbgfx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3132BFAAF67000C838E /* libbgfx.a */; };
 		B7FFC3A72BFAAFF3000C838E /* libbimg_decode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3172BFAAF67000C838E /* libbimg_decode.a */; };
 		B7FFC3A82BFAAFF3000C838E /* libbimg_encode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3192BFAAF67000C838E /* libbimg_encode.a */; };
 		B7FFC3A92BFAAFF3000C838E /* libbimg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3152BFAAF67000C838E /* libbimg.a */; };
@@ -646,11 +602,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				B7FFC3A12BFAAFE7000C838E /* libbgfx.a in Embed Frameworks */,
-				B7FFC3A22BFAAFE7000C838E /* libbimg.a in Embed Frameworks */,
-				B7FFC3A32BFAAFE7000C838E /* libbimg_decode.a in Embed Frameworks */,
-				B7FFC3A42BFAAFE7000C838E /* libbimg_encode.a in Embed Frameworks */,
-				B7FFC3A52BFAAFE7000C838E /* libbx.a in Embed Frameworks */,
 				B77B0E1D2BF7BDC400945F27 /* SDL2_ttf.framework in Embed Frameworks */,
 				B7FFC2C32BF7D834000C838E /* SDL2.framework in Embed Frameworks */,
 			);
@@ -663,107 +614,6 @@
 		B70027012BF7A8D8000DB8EC /* OpenBMS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenBMS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B70027132BF7A8DA000DB8EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B70027162BF7A8DA000DB8EC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		B71627A82CD9EA470048648F /* AudioWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioWrapper.h; sourceTree = "<group>"; };
-		B71627A92CD9EA470048648F /* AudioWrapper.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; path = AudioWrapper.cpp; sourceTree = "<group>"; };
-		B71627AA2CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71627AB2CD9EA470048648F /* decoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = decoder.h; sourceTree = "<group>"; };
-		B71627AC2CD9EA470048648F /* decoder.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = decoder.cpp; sourceTree = "<group>"; };
-		B71627AD2CD9EA470048648F /* Jukebox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Jukebox.h; sourceTree = "<group>"; };
-		B71627AE2CD9EA470048648F /* Jukebox.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Jukebox.cpp; sourceTree = "<group>"; };
-		B71627B02CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71627B12CD9EA470048648F /* GameObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameObject.h; sourceTree = "<group>"; };
-		B71627B22CD9EA470048648F /* GameObject.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GameObject.cpp; sourceTree = "<group>"; };
-		B71627B32CD9EA470048648F /* SpriteObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpriteObject.h; sourceTree = "<group>"; };
-		B71627B42CD9EA470048648F /* SpriteObject.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SpriteObject.cpp; sourceTree = "<group>"; };
-		B71627B62CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71627B72CD9EA470048648F /* IInputHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IInputHandler.h; sourceTree = "<group>"; };
-		B71627B82CD9EA470048648F /* IInputSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IInputSource.h; sourceTree = "<group>"; };
-		B71627B92CD9EA470048648F /* InputNormalizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InputNormalizer.h; sourceTree = "<group>"; };
-		B71627BA2CD9EA470048648F /* InputNormalizer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = InputNormalizer.cpp; sourceTree = "<group>"; };
-		B71627BB2CD9EA470048648F /* IRhythmControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IRhythmControl.h; sourceTree = "<group>"; };
-		B71627BC2CD9EA470048648F /* RhythmInputHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RhythmInputHandler.h; sourceTree = "<group>"; };
-		B71627BD2CD9EA470048648F /* RhythmInputHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RhythmInputHandler.cpp; sourceTree = "<group>"; };
-		B71627BE2CD9EA470048648F /* SDLInputSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDLInputSource.h; sourceTree = "<group>"; };
-		B71627BF2CD9EA470048648F /* SDLInputSource.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SDLInputSource.cpp; sourceTree = "<group>"; };
-		B71627C02CD9EA470048648F /* SDLTouchInputSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDLTouchInputSource.h; sourceTree = "<group>"; };
-		B71627C12CD9EA470048648F /* SDLTouchInputSource.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SDLTouchInputSource.cpp; sourceTree = "<group>"; };
-		B71627C22CD9EA470048648F /* usb_hid_keys.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = usb_hid_keys.h; sourceTree = "<group>"; };
-		B71627C32CD9EA470048648F /* vkcodes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vkcodes.h; sourceTree = "<group>"; };
-		B71627C52CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71627C62CD9EA470048648F /* Quaternion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Quaternion.h; sourceTree = "<group>"; };
-		B71627C72CD9EA470048648F /* Quaternion.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Quaternion.cpp; sourceTree = "<group>"; };
-		B71627C82CD9EA470048648F /* Vector3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Vector3.h; sourceTree = "<group>"; };
-		B71627C92CD9EA470048648F /* Vector3.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Vector3.cpp; sourceTree = "<group>"; };
-		B71627CB2CD9EA470048648F /* Camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Camera.h; sourceTree = "<group>"; };
-		B71627CC2CD9EA470048648F /* Camera.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Camera.cpp; sourceTree = "<group>"; };
-		B71627CD2CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71627CE2CD9EA470048648F /* Color.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Color.h; sourceTree = "<group>"; };
-		B71627CF2CD9EA470048648F /* Color.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Color.cpp; sourceTree = "<group>"; };
-		B71627D02CD9EA470048648F /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
-		B71627D12CD9EA470048648F /* common.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = common.cpp; sourceTree = "<group>"; };
-		B71627D22CD9EA470048648F /* ShaderManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderManager.h; sourceTree = "<group>"; };
-		B71627D42CD9EA470048648F /* BMSRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSRenderer.h; sourceTree = "<group>"; };
-		B71627D52CD9EA470048648F /* BMSRenderer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BMSRenderer.cpp; sourceTree = "<group>"; };
-		B71627D62CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71627D72CD9EA470048648F /* GamePlayScene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GamePlayScene.h; sourceTree = "<group>"; };
-		B71627D82CD9EA470048648F /* GamePlayScene.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GamePlayScene.cpp; sourceTree = "<group>"; };
-		B71627D92CD9EA470048648F /* Judge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Judge.h; sourceTree = "<group>"; };
-		B71627DA2CD9EA470048648F /* Judge.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Judge.cpp; sourceTree = "<group>"; };
-		B71627DB2CD9EA470048648F /* RhythmState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RhythmState.h; sourceTree = "<group>"; };
-		B71627DD2CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71627DE2CD9EA470048648F /* MainMenuScene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainMenuScene.h; sourceTree = "<group>"; };
-		B71627DF2CD9EA470048648F /* MainMenuScene.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MainMenuScene.cpp; sourceTree = "<group>"; };
-		B71627E02CD9EA470048648F /* Scene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Scene.h; sourceTree = "<group>"; };
-		B71627E12CD9EA470048648F /* SceneManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneManager.h; sourceTree = "<group>"; };
-		B71627E22CD9EA470048648F /* SceneManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SceneManager.cpp; sourceTree = "<group>"; };
-		B71627E42CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71627E52CD9EA470048648F /* Stopwatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Stopwatch.h; sourceTree = "<group>"; };
-		B71627E62CD9EA470048648F /* Stopwatch.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Stopwatch.cpp; sourceTree = "<group>"; };
-		B71627E82CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71627E92CD9EA470048648F /* transcode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = transcode.h; sourceTree = "<group>"; };
-		B71627EA2CD9EA470048648F /* transcode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = transcode.c; sourceTree = "<group>"; };
-		B71627EB2CD9EA470048648F /* VideoPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VideoPlayer.h; sourceTree = "<group>"; };
-		B71627EC2CD9EA470048648F /* VideoPlayer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = VideoPlayer.cpp; sourceTree = "<group>"; };
-		B71627EF2CD9EA470048648F /* Button.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Button.h; sourceTree = "<group>"; };
-		B71627F02CD9EA470048648F /* Button.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Button.cpp; sourceTree = "<group>"; };
-		B71627F12CD9EA470048648F /* ChartListItemView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChartListItemView.h; sourceTree = "<group>"; };
-		B71627F22CD9EA470048648F /* ChartListItemView.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ChartListItemView.cpp; sourceTree = "<group>"; };
-		B71627F32CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71627F42CD9EA470048648F /* ImageView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImageView.h; sourceTree = "<group>"; };
-		B71627F52CD9EA470048648F /* ImageView.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ImageView.cpp; sourceTree = "<group>"; };
-		B71627F62CD9EA470048648F /* Layout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Layout.h; sourceTree = "<group>"; };
-		B71627F72CD9EA470048648F /* LinearLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LinearLayout.h; sourceTree = "<group>"; };
-		B71627F82CD9EA470048648F /* LinearLayout.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LinearLayout.cpp; sourceTree = "<group>"; };
-		B71627F92CD9EA470048648F /* RecyclerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RecyclerView.h; sourceTree = "<group>"; };
-		B71627FA2CD9EA470048648F /* TextInputBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextInputBox.h; sourceTree = "<group>"; };
-		B71627FB2CD9EA470048648F /* TextInputBox.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TextInputBox.cpp; sourceTree = "<group>"; };
-		B71627FC2CD9EA470048648F /* TextView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextView.h; sourceTree = "<group>"; };
-		B71627FD2CD9EA470048648F /* TextView.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TextView.cpp; sourceTree = "<group>"; };
-		B71627FE2CD9EA470048648F /* View.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = View.h; sourceTree = "<group>"; };
-		B71628002CD9EA470048648F /* bgfx_helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bgfx_helper.h; sourceTree = "<group>"; };
-		B71628012CD9EA470048648F /* bgfx_helper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bgfx_helper.cpp; sourceTree = "<group>"; };
-		B71628022CD9EA470048648F /* bms_parser.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = bms_parser.hpp; sourceTree = "<group>"; };
-		B71628032CD9EA470048648F /* bms_parser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = bms_parser.cpp; sourceTree = "<group>"; };
-		B71628042CD9EA470048648F /* ChartDBHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ChartDBHelper.h; sourceTree = "<group>"; };
-		B71628052CD9EA470048648F /* ChartDBHelper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ChartDBHelper.cpp; sourceTree = "<group>"; };
-		B71628062CD9EA470048648F /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		B71628072CD9EA470048648F /* context.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = context.h; sourceTree = "<group>"; };
-		B71628082CD9EA470048648F /* iOSNatives.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = iOSNatives.hpp; sourceTree = "<group>"; };
-		B71628092CD9EA470048648F /* iOSNatives.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = iOSNatives.mm; sourceTree = "<group>"; };
-		B716280A2CD9EA470048648F /* MacNatives.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MacNatives.h; sourceTree = "<group>"; };
-		B716280B2CD9EA470048648F /* MacNatives.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MacNatives.mm; sourceTree = "<group>"; };
-		B716280C2CD9EA470048648F /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
-		B716280D2CD9EA470048648F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		B716280E2CD9EA470048648F /* path.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = path.h; sourceTree = "<group>"; };
-		B716280F2CD9EA470048648F /* path.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = path.cpp; sourceTree = "<group>"; };
-		B71628102CD9EA470048648F /* SDL_uikit_main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_uikit_main.c; sourceTree = "<group>"; };
-		B71628112CD9EA470048648F /* sqlite3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sqlite3.h; sourceTree = "<group>"; };
-		B71628122CD9EA470048648F /* sqlite3.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = sqlite3.c; sourceTree = "<group>"; };
-		B71628132CD9EA470048648F /* targets.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = targets.h; sourceTree = "<group>"; };
-		B71628142CD9EA470048648F /* tinyfiledialogs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tinyfiledialogs.h; sourceTree = "<group>"; };
-		B71628152CD9EA470048648F /* tinyfiledialogs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = tinyfiledialogs.c; sourceTree = "<group>"; };
-		B71628162CD9EA470048648F /* Utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
-		B71628172CD9EA470048648F /* Utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		B71B9EDB2BFDA3A200D789A5 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		B71B9EDD2BFDA3DA00D789A5 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
 		B71B9EDF2BFDA40900D789A5 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -921,6 +771,30 @@
 		B7FFC2CC2BFAAF66000C838E /* bgfx.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = bgfx.xcodeproj; path = ../../../bgfx/build/bgfx.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B70A13B22D1C846500111D5C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				audio/CMakeLists.txt,
+				CMakeLists.txt,
+				game/CMakeLists.txt,
+				input/CMakeLists.txt,
+				math/CMakeLists.txt,
+				rendering/CMakeLists.txt,
+				scene/CMakeLists.txt,
+				scene/play/CMakeLists.txt,
+				utils/CMakeLists.txt,
+				video/CMakeLists.txt,
+				view/CMakeLists.txt,
+			);
+			target = B70027002BF7A8D8000DB8EC /* OpenBMS */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		B70A137E2D1C844800111D5C /* src */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (B70A13B22D1C846500111D5C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {audio/AudioWrapper.cpp = sourcecode.cpp.objcpp; }; explicitFolders = (); name = src; path = /Users/xf/workspace/SNURhythm/OpenBMS/src; sourceTree = "<absolute>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		B70026FE2BF7A8D8000DB8EC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -955,6 +829,7 @@
 				B7E62F7D2C39A21100275C00 /* libsndfile.a in Frameworks */,
 				B71B9EE02BFDA40900D789A5 /* AudioToolbox.framework in Frameworks */,
 				B71B9EDE2BFDA3DA00D789A5 /* AVFAudio.framework in Frameworks */,
+				B70A12672D1C839900111D5C /* libbgfx.a in Frameworks */,
 				B71B9EDC2BFDA3A200D789A5 /* CoreAudio.framework in Frameworks */,
 				B79B1BD22BFAC23200FAD60F /* QuartzCore.framework in Frameworks */,
 				B79B1BD02BFAC20100FAD60F /* UIKit.framework in Frameworks */,
@@ -969,7 +844,6 @@
 				B77B0E202BF7C46D00945F27 /* Foundation.framework in Frameworks */,
 				B77B0DFD2BF7BD3900945F27 /* SDL2.framework in Frameworks */,
 				B7FFC3A92BFAAFF3000C838E /* libbimg.a in Frameworks */,
-				B7FFC3A62BFAAFF3000C838E /* libbgfx.a in Frameworks */,
 				B7D7520F2C90026F00CC4FF8 /* libluajit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1000,7 +874,7 @@
 		B70027032BF7A8D8000DB8EC /* OpenBMS */ = {
 			isa = PBXGroup;
 			children = (
-				B71628182CD9EA470048648F /* src */,
+				B70A137E2D1C844800111D5C /* src */,
 				B71B9EE12BFDA44500D789A5 /* assets */,
 				B799B7B52BFD224200115C26 /* Info.plist */,
 				B7459F6A2BFC2A58002C5A6F /* shaders */,
@@ -1010,195 +884,6 @@
 			);
 			path = OpenBMS;
 			sourceTree = "<group>";
-		};
-		B71627AF2CD9EA470048648F /* audio */ = {
-			isa = PBXGroup;
-			children = (
-				B71627A82CD9EA470048648F /* AudioWrapper.h */,
-				B71627A92CD9EA470048648F /* AudioWrapper.cpp */,
-				B71627AA2CD9EA470048648F /* CMakeLists.txt */,
-				B71627AB2CD9EA470048648F /* decoder.h */,
-				B71627AC2CD9EA470048648F /* decoder.cpp */,
-				B71627AD2CD9EA470048648F /* Jukebox.h */,
-				B71627AE2CD9EA470048648F /* Jukebox.cpp */,
-			);
-			path = audio;
-			sourceTree = "<group>";
-		};
-		B71627B52CD9EA470048648F /* game */ = {
-			isa = PBXGroup;
-			children = (
-				B71627B02CD9EA470048648F /* CMakeLists.txt */,
-				B71627B12CD9EA470048648F /* GameObject.h */,
-				B71627B22CD9EA470048648F /* GameObject.cpp */,
-				B71627B32CD9EA470048648F /* SpriteObject.h */,
-				B71627B42CD9EA470048648F /* SpriteObject.cpp */,
-			);
-			path = game;
-			sourceTree = "<group>";
-		};
-		B71627C42CD9EA470048648F /* input */ = {
-			isa = PBXGroup;
-			children = (
-				B71627B62CD9EA470048648F /* CMakeLists.txt */,
-				B71627B72CD9EA470048648F /* IInputHandler.h */,
-				B71627B82CD9EA470048648F /* IInputSource.h */,
-				B71627B92CD9EA470048648F /* InputNormalizer.h */,
-				B71627BA2CD9EA470048648F /* InputNormalizer.cpp */,
-				B71627BB2CD9EA470048648F /* IRhythmControl.h */,
-				B71627BC2CD9EA470048648F /* RhythmInputHandler.h */,
-				B71627BD2CD9EA470048648F /* RhythmInputHandler.cpp */,
-				B71627BE2CD9EA470048648F /* SDLInputSource.h */,
-				B71627BF2CD9EA470048648F /* SDLInputSource.cpp */,
-				B71627C02CD9EA470048648F /* SDLTouchInputSource.h */,
-				B71627C12CD9EA470048648F /* SDLTouchInputSource.cpp */,
-				B71627C22CD9EA470048648F /* usb_hid_keys.h */,
-				B71627C32CD9EA470048648F /* vkcodes.h */,
-			);
-			path = input;
-			sourceTree = "<group>";
-		};
-		B71627CA2CD9EA470048648F /* math */ = {
-			isa = PBXGroup;
-			children = (
-				B71627C52CD9EA470048648F /* CMakeLists.txt */,
-				B71627C62CD9EA470048648F /* Quaternion.h */,
-				B71627C72CD9EA470048648F /* Quaternion.cpp */,
-				B71627C82CD9EA470048648F /* Vector3.h */,
-				B71627C92CD9EA470048648F /* Vector3.cpp */,
-			);
-			path = math;
-			sourceTree = "<group>";
-		};
-		B71627D32CD9EA470048648F /* rendering */ = {
-			isa = PBXGroup;
-			children = (
-				B71627CB2CD9EA470048648F /* Camera.h */,
-				B71627CC2CD9EA470048648F /* Camera.cpp */,
-				B71627CD2CD9EA470048648F /* CMakeLists.txt */,
-				B71627CE2CD9EA470048648F /* Color.h */,
-				B71627CF2CD9EA470048648F /* Color.cpp */,
-				B71627D02CD9EA470048648F /* common.h */,
-				B71627D12CD9EA470048648F /* common.cpp */,
-				B71627D22CD9EA470048648F /* ShaderManager.h */,
-			);
-			path = rendering;
-			sourceTree = "<group>";
-		};
-		B71627DC2CD9EA470048648F /* play */ = {
-			isa = PBXGroup;
-			children = (
-				B71627D42CD9EA470048648F /* BMSRenderer.h */,
-				B71627D52CD9EA470048648F /* BMSRenderer.cpp */,
-				B71627D62CD9EA470048648F /* CMakeLists.txt */,
-				B71627D72CD9EA470048648F /* GamePlayScene.h */,
-				B71627D82CD9EA470048648F /* GamePlayScene.cpp */,
-				B71627D92CD9EA470048648F /* Judge.h */,
-				B71627DA2CD9EA470048648F /* Judge.cpp */,
-				B71627DB2CD9EA470048648F /* RhythmState.h */,
-			);
-			path = play;
-			sourceTree = "<group>";
-		};
-		B71627E32CD9EA470048648F /* scene */ = {
-			isa = PBXGroup;
-			children = (
-				B71627DC2CD9EA470048648F /* play */,
-				B71627DD2CD9EA470048648F /* CMakeLists.txt */,
-				B71627DE2CD9EA470048648F /* MainMenuScene.h */,
-				B71627DF2CD9EA470048648F /* MainMenuScene.cpp */,
-				B71627E02CD9EA470048648F /* Scene.h */,
-				B71627E12CD9EA470048648F /* SceneManager.h */,
-				B71627E22CD9EA470048648F /* SceneManager.cpp */,
-			);
-			path = scene;
-			sourceTree = "<group>";
-		};
-		B71627E72CD9EA470048648F /* utils */ = {
-			isa = PBXGroup;
-			children = (
-				B71627E42CD9EA470048648F /* CMakeLists.txt */,
-				B71627E52CD9EA470048648F /* Stopwatch.h */,
-				B71627E62CD9EA470048648F /* Stopwatch.cpp */,
-			);
-			path = utils;
-			sourceTree = "<group>";
-		};
-		B71627EE2CD9EA470048648F /* video */ = {
-			isa = PBXGroup;
-			children = (
-				B71627E82CD9EA470048648F /* CMakeLists.txt */,
-				B71627E92CD9EA470048648F /* transcode.h */,
-				B71627EA2CD9EA470048648F /* transcode.c */,
-				B71627EB2CD9EA470048648F /* VideoPlayer.h */,
-				B71627EC2CD9EA470048648F /* VideoPlayer.cpp */,
-			);
-			path = video;
-			sourceTree = "<group>";
-		};
-		B71627FF2CD9EA470048648F /* view */ = {
-			isa = PBXGroup;
-			children = (
-				B71627EF2CD9EA470048648F /* Button.h */,
-				B71627F02CD9EA470048648F /* Button.cpp */,
-				B71627F12CD9EA470048648F /* ChartListItemView.h */,
-				B71627F22CD9EA470048648F /* ChartListItemView.cpp */,
-				B71627F32CD9EA470048648F /* CMakeLists.txt */,
-				B71627F42CD9EA470048648F /* ImageView.h */,
-				B71627F52CD9EA470048648F /* ImageView.cpp */,
-				B71627F62CD9EA470048648F /* Layout.h */,
-				B71627F72CD9EA470048648F /* LinearLayout.h */,
-				B71627F82CD9EA470048648F /* LinearLayout.cpp */,
-				B71627F92CD9EA470048648F /* RecyclerView.h */,
-				B71627FA2CD9EA470048648F /* TextInputBox.h */,
-				B71627FB2CD9EA470048648F /* TextInputBox.cpp */,
-				B71627FC2CD9EA470048648F /* TextView.h */,
-				B71627FD2CD9EA470048648F /* TextView.cpp */,
-				B71627FE2CD9EA470048648F /* View.h */,
-			);
-			path = view;
-			sourceTree = "<group>";
-		};
-		B71628182CD9EA470048648F /* src */ = {
-			isa = PBXGroup;
-			children = (
-				B71627AF2CD9EA470048648F /* audio */,
-				B71627B52CD9EA470048648F /* game */,
-				B71627C42CD9EA470048648F /* input */,
-				B71627CA2CD9EA470048648F /* math */,
-				B71627D32CD9EA470048648F /* rendering */,
-				B71627E32CD9EA470048648F /* scene */,
-				B71627E72CD9EA470048648F /* utils */,
-				B71627EE2CD9EA470048648F /* video */,
-				B71627FF2CD9EA470048648F /* view */,
-				B71628002CD9EA470048648F /* bgfx_helper.h */,
-				B71628012CD9EA470048648F /* bgfx_helper.cpp */,
-				B71628022CD9EA470048648F /* bms_parser.hpp */,
-				B71628032CD9EA470048648F /* bms_parser.cpp */,
-				B71628042CD9EA470048648F /* ChartDBHelper.h */,
-				B71628052CD9EA470048648F /* ChartDBHelper.cpp */,
-				B71628062CD9EA470048648F /* CMakeLists.txt */,
-				B71628072CD9EA470048648F /* context.h */,
-				B71628082CD9EA470048648F /* iOSNatives.hpp */,
-				B71628092CD9EA470048648F /* iOSNatives.mm */,
-				B716280A2CD9EA470048648F /* MacNatives.h */,
-				B716280B2CD9EA470048648F /* MacNatives.mm */,
-				B716280C2CD9EA470048648F /* main.h */,
-				B716280D2CD9EA470048648F /* main.cpp */,
-				B716280E2CD9EA470048648F /* path.h */,
-				B716280F2CD9EA470048648F /* path.cpp */,
-				B71628102CD9EA470048648F /* SDL_uikit_main.c */,
-				B71628112CD9EA470048648F /* sqlite3.h */,
-				B71628122CD9EA470048648F /* sqlite3.c */,
-				B71628132CD9EA470048648F /* targets.h */,
-				B71628142CD9EA470048648F /* tinyfiledialogs.h */,
-				B71628152CD9EA470048648F /* tinyfiledialogs.c */,
-				B71628162CD9EA470048648F /* Utils.h */,
-				B71628172CD9EA470048648F /* Utils.cpp */,
-			);
-			name = src;
-			path = /Users/xf/workspace/SNURhythm/OpenBMS/src;
-			sourceTree = "<absolute>";
 		};
 		B72522F62BF7AD7100C6C414 /* Frameworks */ = {
 			isa = PBXGroup;
@@ -1484,6 +1169,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B70A137E2D1C844800111D5C /* src */,
 			);
 			name = OpenBMS;
 			productName = OpenBMS;
@@ -2141,45 +1829,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B71628242CD9EA470048648F /* Utils.cpp in Sources */,
-				B71628252CD9EA470048648F /* VideoPlayer.cpp in Sources */,
-				B71628262CD9EA470048648F /* transcode.c in Sources */,
-				B71628272CD9EA470048648F /* Quaternion.cpp in Sources */,
-				B71628282CD9EA470048648F /* SceneManager.cpp in Sources */,
-				B71628292CD9EA470048648F /* Judge.cpp in Sources */,
-				B716282A2CD9EA470048648F /* ImageView.cpp in Sources */,
-				B716282B2CD9EA470048648F /* LinearLayout.cpp in Sources */,
-				B716282C2CD9EA470048648F /* TextInputBox.cpp in Sources */,
-				B716282D2CD9EA470048648F /* tinyfiledialogs.c in Sources */,
-				B716282E2CD9EA470048648F /* Vector3.cpp in Sources */,
-				B716282F2CD9EA470048648F /* iOSNatives.mm in Sources */,
-				B71628302CD9EA470048648F /* SDLTouchInputSource.cpp in Sources */,
-				B71628312CD9EA470048648F /* RhythmInputHandler.cpp in Sources */,
-				B71628322CD9EA470048648F /* InputNormalizer.cpp in Sources */,
-				B71628332CD9EA470048648F /* GamePlayScene.cpp in Sources */,
-				B71628342CD9EA470048648F /* SDLInputSource.cpp in Sources */,
-				B71628352CD9EA470048648F /* BMSRenderer.cpp in Sources */,
-				B71628362CD9EA470048648F /* sqlite3.c in Sources */,
-				B71628372CD9EA470048648F /* common.cpp in Sources */,
-				B71628382CD9EA470048648F /* SpriteObject.cpp in Sources */,
-				B71628392CD9EA470048648F /* MainMenuScene.cpp in Sources */,
-				B716283A2CD9EA470048648F /* bgfx_helper.cpp in Sources */,
-				B716283B2CD9EA470048648F /* Jukebox.cpp in Sources */,
-				B716283C2CD9EA470048648F /* ChartDBHelper.cpp in Sources */,
-				B716283D2CD9EA470048648F /* bms_parser.cpp in Sources */,
-				B716283E2CD9EA470048648F /* Button.cpp in Sources */,
-				B716283F2CD9EA470048648F /* Color.cpp in Sources */,
-				B71628402CD9EA470048648F /* Stopwatch.cpp in Sources */,
-				B71628412CD9EA470048648F /* GameObject.cpp in Sources */,
-				B71628422CD9EA470048648F /* SDL_uikit_main.c in Sources */,
-				B71628432CD9EA470048648F /* Camera.cpp in Sources */,
-				B71628442CD9EA470048648F /* path.cpp in Sources */,
-				B71628452CD9EA470048648F /* main.cpp in Sources */,
-				B71628462CD9EA470048648F /* TextView.cpp in Sources */,
-				B71628472CD9EA470048648F /* decoder.cpp in Sources */,
-				B71628482CD9EA470048648F /* AudioWrapper.cpp in Sources */,
-				B71628492CD9EA470048648F /* ChartListItemView.cpp in Sources */,
-				B716284A2CD9EA470048648F /* MacNatives.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2249,6 +1898,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -2304,6 +1954,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -2318,6 +1969,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4U66W7TDBL;
@@ -2334,6 +1986,7 @@
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
 				);
 				INFOPLIST_FILE = OpenBMS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenBMS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music-games";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -2353,9 +2006,11 @@
 					"$(PROJECT_DIR)/lib",
 					"$(SDKROOT)/usr/lib/swift",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.snurhythm.OpenBMS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -2366,6 +2021,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4U66W7TDBL;
@@ -2378,6 +2034,7 @@
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
 				);
 				INFOPLIST_FILE = OpenBMS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenBMS;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music-games";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -2397,9 +2054,11 @@
 					"$(PROJECT_DIR)/lib",
 					"$(SDKROOT)/usr/lib/swift",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.snurhythm.OpenBMS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

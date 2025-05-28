@@ -108,14 +108,14 @@ bx::Vec3 Camera::deproject(float x, float y, float distance) {
   float ndcX = (2.0f * (x - this->x) / this->width) - 1.0f;
   float ndcY = 1.0f - (2.0f * (y - this->y) / this->height);
 
-  // Create a point in NDC space at the specified distance along the camera's view direction
+  // Create a point in NDC space at the specified distance along the camera's
+  // view direction
   bx::Vec3 pointInNDC(ndcX, ndcY, 1.0f);
 
   // Multiply by the inverse projection matrix to get the point in view space
   float invProjMtx[16];
   bx::mtxInverse(invProjMtx, projMtx);
   bx::Vec3 pointInView = bx::mul(pointInNDC, invProjMtx);
-
 
   // Scale by the distance along the view direction
   pointInView = bx::mul(pointInView, distance);
@@ -125,11 +125,10 @@ bx::Vec3 Camera::deproject(float x, float y, float distance) {
   bx::mtxInverse(invViewMtx, viewMtx);
   bx::Vec3 pointInWorld = bx::mul(pointInView, invViewMtx);
 
-
   return pointInWorld;
 }
 
 float Camera::getDistanceFromEye(bx::Vec3 point) {
   bx::Vec3 eyeToPoint = {point.x - eye.x, point.y - eye.y, point.z - eye.z};
   return bx::length(eyeToPoint);
- }
+}

@@ -59,7 +59,7 @@ void ImageView::freeTexture() {
 
 bool ImageView::setImage(const path_t &path) { return loadTexture(path); }
 void ImageView::freeImage() { freeTexture(); }
-void ImageView::render(RenderContext &context) {
+void ImageView::renderImpl(RenderContext &context) {
   if (!bgfx::isValid(texture)) {
     return;
   }

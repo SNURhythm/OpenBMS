@@ -33,6 +33,11 @@ public:
   std::list<bms_parser::LongNote *>
       orphanLongNotes; // long note whose head is dead but tail is alive
   size_t currentTimelineIndex = 0;
+  JudgeResult latestJudgeResult = JudgeResult(None, 0);
+  std::chrono::system_clock::time_point latestJudgeResultTime;
+  int latestCombo = 0;
+  int latestScore = 0;
+  void reset();
 };
 class BMSRenderer {
 private:
@@ -40,16 +45,17 @@ private:
   TextView *judgeText = nullptr;
   TextView *scoreText = nullptr;
   std::map<int, LaneState> laneStates;
-  JudgeResult latestJudgeResult = JudgeResult(None, 0);
-  std::chrono::system_clock::time_point latestJudgeResultTime;
-  int latestCombo = 0;
-  int latestScore = 0;
+
   float noteImageHeight = 0;
   float noteImageWidth = 0;
   std::vector<bms_parser::TimeLine *> timelines;
   BMSRendererState state;
+  int keyLaneCount;
   float noteRenderWidth = 1.0f;
   float noteRenderHeight = 1.0f;
+
+  float longBodyRenderHeightOff = 1.0f;
+  float longBodyRenderHeightOn = 1.0f;
   float lowerBound = -1.0f;
   float upperBound = 20.0f;
   float judgeY = 0.0f;
@@ -71,7 +77,21 @@ private:
   float laneToX(int lane);
   bgfx::TextureHandle noteTexture = BGFX_INVALID_HANDLE;
   bgfx::TextureHandle noteTexture2 = BGFX_INVALID_HANDLE;
-  bgfx::TextureHandle scratchTexture;
+  bgfx::TextureHandle longHeadTexture = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longBodyTextureOn = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longBodyTextureOff = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longTailTexture = BGFX_INVALID_HANDLE;
+
+  bgfx::TextureHandle longHeadTexture2 = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longBodyTextureOn2 = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longBodyTextureOff2 = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle longTailTexture2 = BGFX_INVALID_HANDLE;
+
+  bgfx::TextureHandle scratchTexture = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle scratchLongHeadTexture = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle scratchLongBodyTextureOn = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle scratchLongBodyTextureOff = BGFX_INVALID_HANDLE;
+  bgfx::TextureHandle scratchLongTailTexture = BGFX_INVALID_HANDLE;
   bms_parser::Chart *chart;
 
 public:
@@ -81,4 +101,5 @@ public:
   explicit BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming);
 
   void render(RenderContext &context, long long micro);
+  void reset();
 };

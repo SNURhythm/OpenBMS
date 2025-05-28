@@ -10,6 +10,7 @@
 
 class ImageView : public View {
 private:
+  void renderImpl(RenderContext &context) override;
   struct ImageCache {
     int width, height;
     unsigned char *data;
@@ -27,7 +28,7 @@ public:
   ~ImageView() override;
   bool setImage(const path_t &path);
   void freeImage();
-  void render(RenderContext &context) override;
+
   static void dropCache(const path_t &path);
   static void dropAllCache();
 };

@@ -21,10 +21,10 @@ void SpriteObject::renderImpl(RenderContext &context) {
   auto *index = (uint16_t *)tib.data;
 
   // Define the corners of the rectangle in local space (2D in X-Y plane)
-  vertices[0] = {0.0f, height, 0.0f, 0.0f, 1.0f * tileV}; // x, y, z, u, v
-  vertices[1] = {width, height, 0.0f, 1.0f * tileU, 1.0f * tileV};
-  vertices[2] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
-  vertices[3] = {width, 0.0f, 0.0f, 1.0f * tileU, 0.0f};
+  vertices[0] = {0.0f, height, 0.0f, 0.0f, 0.0f}; // x, y, z, u, v
+  vertices[1] = {width, height, 0.0f, 1.0f * tileU, 0.0f};
+  vertices[2] = {0.0f, 0.0f, 0.0f, 0.0f, 1.0f * tileV};
+  vertices[3] = {width, 0.0f, 0.0f, 1.0f * tileU, 1.0f * tileV};
 
   // Set up indices for two triangles (quad)
   index[0] = 0;

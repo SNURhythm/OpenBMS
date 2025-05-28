@@ -8,16 +8,19 @@
 #include <string>
 class Button : public View {
 private:
+  void renderImpl(RenderContext &context) override;
+  void handleEventsImpl(SDL_Event &event) override;
+
+private:
   std::function<void()> onClickListener;
   View *contentView;
 
 public:
   Button(int x, int y, int width, int height);
   ~Button() override;
-  void render(RenderContext &context) override;
+
   void onLayout() override;
 
-  void handleEvents(SDL_Event &event) override;
   void setOnClickListener(std::function<void()> listener);
   void setContentView(View *view);
 };

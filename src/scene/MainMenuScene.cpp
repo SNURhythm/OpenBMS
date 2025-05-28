@@ -117,20 +117,13 @@ void MainMenuScene::initView(ApplicationContext &context) {
   auto dbHelper = ChartDBHelper::GetInstance();
 
   recyclerView->onCreateView = [this](const bms_parser::ChartMeta &item) {
-    return new ChartListItemView(0, 0, rendering::window_width, 100, item.Title,
-                                 item.Artist, std::to_string(item.PlayLevel));
+    return new ChartListItemView(0, 0, rendering::window_width, 100, item);
   };
   recyclerView->itemHeight = 100;
   recyclerView->onBind = [this](View *view, const bms_parser::ChartMeta &item,
                                 int idx, bool isSelected) {
     auto *chartListItemView = dynamic_cast<ChartListItemView *>(view);
-    chartListItemView->setTitle(item.Title);
-    chartListItemView->setArtist(item.Artist);
-    chartListItemView->setLevel(std::to_string(item.PlayLevel));
-    if (!item.Banner.empty())
-      chartListItemView->setBanner(item.Folder / item.Banner);
-    else
-      chartListItemView->unsetBanner();
+    chartListItemView->setMeta(item);
     if (isSelected) {
       chartListItemView->onSelected();
     } else {
@@ -222,11 +215,11 @@ void MainMenuScene::initView(ApplicationContext &context) {
     if (text.empty()) {
       std::vector<bms_parser::ChartMeta> chartMetas;
       dbHelper.SelectAllChartMeta(db, chartMetas);
-      recyclerView->setItems(chartMetas);
+      recyclerView->setItems(std::move(chartMetas));
     } else {
       std::vector<bms_parser::ChartMeta> chartMetas;
       dbHelper.SearchChartMeta(db, text, chartMetas);
-      recyclerView->setItems(chartMetas);
+      recyclerView->setItems(std::move(chartMetas));
     }
   });
   left->addView(searchBox, {0, 50, 0});
@@ -276,7 +269,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
   addView(rootLayout);
   std::vector<bms_parser::ChartMeta> chartMetas;
   dbHelper.SelectAllChartMeta(db, chartMetas);
-  recyclerView->setItems(chartMetas);
+  recyclerView->setItems(std::move(chartMetas));
 }
 
 void MainMenuScene::update(float dt) {
@@ -379,7 +372,7 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
   chartMetas.clear();
   dbHelper.SelectAllChartMeta(db, chartMetas);
 
-  scene.recyclerView->setItems(chartMetas);
+  scene.recyclerView->setItems(std::move(chartMetas));
 }
 
 #ifdef _WIN32
@@ -395,7 +388,6 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
   if (hFind != INVALID_HANDLE_VALUE) {
     do {
       if (isCancelled) {
-        FindClose(hFind);
         break;
       }
       if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {

@@ -20,6 +20,8 @@ public:
 
   void seek(long long micro);
 
+  bool isRunning() const;
+
 private:
   std::chrono::high_resolution_clock::time_point start_time;
   bool running;

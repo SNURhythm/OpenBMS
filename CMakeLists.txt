@@ -19,15 +19,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# Compiler options
-#add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedantic -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -g)
-# for msvc
-add_compile_options(/Zc:__cplusplus)
+
+
 # Include directories
 include_directories(include)
 include_directories(bgfx/bgfx/include)
@@ -55,6 +53,10 @@ if (MSVC)
     include_directories(bgfx/bx/include/compat/msvc)
 endif ()
 
+# Add Yoga include directories
+include_directories(yoga)
+include_directories(yoga/lib)
+
 # Source directory
 set(SRC_DIR src)
 
@@ -76,8 +78,12 @@ set(FFMPEG_LIBS
         x264
 )
 # Platform-specific settings
+if (NOT WIN32)
+    add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedantic -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -g)
+endif ()
 if (WIN32)
-
+    # for msvc
+    add_compile_options(/Zc:__cplusplus /Zc:preprocessor /wd4819)
     add_definitions(-DSTBI_WINDOWS_UTF8)
     find_package(SndFile CONFIG REQUIRED)
     set(CP_ASSETS "xcopy /s /i assets ${BUILD_DIR}\\assets /Y")
@@ -172,7 +178,7 @@ add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 # Main executable
 add_executable(main)
 
-target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${FFMPEG_LIBS} ${LUA_LIB} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx)
+target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${FFMPEG_LIBS} ${LUA_LIB} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx yogacore)
 
 # Custom target for copying assets
 add_custom_command(
@@ -195,12 +201,18 @@ endif ()
 
 
 
-# Copy shaders
-add_custom_command(
-        TARGET main POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
+file(GLOB_RECURSE SHADER_FILES 
+    "${CMAKE_SOURCE_DIR}/shaders/*.*"
 )
 
+# Add a custom target that depends on all shader files
+add_custom_target(copy_shaders ALL
+    DEPENDS ${SHADER_FILES}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
+)
+
+# Make the main target depend on shader copying
+add_dependencies(main copy_shaders)
 # Installation rules
 install(TARGETS main DESTINATION bin)
 install(DIRECTORY assets DESTINATION bin)
@@ -209,6 +221,7 @@ install(DIRECTORY assets DESTINATION bin)
 
 add_subdirectory(bgfx)
 add_subdirectory(src)
+add_subdirectory(yoga)
 #add_subdirectory(libsndfile)
 # # Add pre-generated Xcode projects as subprojects
 # set_property(GLOBAL PROPERTY USE_FOLDERS ON)

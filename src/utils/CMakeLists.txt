@@ -1,1 +1,1 @@
-target_sources(main PRIVATE Stopwatch.cpp)
+target_sources(main PRIVATE Stopwatch.cpp SpriteLoader.cpp)

@@ -7,14 +7,13 @@
 Button::Button(int x, int y, int width, int height)
     : View(x, y, width, height) {}
 
-void Button::render(RenderContext &context) {
+void Button::renderImpl(RenderContext &context) {
   context.scissor.x = getX();
   context.scissor.y = getY();
   context.scissor.width = getWidth();
   context.scissor.height = getHeight();
 
   if (contentView) {
-
     contentView->render(context);
   }
 }
@@ -36,7 +35,7 @@ void Button::onLayout() {
   }
 }
 
-void Button::handleEvents(SDL_Event &event) {
+void Button::handleEventsImpl(SDL_Event &event) {
   if (contentView) {
     contentView->handleEvents(event);
   }

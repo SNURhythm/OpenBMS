@@ -8,6 +8,19 @@ struct Padding {
   int left, top, right, bottom;
 };
 class Layout : public View {
+private:
+  void renderImpl(RenderContext &context) override {
+    for (auto &view : views) {
+      view->render(context);
+    }
+  }
+
+  inline void handleEventsImpl(SDL_Event &event) override {
+    for (auto &view : views) {
+      view->handleEvents(event);
+    }
+  }
+
 public:
   inline Layout(int x, int y, int width, int height)
       : View(x, y, width, height) {}
@@ -23,16 +36,6 @@ public:
   inline void removeAllViews() {
     views.clear();
     layout();
-  }
-  void render(RenderContext &context) override {
-    for (auto &view : views) {
-      view->render(context);
-    }
-  }
-  inline void handleEvents(SDL_Event &event) override {
-    for (auto &view : views) {
-      view->handleEvents(event);
-    }
   }
 
   virtual void layout() = 0;

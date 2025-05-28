@@ -8,7 +8,8 @@
 #include "../../bms_parser.hpp"
 #include "../../input/IRhythmControl.h"
 #include "../../view/TextView.h"
-
+class Button;
+class LinearLayout;
 struct StartOptions {
   unsigned long long startPosition = 0;
   bool autoKeySound = false;
@@ -39,8 +40,12 @@ public:
   int pressLane(int lane, double inputDelay) override;
   int pressLane(int mainLane, int compensateLane, double inputDelay) override;
   void releaseLane(int lane, double inputDelay) override;
+  EventHandleResult handleEvents(SDL_Event &event) override;
 
 private:
+  void reset();
+  LinearLayout *pauseLayout = nullptr;
+  Button *pauseButton = nullptr;
   Judge judge;
   StartOptions options;
   void checkPassedTimeline(long long time);

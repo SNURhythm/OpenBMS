@@ -6,16 +6,27 @@
 #include "../../view/TextView.h"
 #include "BMSRenderer.h"
 #include "../../input/RhythmInputHandler.h"
+#include "../../view/Button.h"
+#include "../../scene/MainMenuScene.h"
+#include "../../view/LinearLayout.h"
 void GamePlayScene::init() {
   auto chartNameText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
-  chartNameText->setText("Selected: " + chart->Meta.Title);
+  chartNameText->setText(chart->Meta.Title);
   chartNameText->setPosition(10, 10);
   addView(chartNameText);
   renderer = new BMSRenderer(chart, judge.timingWindows[Bad].second);
-  state = new RhythmState(chart, false);
-  context.jukebox.schedule(*chart, false, isCancelled);
-  context.jukebox.play();
-  state->isPlaying = true;
+  context.jukebox.stop();
+  // NOTE: should be set before "reset" call to avoid race condition with onTick
+  // callback call
+  context.jukebox.onTick([this](long long time) {
+    if (state != nullptr && state->isPlaying) {
+      checkPassedTimeline(time);
+      if (state->passedMeasureCount == chart->Measures.size()) {
+        //        SDL_Log("All measures passed");
+      }
+    }
+  });
+  reset();
   inputHandler = new RhythmInputHandler(this, chart->Meta);
   inputHandler->startListenSDL();
   inputHandler->startListenTouch();
@@ -25,19 +36,113 @@ void GamePlayScene::init() {
     SDL_Log("Setting lane %d to false", lane);
     lanePressed[lane] = false;
   }
-  context.jukebox.onTick([this](long long time) {
-    if (state != nullptr && state->isPlaying) {
-      checkPassedTimeline(time);
-      if (state->passedMeasureCount == chart->Measures.size()) {
-        SDL_Log("All measures passed");
+
+  /* pause screen */
+  pauseLayout =
+      new LinearLayout(0, 0, rendering::window_width, rendering::window_height,
+                       Orientation::VERTICAL);
+  pauseLayout->setAlign(LinearLayout::CENTER);
+  {
+    auto spacer1 = new LinearLayout(0, 0, 0, 0, Orientation::VERTICAL);
+    pauseLayout->addView(spacer1, {0, 0, 1});
+    auto pauseScreen = new LinearLayout(0, 0, 0, 0, Orientation::VERTICAL);
+    pauseScreen->setAlign(LinearLayout::CENTER);
+    {
+      auto pauseText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
+      pauseText->setText("Paused");
+      pauseText->setAlign(TextView::CENTER);
+      pauseScreen->addView(pauseText, {0, 0, 1});
+      auto resumeButton = new Button(0, 0, 0, 0);
+      auto resumeText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
+      resumeText->setText("Resume");
+      resumeText->setAlign(TextView::CENTER);
+      resumeButton->setContentView(resumeText);
+      resumeButton->setOnClickListener([this]() {
+        context.jukebox.resume();
+        pauseLayout->setVisible(false);
+      });
+      pauseScreen->addView(resumeButton, {0, 0, 1});
+      auto restartButton = new Button(0, 0, 0, 0);
+      auto restartText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
+      restartText->setText("Restart");
+      restartText->setAlign(TextView::CENTER);
+      restartButton->setContentView(restartText);
+      restartButton->setOnClickListener([this]() {
+        pauseLayout->setVisible(false);
+        defer(
+            [this]() {
+              reset();
+              return true;
+            },
+            0, true);
+      });
+      pauseScreen->addView(restartButton, {0, 0, 1});
+      auto exitButton = new Button(0, 0, 0, 0);
+      auto exitText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
+      exitText->setText("Exit");
+      exitText->setAlign(TextView::CENTER);
+      exitButton->setContentView(exitText);
+      exitButton->setOnClickListener([this]() {
+        context.jukebox.stop();
+        defer(
+            [this]() {
+              context.sceneManager->changeScene(new MainMenuScene(context));
+              return false;
+            },
+            0, true);
+      });
+      pauseScreen->addView(exitButton, {0, 0, 1});
+    }
+
+    pauseLayout->addView(pauseScreen, {200, 200, 0});
+    auto spacer2 = new LinearLayout(0, 0, 200, 0, Orientation::VERTICAL);
+    pauseLayout->addView(spacer2, {0, 0, 1});
+  }
+  pauseLayout->setVisible(false);
+  addView(pauseLayout);
+
+  /* pause button */
+  pauseButton = new Button(rendering::window_width - 40, 10, 40, 40);
+  auto pauseText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
+  pauseText->setText("| |");
+  pauseText->setAlign(TextView::CENTER);
+  pauseButton->setContentView(pauseText);
+  pauseButton->setOnClickListener([this]() {
+    context.jukebox.pause();
+    pauseLayout->setVisible(true);
+  });
+  addView(pauseButton);
+}
+
+void GamePlayScene::reset() {
+  if (state != nullptr) {
+    delete state;
+    state = nullptr;
+  }
+  renderer->reset();
+  // reset all notes
+  for (const auto &measure : chart->Measures) {
+    for (const auto &timeline : measure->TimeLines) {
+      for (const auto &note : timeline->Notes) {
+        if (note == nullptr) {
+          continue;
+        }
+        note->Reset();
       }
     }
-  });
+  }
+  context.jukebox.stop();
+  context.jukebox.schedule(*chart, false, isCancelled);
+  context.jukebox.play();
+  state = new RhythmState(chart, false);
+  state->isPlaying = true;
 }
 void GamePlayScene::update(float dt) {}
 
 void GamePlayScene::renderScene() {
   RenderContext renderContext;
+  pauseLayout->setSize(rendering::window_width, rendering::window_height);
+  pauseButton->setPosition(rendering::window_width - 40, 10);
   renderer->render(renderContext, context.jukebox.getTimeMicros());
   context.jukebox.render();
   std::string str;
@@ -47,12 +152,20 @@ void GamePlayScene::renderScene() {
   laneStateText->setText(str);
   laneStateText->render(renderContext);
 }
-void GamePlayScene::cleanupScene() { context.jukebox.removeOnTick(); }
+void GamePlayScene::cleanupScene() {
+  context.jukebox.removeOnTick();
+  inputHandler->stopListen();
+  delete inputHandler;
+  inputHandler = nullptr;
+}
 int GamePlayScene::pressLane(int lane, double inputDelay) {
   return pressLane(lane, lane, inputDelay);
 }
 int GamePlayScene::pressLane(int mainLane, int compensateLane,
                              double inputDelay) {
+  if (context.jukebox.isPaused()) {
+    return mainLane;
+  }
   std::vector<int> candidates;
   if (lanePressed.contains(mainLane) && !lanePressed[mainLane]) {
     candidates.push_back(mainLane);
@@ -330,4 +443,20 @@ void GamePlayScene::releaseNote(bms_parser::Note *Note,
   const auto HeadJudgeResult =
       judge.judgeNow(LongNote->Head, LongNote->Head->PlayedTime);
   onJudge(HeadJudgeResult);
+}
+
+EventHandleResult GamePlayScene::handleEvents(SDL_Event &event) {
+  Scene::handleEvents(event);
+  if (event.type == SDL_KEYDOWN) {
+    if (event.key.keysym.sym == SDLK_ESCAPE) {
+      if (context.jukebox.isPaused()) {
+        context.jukebox.resume();
+        pauseLayout->setVisible(false);
+      } else {
+        context.jukebox.pause();
+        pauseLayout->setVisible(true);
+      }
+    }
+  }
+  return {};
 }
