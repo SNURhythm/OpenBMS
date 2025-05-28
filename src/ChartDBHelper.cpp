@@ -169,13 +169,13 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
   ToRelativePath(folder);
   sqlite3_bind_text(stmt, 9, path_t_to_utf8(fspath_to_path_t(folder)).c_str(),
                     -1, SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 10, chartMeta.StageFile.string().c_str(), -1,
+  sqlite3_bind_text(stmt, 10, path_t_to_utf8(fspath_to_path_t(chartMeta.StageFile)).c_str(), -1,
                     SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 11, chartMeta.Banner.string().c_str(), -1,
+  sqlite3_bind_text(stmt, 11, path_t_to_utf8(fspath_to_path_t(chartMeta.Banner)).c_str(), -1,
                     SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 12, chartMeta.BackBmp.string().c_str(), -1,
+  sqlite3_bind_text(stmt, 12, path_t_to_utf8(fspath_to_path_t(chartMeta.BackBmp)).c_str(), -1,
                     SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 13, chartMeta.Preview.string().c_str(), -1,
+  sqlite3_bind_text(stmt, 13, path_t_to_utf8(fspath_to_path_t(chartMeta.Preview)).c_str(), -1,
                     SQLITE_TRANSIENT);
   sqlite3_bind_double(stmt, 14, chartMeta.PlayLevel);
   sqlite3_bind_int(stmt, 15, chartMeta.Difficulty);
@@ -351,14 +351,10 @@ bool ChartDBHelper::ClearChartMeta(sqlite3 *db) {
 bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
   int idx = 0;
   bms_parser::ChartMeta chartMeta;
-#ifdef _WIN32
-  const wchar_t* t = reinterpret_cast<const wchar_t *>(sqlite3_column_text16(stmt, idx++));
-#else
-  const char* t = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
-#endif
-  std::filesystem::path path = std::filesystem::path(t
-      );
-      ToAbsolutePath(path);
+  auto t = ReadPath(stmt, idx++);
+
+  std::filesystem::path path = std::filesystem::path(t);
+  ToAbsolutePath(path);
   chartMeta.BmsPath = path;
   chartMeta.MD5 = std::string(
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
@@ -374,22 +370,18 @@ bms_parser::ChartMeta ChartDBHelper::ReadChartMeta(sqlite3_stmt *stmt) {
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
   chartMeta.SubArtist = std::string(
       reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-#ifdef _WIN32
-  const wchar_t* folder_char = reinterpret_cast<const wchar_t *>(sqlite3_column_text16(stmt, idx++));
-#else
-  const char* folder_char = reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++));
-#endif
+  auto folder_char = ReadPath(stmt, idx++);
   std::filesystem::path folder = std::filesystem::path(folder_char);
   ToAbsolutePath(folder);
   chartMeta.Folder = folder;
-  chartMeta.StageFile = std::filesystem::path(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.Banner = std::filesystem::path(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.BackBmp = std::filesystem::path(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
-  chartMeta.Preview = std::filesystem::path(
-      reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx++)));
+  auto stage_file_char = ReadPath(stmt, idx++);
+  chartMeta.StageFile = std::filesystem::path(stage_file_char);
+  auto banner_char = ReadPath(stmt, idx++);
+  chartMeta.Banner = std::filesystem::path(banner_char);
+  auto back_bmp_char = ReadPath(stmt, idx++);
+  chartMeta.BackBmp = std::filesystem::path(back_bmp_char);
+  auto preview_char = ReadPath(stmt, idx++);
+  chartMeta.Preview = std::filesystem::path(preview_char);
 
   chartMeta.PlayLevel = sqlite3_column_double(stmt, idx++);
   chartMeta.Difficulty = sqlite3_column_int(stmt, idx++);

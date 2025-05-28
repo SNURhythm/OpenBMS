@@ -65,7 +65,7 @@ set(BUILD_DIR ${CMAKE_BINARY_DIR}/build)
 
 # Libraries directory
 set(LIB_DIR lib)
-add_definitions(-DBX_CONFIG_DEBUG=0 -DSOL_LUAJIT=1)
+add_definitions(-DBX_CONFIG_DEBUG=0 -DSOL_LUAJIT=1 -DNOMINMAX)
 set(FFMPEG_LIBS
         avcodec
         avfilter
@@ -80,10 +80,10 @@ set(FFMPEG_LIBS
 # Platform-specific settings
 # for msvc
 if (MSVC)
-    add_compile_options(/Zc:__cplusplus /Zc:preprocessor /wd4819)
-else()
+    add_compile_options(/Zc:__cplusplus /Zc:preprocessor /wd4819 /utf-8)
+else ()
     add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedantic -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -g)
-endif()
+endif ()
 if (WIN32)
 
     add_definitions(-DSTBI_WINDOWS_UTF8)
