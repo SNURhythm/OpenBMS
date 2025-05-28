@@ -9,14 +9,15 @@
 class Button : public View {
 private:
   void renderImpl(RenderContext &context) override;
-  void handleEventsImpl(SDL_Event &event) override;
+  bool handleEventsImpl(SDL_Event &event) override;
 
 private:
   std::function<void()> onClickListener;
   View *contentView;
 
 public:
-  Button(int x, int y, int width, int height);
+  Button() : View() {}
+  Button(int x, int y, int width, int height) : View(x, y, width, height) {}
   ~Button() override;
 
   void onLayout() override;

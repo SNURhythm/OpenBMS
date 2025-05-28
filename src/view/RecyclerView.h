@@ -18,7 +18,6 @@
 template <typename T> class RecyclerView : public View {
 private:
   void renderImpl(RenderContext &context) override {
-
     if (!touchDragging && touchDragged) {
       touchScrollSpeed *= 0.98;
       if (touchScrollSpeedReal > 0.01f || touchScrollSpeedReal < -0.01f) {
@@ -134,7 +133,7 @@ private:
     //                  10, this->getHeight());
   }
 
-  inline void handleEventsImpl(SDL_Event &event) override {
+  inline bool handleEventsImpl(SDL_Event &event) override {
     switch (event.type) {
     case SDL_KEYDOWN: {
       bool changed = false;
@@ -193,11 +192,13 @@ private:
       // check mouse position
       int x, y;
       SDL_GetMouseState(&x, &y);
+      SDL_Log("mouse wheel: %d, %d, %d, %d, %d, %d", x, y, this->getX(),
+              this->getY(), this->getWidth(), this->getHeight());
       if (x < this->getX() || x > this->getX() + this->getWidth()) {
-        return;
+        return true;
       }
       if (y < this->getY() || y > this->getY() + this->getHeight()) {
-        return;
+        return true;
       }
       scrollOffset -= event.wheel.y * 15.0f;
       if (scrollOffset < 0) {
@@ -213,32 +214,32 @@ private:
     case SDL_MOUSEBUTTONUP:
     case SDL_MOUSEBUTTONDOWN: {
       if (touchDragging) {
-        return;
+        return true;
       }
       if (event.type == SDL_MOUSEBUTTONDOWN &&
           event.button.button != SDL_BUTTON_LEFT) {
-        return;
+        return true;
       }
       // ignore touch
       if (event.button.which == SDL_TOUCH_MOUSEID &&
           event.type == SDL_MOUSEBUTTONDOWN) {
-        return;
+        return true;
       }
 
       // ignore mouse up
       if (event.type == SDL_MOUSEBUTTONUP &&
           event.button.button == SDL_BUTTON_LEFT &&
           event.button.which != SDL_TOUCH_MOUSEID) {
-        return;
+        return true;
       }
 
       int x, y;
       SDL_GetMouseState(&x, &y);
       if (x < this->getX() || x > this->getX() + this->getWidth()) {
-        return;
+        return true;
       }
       if (y < this->getY() || y > this->getY() + this->getHeight()) {
-        return;
+        return true;
       }
       int index = (y - this->getY() + scrollOffset) / itemHeight;
       if (index >= 0 && index < items.size()) {
@@ -267,10 +268,10 @@ private:
       float touchY = (normY * windowHeight);
 
       if (touchX < this->getX() || touchX > this->getX() + this->getWidth()) {
-        return;
+        return true;
       }
       if (touchY < this->getY() || touchY > this->getY() + this->getHeight()) {
-        return;
+        return true;
       }
       touchLastY = touchY;
       touchScrollSpeedReal = 0;
@@ -280,7 +281,7 @@ private:
     }
     case SDL_FINGERMOTION: {
       if (event.tfinger.fingerId != touchId) {
-        return;
+        return true;
       }
       // Get the normalized touch coordinates
       float normX = event.tfinger.x;
@@ -296,10 +297,10 @@ private:
       int touchY = static_cast<int>(normY * windowHeight);
 
       if (touchX < this->getX() || touchX > this->getX() + this->getWidth()) {
-        return;
+        return true;
       }
       if (touchY < this->getY() || touchY > this->getY() + this->getHeight()) {
-        return;
+        return true;
       }
       scrollOffset += (touchLastY - touchY);
       touchScrollInertia = 1.2f * (touchLastY - touchY);
@@ -335,13 +336,13 @@ private:
       break;
     }
     }
+    return true;
   }
 
 public:
-  inline RecyclerView(int x, int y, int width, int height,
-                      std::function<bool(const T &, const T &)> itemComparator)
+  inline RecyclerView(std::function<bool(const T &, const T &)> itemComparator)
       : scrollOffset(0), itemHeight(100), topMargin(1), bottomMargin(1),
-        itemComparator(itemComparator), View(x, y, width, height) {}
+        itemComparator(itemComparator), View() {}
   inline ~RecyclerView() {
     for (auto entry : viewEntries) {
       recycleView(entry.first);
@@ -476,10 +477,11 @@ private:
         }
       }
       // update the position of the view
+
       view->setPosition(this->getX(),
-                        this->getY() + (i * itemHeight) - scrollOffset);
+                        this->getY() + (i * itemHeight) - scrollOffset,
+                        YGPositionType::YGPositionTypeAbsolute);
       view->setSize(this->getWidth(), itemHeight);
-      //   SDL_Log("View position: %d, %d", view->x, view->y);
 
       newVisibleItems.push_back(std::make_pair(view, item));
     }
@@ -524,7 +526,10 @@ private:
 protected:
   inline void onResize(int newWidth, int newHeight) override {
     View::onResize(newWidth, newHeight);
-    SDL_Log("RecyclerView::onResize");
+    updateVisibleItems();
+  }
+  void onLayout() override {
+    View::onLayout();
     updateVisibleItems();
   }
 };

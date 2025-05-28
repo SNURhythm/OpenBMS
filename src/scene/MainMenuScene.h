@@ -1,6 +1,5 @@
 #pragma once
 #include "../view/RecyclerView.h"
-#include "../view/LinearLayout.h"
 #include "Scene.h"
 #include "../ChartDBHelper.h"
 #include "../path.h"
@@ -30,7 +29,7 @@ private:
   std::thread loadThread;
   std::thread checkEntriesThread;
   RecyclerView<bms_parser::ChartMeta> *recyclerView = nullptr;
-  LinearLayout *rootLayout = nullptr;
+  View *rootLayout = nullptr;
 
   void initView(ApplicationContext &context);
   static void CheckEntries(ApplicationContext &context, MainMenuScene &scene);

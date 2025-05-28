@@ -29,7 +29,7 @@ public:
   [[nodiscard]] inline bool getSelected() const { return isSelected; }
 
 private:
-  void handleEventsImpl(SDL_Event &event) override;
+  bool handleEventsImpl(SDL_Event &event) override;
   void renderImpl(RenderContext &context) override;
   std::string editingText;
   std::string composition;

@@ -4,3 +4,15 @@ xcuserdata/
 ## Xcode 8 and earlier
 *.xcscmblueprint
 *.xccheckout
+
+## cocoapods
+Pods/
+
+vendor/
+
+.env
+
+## fastlane outputs
+*.ipa
+*.dSYM.zip
+fastlane/report.xml
