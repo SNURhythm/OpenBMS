@@ -19,3 +19,4 @@ typedef std::string path_t;
 #endif
 
 std::string path_t_to_utf8(const path_t &input);
+path_t utf8_to_path_t(const std::string &input);

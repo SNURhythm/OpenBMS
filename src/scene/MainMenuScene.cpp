@@ -353,14 +353,16 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
         bms_parser::Chart *chart;
         std::atomic_bool cancel(false);
         bms_parser::ChartMeta chartMeta;
-        try {
-          parser.Parse(diffs[i].path, &chart, false, true, cancel);
-        } catch (std::exception &e) {
-          delete chart;
-          std::cerr << "Error parsing " << diffs[i].path << ": " << e.what()
-                    << std::endl;
-          continue;
-        }
+        // try {
+        parser.Parse(diffs[i].path, &chart, false, true, cancel);
+        // } catch (std::exception &e) {
+        //   delete chart;
+        //   SDL_Log("Error parsing %s:",
+        //   path_t_to_utf8(diffs[i].path).c_str()); std::cerr << "Error parsing
+        //   " << diffs[i].path << ": " << e.what()
+        //             << std::endl;
+        //   continue;
+        // }
 
         if (chart == nullptr)
           continue;
