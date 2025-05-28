@@ -80,7 +80,7 @@ set(FFMPEG_LIBS
 # Platform-specific settings
 # for msvc
 if (MSVC)
-    add_compile_options(/Zc:__cplusplus /Zc:preprocessor /wd4819)
+    add_compile_options(/Zc:__cplusplus /Zc:preprocessor)
 else()
     add_compile_options(-Wno-strict-prototypes -Wno-unused-but-set-variable -pedantic -Wno-ignored-attributes -Wstrict-aliasing -Wstrict-overflow -g)
 endif()
