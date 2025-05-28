@@ -72,21 +72,36 @@ void RhythmInputHandler::stopListen() {
     }
   }
 }
+int RhythmInputHandler::clampLane(int lane) const
+{
+	if (lane < 0)
+	{
+		return 7; // left scratch
+	}
+	if (lane >= keyLaneCount)
+	{
+		return isDP ? 15 : 7; // right scratch
+	}
+	if (lane >= 7 && keyLaneCount == 14)
+	{
+		// 14Keys: 7 is scratch, so we should map 7~13 to 8~14
+		lane += 1;
+	}
+	if (lane >= 5 && keyLaneCount == 10)
+	{
+		// 10Keys: 5,6 is empty and 7 is scratch, so we should map 5~9 to 8~12
+		lane += 3;
+	}
+	return lane;
+}
 int RhythmInputHandler::touchToLane(Vector3 location) {
   float distance = rendering::game_camera.getDistanceFromEye({4.0, 2, 0});
   float z = distance - sin(atan2(0.5, 2.1)) * 2;
   bx::Vec3 position =
       rendering::game_camera.deproject(location.x, location.y, z);
-  int line = (int)position.x - 1;
-  if (line < 0) {
-    line = 7;
-  } else if (line > keyMode - 1) {
-    if (keyMode >= 10) {
-      line = 15;
-    } else {
-      line = 7;
-    }
-  }
+  int line = (int)(position.x * totalLaneCount / 8.0f) - 1;
+  line = clampLane(line);
+  SDL_Log("Touch to lane: %d", line);
   return line;
 }
 RhythmInputHandler::RhythmInputHandler(IRhythmControl *control,
@@ -152,5 +167,7 @@ RhythmInputHandler::RhythmInputHandler(IRhythmControl *control,
         // Rscratch: RShift
         {SDL_KeyCode::SDLK_RSHIFT, 15}}}};
   keyMap = DefaultKeyMap[meta.KeyMode];
-  keyMode = meta.KeyMode;
+  keyLaneCount = meta.GetKeyLaneCount();
+  totalLaneCount = meta.GetTotalLaneCount();
+  isDP = meta.IsDP;
 }

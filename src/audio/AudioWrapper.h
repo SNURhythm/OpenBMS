@@ -5,11 +5,12 @@
 #include <string>
 #include <vector>
 #include "../path.h"
+#include "../utils/Stopwatch.h"
 #include <mutex>
 #include <atomic>
 // Custom data structure to hold PCM data and playback state
 struct SoundData {
-  std::vector<short> pcmData;
+
   size_t currentFrame;
   int channels;
   int originalSampleRate;
@@ -19,12 +20,13 @@ struct SoundData {
   size_t resampledFrameCount;
 };
 struct UserData {
+  Stopwatch *stopwatch;
   std::mutex *mutex;
   std::vector<std::shared_ptr<SoundData>> *soundDataList;
 };
 class AudioWrapper {
 public:
-  AudioWrapper();
+  AudioWrapper(Stopwatch *stopwatch);
   ~AudioWrapper();
   bool loadSound(const path_t &path, std::atomic<bool> &isCancelled);
   void preloadSounds(const std::vector<path_t> &paths,
@@ -42,4 +44,5 @@ private:
       soundDataIndexMap; // Map to store index of SoundData in soundDataList
   std::mutex soundDataListMutex;
   UserData userData;
+  Stopwatch *stopwatch;
 };

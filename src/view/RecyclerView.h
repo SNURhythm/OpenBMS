@@ -16,77 +16,8 @@
 #include <algorithm>
 
 template <typename T> class RecyclerView : public View {
-public:
-  inline RecyclerView(int x, int y, int width, int height,
-                      std::function<bool(const T &, const T &)> itemComparator)
-      : scrollOffset(0), itemHeight(100), topMargin(1), bottomMargin(1),
-        itemComparator(itemComparator), View(x, y, width, height) {}
-  inline ~RecyclerView() {
-    for (auto entry : viewEntries) {
-      recycleView(entry.first);
-    }
-    for (auto view : recycledViewEntries) {
-      delete view;
-    }
-  }
-
-  // scroll offset in pixels
-  float scrollOffset;
-
-  // fixed height of all items in the list
-  int itemHeight;
-  int topMargin;    // Number of items to keep ready above the visible area
-  int bottomMargin; // Number of items to keep ready below the visible area
-
-  inline void setItems(const std::vector<T> &items) {
-    this->items = items;
-    // reset selected index
-    selectedIndex = -1;
-    // reset scroll offset
-    scrollOffset = 0;
-    updateVisibleItems();
-  }
-
-  inline void push(T item) {
-    items.push_back(item);
-    updateVisibleItems();
-  }
-
-  inline void pop() {
-    items.pop_back();
-    updateVisibleItems();
-  }
-
-  inline void remove(int index) {
-    items.erase(items.begin() + index);
-    updateVisibleItems();
-  }
-
-  inline void clear() {
-    items.clear();
-    for (auto view : viewEntries) {
-      recycleView(view);
-    }
-    viewEntries.clear();
-  }
-
-  inline T get(int index) { return items[index]; }
-
-  inline int size() { return items.size(); }
-
-  inline std::vector<T> getItems() { return items; }
-
-  // on bound to the view (delegate)
-  std::function<void(View *, T, int, bool isSelected)> onBind;
-  std::function<View *(T)> onCreateView;
-  std::function<bool(const T &, const T &)> itemComparator;
-
-  // on click
-  std::function<void(T, int)> onSelected;
-  std::function<void(T, int)> onUnselected;
-  int selectedIndex = -1;
-
-  void render(RenderContext &context) override {
+private:
+  void renderImpl(RenderContext &context) override {
 
     if (!touchDragging && touchDragged) {
       touchScrollSpeed *= 0.98;
@@ -203,7 +134,7 @@ public:
     //                  10, this->getHeight());
   }
 
-  inline void handleEvents(SDL_Event &event) override {
+  inline void handleEventsImpl(SDL_Event &event) override {
     switch (event.type) {
     case SDL_KEYDOWN: {
       bool changed = false;
@@ -405,6 +336,85 @@ public:
     }
     }
   }
+
+public:
+  inline RecyclerView(int x, int y, int width, int height,
+                      std::function<bool(const T &, const T &)> itemComparator)
+      : scrollOffset(0), itemHeight(100), topMargin(1), bottomMargin(1),
+        itemComparator(itemComparator), View(x, y, width, height) {}
+  inline ~RecyclerView() {
+    for (auto entry : viewEntries) {
+      recycleView(entry.first);
+    }
+    for (auto view : recycledViewEntries) {
+      delete view;
+    }
+  }
+
+  // scroll offset in pixels
+  float scrollOffset;
+
+  // fixed height of all items in the list
+  int itemHeight;
+  int topMargin;    // Number of items to keep ready above the visible area
+  int bottomMargin; // Number of items to keep ready below the visible area
+
+  inline void setItems(const std::vector<T> &&items) {
+    this->items = std::move(items);
+    // reset selected index
+    selectedIndex = -1;
+    // reset scroll offset
+    scrollOffset = 0;
+    updateVisibleItems();
+  }
+
+  inline void setItems(const std::vector<T> &items) {
+    this->items = items;
+    // reset selected index
+    selectedIndex = -1;
+    // reset scroll offset
+    scrollOffset = 0;
+    updateVisibleItems();
+  }
+
+  inline void push(T item) {
+    items.push_back(item);
+    updateVisibleItems();
+  }
+
+  inline void pop() {
+    items.pop_back();
+    updateVisibleItems();
+  }
+
+  inline void remove(int index) {
+    items.erase(items.begin() + index);
+    updateVisibleItems();
+  }
+
+  inline void clear() {
+    items.clear();
+    for (auto view : viewEntries) {
+      recycleView(view);
+    }
+    viewEntries.clear();
+  }
+
+  inline T get(int index) { return items[index]; }
+
+  inline int size() { return items.size(); }
+
+  inline std::vector<T> getItems() { return items; }
+
+  // on bound to the view (delegate)
+  std::function<void(View *, T, int, bool isSelected)> onBind;
+  std::function<View *(T)> onCreateView;
+  std::function<bool(const T &, const T &)> itemComparator;
+
+  // on click
+  std::function<void(T, int)> onSelected;
+  std::function<void(T, int)> onUnselected;
+  int selectedIndex = -1;
 
   inline View *getViewByIndex(int index) {
     if (idxToView.find(index) != idxToView.end()) {

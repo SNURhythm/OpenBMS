@@ -2,11 +2,18 @@
 #include <SDL2/SDL.h>
 #include <thread>
 #include "../Utils.h"
-#include "../video/transcode.h"
+#include "../game/GameState.h"
 #include "../rendering/common.h"
-Jukebox::Jukebox() {}
+#include "../rendering/ShaderManager.h"
+#include "bgfx/bgfx.h"
+#include <stb_image.h>
+Jukebox::Jukebox(Stopwatch *stopwatch)
+    : audio(stopwatch), stopwatch(stopwatch) {
+  s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+}
 
 Jukebox::~Jukebox() {
+  bgfx::destroy(s_texColor);
   isPlaying = false;
   if (playThread.joinable())
     playThread.join();
@@ -15,6 +22,9 @@ Jukebox::~Jukebox() {
   for (auto &videoPlayer : videoPlayerTable) {
     delete videoPlayer.second;
   }
+  for (auto &image : imageTable) {
+    bgfx::destroy(image.second.texture);
+  }
 }
 void Jukebox::render() {
   if (currentBga != -1) {
@@ -22,8 +32,25 @@ void Jukebox::render() {
       auto videoPlayer = videoPlayerTable[currentBga];
       videoPlayer->viewWidth = rendering::window_width;
       videoPlayer->viewHeight = rendering::window_height;
+      videoPlayer->viewId = rendering::bga_view;
       videoPlayer->update();
       videoPlayer->render();
+    } else if (imageTable.find(currentBga) != imageTable.end()) {
+      auto image = imageTable[currentBga];
+      renderImage(image, rendering::bga_view);
+    }
+  }
+  if (currentBmpLayer != -1) {
+    if (videoPlayerTable.find(currentBmpLayer) != videoPlayerTable.end()) {
+      auto videoPlayer = videoPlayerTable[currentBmpLayer];
+      videoPlayer->viewWidth = rendering::window_width;
+      videoPlayer->viewHeight = rendering::window_height;
+      videoPlayer->viewId = rendering::bga_layer_view;
+      videoPlayer->update();
+      videoPlayer->render();
+    } else if (imageTable.find(currentBmpLayer) != imageTable.end()) {
+      auto image = imageTable[currentBmpLayer];
+      renderImage(image, rendering::bga_layer_view);
     }
   }
 }
@@ -103,10 +130,11 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart,
         //   }
         // }
         // new video player
-        auto videoPlayer = new VideoPlayer();
+        auto videoPlayer = new VideoPlayer(stopwatch);
         path_t p = fspath_to_path_t(path);
 
         if (videoPlayer->loadVideo(path_t_to_utf8(p), isCancelled)) {
+          std::lock_guard<std::mutex> lock(videoPlayerTableMutex);
           videoPlayerTable[bmp->first] = videoPlayer;
 
           SDL_Log("video width: %f, video height: %f", videoPlayer->viewWidth,
@@ -123,7 +151,38 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart,
 
       // if not found, fall back to image loading
       if (!found) {
-        // TODO: implement
+        for (const auto &ext : imageExtensions) {
+          if (isCancelled)
+            return;
+          path = basePath;
+          path.replace_extension(ext);
+          if (!std::filesystem::exists(path)) {
+            continue;
+          }
+          path_t p = fspath_to_path_t(path);
+          std::string utf8Path = path_t_to_utf8(p);
+          int width, height, channels;
+          unsigned char *data =
+              stbi_load(utf8Path.c_str(), &width, &height, &channels, 4);
+          if (!data) {
+            SDL_Log("Failed to load image: %s", utf8Path.c_str());
+            continue;
+          }
+          SDL_Log("Loaded image: %s", utf8Path.c_str());
+          {
+            std::lock_guard<std::mutex> lock(imageTableMutex);
+            imageTable[bmp->first] = {
+                .texture = bgfx::createTexture2D(
+                    width, height, false, 1, bgfx::TextureFormat::RGBA8,
+                    BGFX_TEXTURE_NONE, bgfx::copy(data, width * height * 4)),
+                .width = width,
+                .height = height,
+                .channels = channels,
+            };
+          }
+          stbi_image_free(data);
+          break;
+        }
       }
     }
   });
@@ -138,11 +197,16 @@ void Jukebox::loadChart(bms_parser::Chart &chart, bool scheduleNotes,
   audio.unloadSounds();
   wavTableAbs.clear();
   currentBga = -1;
+  currentBmpLayer = -1;
   for (auto &videoPlayer : videoPlayerTable) {
     delete videoPlayer.second;
   }
   videoPlayerTable.clear();
 
+  for (auto &image : imageTable) {
+    bgfx::destroy(image.second.texture);
+  }
+  imageTable.clear();
   if (isCancelled)
     return;
   SDL_Log("Loading sounds");
@@ -162,8 +226,10 @@ void Jukebox::schedule(bms_parser::Chart &chart, bool scheduleNotes,
                        std::atomic_bool &isCancelled) {
   audioCursor = 0;
   bmpCursor = 0;
+  bmpLayerCursor = 0;
   audioList.clear();
   bmpList.clear();
+  bmpLayerList.clear();
   for (auto &measure : chart.Measures) {
     if (isCancelled)
       return;
@@ -171,19 +237,10 @@ void Jukebox::schedule(bms_parser::Chart &chart, bool scheduleNotes,
       if (isCancelled)
         return;
       if (timeline->BgaBase != -1) {
-        BMPData data{
-            .id = timeline->BgaBase,
-            .viewId = rendering::bga_view,
-        };
-
-        bmpList.emplace_back(timeline->Timing, data);
+        bmpList.emplace_back(timeline->Timing, timeline->BgaBase);
       }
       if (timeline->BgaLayer != -1) {
-        BMPData data{
-            .id = timeline->BgaLayer,
-            .viewId = rendering::bga_layer_view,
-        };
-        bmpList.emplace_back(timeline->Timing, data);
+        bmpLayerList.emplace_back(timeline->Timing, timeline->BgaLayer);
       }
       std::vector<std::pair<long long, int>> notes;
       if (scheduleNotes) {
@@ -220,15 +277,19 @@ void Jukebox::play() {
     playThread.join();
   audio.startDevice();
   isPlaying = true;
-  stopwatch.reset();
-  stopwatch.start();
+  stopwatch->reset();
+  stopwatch->start();
   auto hz = 8000;
   playThread = std::thread([this, hz] {
     while (isPlaying) {
+      if (!stopwatch->isRunning()) {
+        std::this_thread::sleep_for(std::chrono::microseconds(1000000 / hz));
+        continue;
+      }
       // lock seek
       std::lock_guard<std::mutex> lock(seekLock);
       auto now = std::chrono::high_resolution_clock::now();
-      auto positionMicro = stopwatch.elapsedMicros();
+      auto positionMicro = stopwatch->elapsedMicros();
       if (onTickCb) {
         onTickCb(positionMicro);
       }
@@ -249,19 +310,38 @@ void Jukebox::play() {
           //          SDL_Log("Playing video at %lld; id: %d; actual time:
           //          %lld",
           //                  target.first, target.second, positionMicro);
-          if (videoPlayerTable.find(target.second.id) !=
-              videoPlayerTable.end()) {
-            auto videoPlayer = videoPlayerTable[target.second.id];
+          if (videoPlayerTable.find(target.second) != videoPlayerTable.end()) {
+            auto videoPlayer = videoPlayerTable[target.second];
             videoPlayer->seek(0);
             videoPlayer->play();
             videoPlayer->viewWidth = rendering::window_width;
             videoPlayer->viewHeight = rendering::window_height;
-            videoPlayer->viewId = target.second.viewId;
-            currentBga = target.second.id;
-          } else {
-            // SDL_Log("Video player not found for id: %d", target.second.id);
+            videoPlayer->viewId = rendering::bga_view;
+            currentBga = target.second;
+          } else if (imageTable.find(target.second) != imageTable.end()) {
+            currentBga = target.second;
           }
           bmpCursor++;
+        }
+      }
+      if (bmpLayerCursor < bmpLayerList.size()) {
+        auto &target = bmpLayerList[bmpLayerCursor];
+        if (positionMicro >= target.first) {
+          //          SDL_Log("Playing video at %lld; id: %d; actual time:
+          //          %lld",
+          //                  target.first, target.second, positionMicro);
+          if (videoPlayerTable.find(target.second) != videoPlayerTable.end()) {
+            auto videoPlayer = videoPlayerTable[target.second];
+            videoPlayer->seek(0);
+            videoPlayer->play();
+            videoPlayer->viewWidth = rendering::window_width;
+            videoPlayer->viewHeight = rendering::window_height;
+            videoPlayer->viewId = rendering::bga_layer_view;
+            currentBmpLayer = target.second;
+          } else if (imageTable.find(target.second) != imageTable.end()) {
+            currentBmpLayer = target.second;
+          }
+          bmpLayerCursor++;
         }
       }
       auto loopRunTime = std::chrono::high_resolution_clock::now() - now;
@@ -270,20 +350,86 @@ void Jukebox::play() {
     }
   });
 }
+void Jukebox::renderImage(ImageData &image, int viewId) {
 
-long long Jukebox::getTimeMicros() { return stopwatch.elapsedMicros(); }
+  if (!bgfx::isValid(image.texture)) {
+    return;
+  }
+  bgfx::VertexLayout layout;
+  layout.begin()
+      .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+      .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+      .end();
 
+  bgfx::TransientVertexBuffer tvb{};
+  bgfx::TransientIndexBuffer tib{};
+
+  bgfx::allocTransientVertexBuffer(&tvb, 4, layout);
+  bgfx::allocTransientIndexBuffer(&tib, 6);
+  auto *vertex = (rendering::PosTexCoord0Vertex *)tvb.data;
+  // canvas extension (See "spread canvas" in
+  // https://hitkey.nekokan.dyndns.info/cmds.htm#BMPXX-ADJUSTMENT)
+  vertex[0].x = rendering::window_width / 2.0f - image.width / 2.0f;
+  vertex[0].y = rendering::window_height / 2.0f - 256.0f / 2.0f + image.height;
+  vertex[0].z = 0.0f;
+  vertex[0].u = 0.0f;
+  vertex[0].v = 1.0f;
+  vertex[1].x = rendering::window_width / 2.0f + image.width / 2.0f;
+  vertex[1].y = rendering::window_height / 2.0f - 256.0f / 2.0f + image.height;
+  vertex[1].z = 0.0f;
+  vertex[1].u = 1.0f;
+  vertex[1].v = 1.0f;
+  vertex[2].x = rendering::window_width / 2.0f - image.width / 2.0f;
+  vertex[2].y = rendering::window_height / 2.0f - 256.0f / 2.0f;
+  vertex[2].z = 0.0f;
+  vertex[2].u = 0.0f;
+  vertex[2].v = 0.0f;
+  vertex[3].x = rendering::window_width / 2.0f + image.width / 2.0f;
+  vertex[3].y = rendering::window_height / 2.0f - 256.0f / 2.0f;
+  vertex[3].z = 0.0f;
+  vertex[3].u = 1.0f;
+  vertex[3].v = 0.0f;
+  auto *indices = (uint16_t *)tib.data;
+  indices[0] = 0;
+  indices[1] = 1;
+  indices[2] = 2;
+  indices[3] = 1;
+  indices[4] = 3;
+  indices[5] = 2;
+  bgfx::setVertexBuffer(0, &tvb);
+  bgfx::setIndexBuffer(&tib);
+  bgfx::setTexture(0, s_texColor, image.texture);
+  bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
+                 BGFX_STATE_BLEND_ALPHA);
+  bgfx::submit(viewId, rendering::ShaderManager::getInstance().getProgram(
+                           "vs_text.bin", viewId == rendering::bga_view
+                                              ? "fs_text.bin"
+                                              : "fs_bgalayer.bin"));
+}
+
+long long Jukebox::getTimeMicros() { return stopwatch->elapsedMicros(); }
+void Jukebox::pause() {
+  SDL_Log("Pausing");
+  stopwatch->pause();
+}
+void Jukebox::resume() { stopwatch->resume(); }
+bool Jukebox::isPaused() { return !stopwatch->isRunning(); }
 void Jukebox::stop() {
+  currentBga = -1;
+  currentBmpLayer = -1;
   isPlaying = false;
   if (playThread.joinable())
     playThread.join();
   audio.stopSounds();
+  for (auto &videoPlayer : videoPlayerTable) {
+    videoPlayer.second->stop();
+  }
 }
 void Jukebox::seek(long long micro) {
   /* TODO: should also play audio/video which starts earlier than seek but
       ends later than seek */
   std::lock_guard<std::mutex> lock(seekLock);
-  stopwatch.seek(micro);
+  stopwatch->seek(micro);
   audio.stopSounds();
   // move cursors to micro
   audioCursor = 0;

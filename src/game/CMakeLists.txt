@@ -1,1 +1,1 @@
-target_sources(main PRIVATE GameObject.cpp SpriteObject.cpp)
+target_sources(main PRIVATE GameObject.cpp SpriteObject.cpp GameState.cpp)

@@ -17,9 +17,9 @@ public:
   void setColor(SDL_Color newColor);
   void setAlign(TextAlign newAlign);
   void setVAlign(TextVAlign newVAlign);
-  void render(RenderContext &context) override;
 
 protected:
+  void renderImpl(RenderContext &context) override;
   TextAlign align = TextAlign::LEFT;
   TextVAlign valign = TextVAlign::TOP;
   TTF_Font *font;

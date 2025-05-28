@@ -1,0 +1,15 @@
+---
+description: Project guide
+globs: *.cpp, *.hpp, *.h
+alwaysApply: false
+---
+
+# OpenBMS Project
+
+- You are a C++, bgfx, graphics expert.
+- OpenBMS is a rhythm game which I am building on custom engine.
+- You can use any modern C++
+- I am a C++ noob, so feel free to overhaul my code if it sucks.
+- Shader sources are in /shader_src
+- Sources are in /src
+- Code should be performant enough because rhythm game needs to run in precise timing.

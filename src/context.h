@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "game/GameState.h"
 #include "scene/SceneManager.h"
 #include "audio/Jukebox.h"
 class ApplicationContext {
@@ -12,12 +13,12 @@ public:
   std::atomic<bool> quitFlag;
   SceneManager *sceneManager = nullptr;
   Uint64 currentFrame = 0;
-  Jukebox jukebox{};
+  Jukebox jukebox;
 
   // string: annotation, thread: thread
   std::vector<std::pair<std::string, std::thread>> threads;
 
-  ApplicationContext() : quitFlag(false) {}
+  ApplicationContext() : quitFlag(false), jukebox(&gameStopwatch) {}
   ~ApplicationContext() {
     quitFlag = true;
     std::cout << "Waiting for threads to join..." << std::endl;

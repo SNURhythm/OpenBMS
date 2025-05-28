@@ -42,7 +42,7 @@ void TextView::setText(const std::string &newText) {
   createTexture();
 }
 
-void TextView::render(RenderContext &context) {
+void TextView::renderImpl(RenderContext &context) {
   if (bgfx::isValid(texture)) {
 
     rect.x = this->getX();
