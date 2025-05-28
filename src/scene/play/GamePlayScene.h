@@ -9,7 +9,6 @@
 #include "../../input/IRhythmControl.h"
 #include "../../view/TextView.h"
 class Button;
-class LinearLayout;
 struct StartOptions {
   unsigned long long startPosition = 0;
   bool autoKeySound = false;
@@ -44,7 +43,7 @@ public:
 
 private:
   void reset();
-  LinearLayout *pauseLayout = nullptr;
+  View *pauseLayout = nullptr;
   Button *pauseButton = nullptr;
   Judge judge;
   StartOptions options;

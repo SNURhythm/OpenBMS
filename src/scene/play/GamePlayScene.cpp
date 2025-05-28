@@ -8,7 +8,6 @@
 #include "../../input/RhythmInputHandler.h"
 #include "../../view/Button.h"
 #include "../../scene/MainMenuScene.h"
-#include "../../view/LinearLayout.h"
 void GamePlayScene::init() {
   auto chartNameText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   chartNameText->setText(chart->Meta.Title);
@@ -39,20 +38,22 @@ void GamePlayScene::init() {
 
   /* pause screen */
   pauseLayout =
-      new LinearLayout(0, 0, rendering::window_width, rendering::window_height,
-                       Orientation::VERTICAL);
-  pauseLayout->setAlign(LinearLayout::CENTER);
+      new View(0, 0, rendering::window_width, rendering::window_height);
+  pauseLayout->setFlexDirection(FlexDirection::Column);
+  pauseLayout->setAlignItems(YGAlignCenter);
   {
-    auto spacer1 = new LinearLayout(0, 0, 0, 0, Orientation::VERTICAL);
-    pauseLayout->addView(spacer1, {0, 0, 1});
-    auto pauseScreen = new LinearLayout(0, 0, 0, 0, Orientation::VERTICAL);
-    pauseScreen->setAlign(LinearLayout::CENTER);
+    auto pauseScreen = new View();
+    pauseScreen->setFlex(1);
+    pauseScreen->setFlexDirection(FlexDirection::Column);
+    pauseScreen->setAlignItems(YGAlignCenter);
+    pauseScreen->setJustifyContent(YGJustifyCenter);
     {
       auto pauseText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
+      pauseText->setSize(200, 100);
       pauseText->setText("Paused");
       pauseText->setAlign(TextView::CENTER);
-      pauseScreen->addView(pauseText, {0, 0, 1});
-      auto resumeButton = new Button(0, 0, 0, 0);
+      pauseScreen->addView(pauseText);
+      auto resumeButton = new Button();
       auto resumeText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
       resumeText->setText("Resume");
       resumeText->setAlign(TextView::CENTER);
@@ -61,8 +62,9 @@ void GamePlayScene::init() {
         context.jukebox.resume();
         pauseLayout->setVisible(false);
       });
-      pauseScreen->addView(resumeButton, {0, 0, 1});
-      auto restartButton = new Button(0, 0, 0, 0);
+      resumeButton->setSize(200, 100);
+      pauseScreen->addView(resumeButton);
+      auto restartButton = new Button();
       auto restartText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
       restartText->setText("Restart");
       restartText->setAlign(TextView::CENTER);
@@ -76,8 +78,9 @@ void GamePlayScene::init() {
             },
             0, true);
       });
-      pauseScreen->addView(restartButton, {0, 0, 1});
-      auto exitButton = new Button(0, 0, 0, 0);
+      restartButton->setSize(200, 100);
+      pauseScreen->addView(restartButton);
+      auto exitButton = new Button();
       auto exitText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
       exitText->setText("Exit");
       exitText->setAlign(TextView::CENTER);
@@ -91,12 +94,11 @@ void GamePlayScene::init() {
             },
             0, true);
       });
-      pauseScreen->addView(exitButton, {0, 0, 1});
+      exitButton->setSize(200, 100);
+      pauseScreen->addView(exitButton);
     }
 
-    pauseLayout->addView(pauseScreen, {200, 200, 0});
-    auto spacer2 = new LinearLayout(0, 0, 200, 0, Orientation::VERTICAL);
-    pauseLayout->addView(spacer2, {0, 0, 1});
+    pauseLayout->addView(pauseScreen);
   }
   pauseLayout->setVisible(false);
   addView(pauseLayout);

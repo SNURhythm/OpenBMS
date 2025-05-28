@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,8 +13,8 @@
 		B71B9EDC2BFDA3A200D789A5 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B71B9EDB2BFDA3A200D789A5 /* CoreAudio.framework */; };
 		B71B9EDE2BFDA3DA00D789A5 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B71B9EDD2BFDA3DA00D789A5 /* AVFAudio.framework */; };
 		B71B9EE02BFDA40900D789A5 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B71B9EDF2BFDA40900D789A5 /* AudioToolbox.framework */; };
-		B71B9EE22BFDA44500D789A5 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = B71B9EE12BFDA44500D789A5 /* assets */; };
-		B7459FBC2BFC2A58002C5A6F /* shaders in Resources */ = {isa = PBXBuildFile; fileRef = B7459F6A2BFC2A58002C5A6F /* shaders */; };
+		B76AB0582DA4A70300E8327C /* assets in Resources */ = {isa = PBXBuildFile; fileRef = B7BAA5AD2DA3F87D008F6FCD /* assets */; };
+		B76AB0592DA4A70600E8327C /* shaders in Resources */ = {isa = PBXBuildFile; fileRef = B7BAA5572DA3F857008F6FCD /* shaders */; };
 		B77B0DFD2BF7BD3900945F27 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; };
 		B77B0E1C2BF7BDC400945F27 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E062BF7BD6000945F27 /* SDL2_ttf.framework */; };
 		B77B0E1D2BF7BDC400945F27 /* SDL2_ttf.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E062BF7BD6000945F27 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -58,6 +58,7 @@
 		B7FFC3A82BFAAFF3000C838E /* libbimg_encode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3192BFAAF67000C838E /* libbimg_encode.a */; };
 		B7FFC3A92BFAAFF3000C838E /* libbimg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3152BFAAF67000C838E /* libbimg.a */; };
 		B7FFC3AA2BFAAFF3000C838E /* libbx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC31D2BFAAF67000C838E /* libbx.a */; };
+		E6E33EB08676F3525400255A /* libPods-OpenBMS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CD33E8E87F5C66C37827A03 /* libPods-OpenBMS.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -611,14 +612,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2CD33E8E87F5C66C37827A03 /* libPods-OpenBMS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-OpenBMS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8BB58BF3E3216A181DA42E9C /* Pods-OpenBMS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenBMS.release.xcconfig"; path = "Target Support Files/Pods-OpenBMS/Pods-OpenBMS.release.xcconfig"; sourceTree = "<group>"; };
 		B70027012BF7A8D8000DB8EC /* OpenBMS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenBMS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B70027132BF7A8DA000DB8EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B70027162BF7A8DA000DB8EC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		B71B9EDB2BFDA3A200D789A5 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		B71B9EDD2BFDA3DA00D789A5 /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
 		B71B9EDF2BFDA40900D789A5 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		B71B9EE12BFDA44500D789A5 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../../../assets; sourceTree = "<group>"; };
-		B7459F6A2BFC2A58002C5A6F /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shaders; path = ../../../../shaders; sourceTree = "<group>"; };
 		B77B0D752BF7B15900945F27 /* SDL_misc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_misc.h; sourceTree = "<group>"; };
 		B77B0D762BF7B15900945F27 /* SDL_opengles2_gl2ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_opengles2_gl2ext.h; sourceTree = "<group>"; };
 		B77B0D772BF7B15900945F27 /* SDL_test_random.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_test_random.h; sourceTree = "<group>"; };
@@ -723,6 +724,8 @@
 		B79B1BCD2BFAC1E700FAD60F /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		B79B1BCF2BFAC20100FAD60F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		B79B1BD12BFAC23200FAD60F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		B7BAA5572DA3F857008F6FCD /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shaders; path = ../../../../shaders; sourceTree = "<group>"; };
+		B7BAA5AD2DA3F87D008F6FCD /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../../../assets; sourceTree = "<group>"; };
 		B7D27A9E2C7CD1F300189ED7 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		B7D27AA02C7CD21100189ED7 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
 		B7D27AA22C7CD21900189ED7 /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
@@ -769,30 +772,72 @@
 		B7FA8B0E2C7D06F200B7EAAF /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		B7FA8B122C7D098E00B7EAAF /* libvlcplugin.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvlcplugin.a; path = lib/libvlcplugin.a; sourceTree = "<group>"; };
 		B7FFC2CC2BFAAF66000C838E /* bgfx.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = bgfx.xcodeproj; path = ../../../bgfx/build/bgfx.xcodeproj; sourceTree = "<group>"; };
+		FAAD4CE37952A091955C8A78 /* Pods-OpenBMS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenBMS.debug.xcconfig"; path = "Target Support Files/Pods-OpenBMS/Pods-OpenBMS.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B70A13B22D1C846500111D5C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		B76AAF692DA4A1C400E8327C /* Exceptions for "src" folder in "OpenBMS" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				audio/CMakeLists.txt,
-				CMakeLists.txt,
-				game/CMakeLists.txt,
-				input/CMakeLists.txt,
-				math/CMakeLists.txt,
-				rendering/CMakeLists.txt,
-				scene/CMakeLists.txt,
-				scene/play/CMakeLists.txt,
-				utils/CMakeLists.txt,
-				video/CMakeLists.txt,
-				view/CMakeLists.txt,
+				audio/AudioWrapper.cpp,
+				audio/decoder.cpp,
+				audio/Jukebox.cpp,
+				bgfx_helper.cpp,
+				bms_parser.cpp,
+				ChartDBHelper.cpp,
+				game/GameObject.cpp,
+				game/GameState.cpp,
+				game/SpriteObject.cpp,
+				input/InputNormalizer.cpp,
+				input/RhythmInputHandler.cpp,
+				input/SDLInputSource.cpp,
+				input/SDLTouchInputSource.cpp,
+				iOSNatives.mm,
+				MacNatives.mm,
+				main.cpp,
+				math/Quaternion.cpp,
+				math/Vector3.cpp,
+				path.cpp,
+				rendering/Camera.cpp,
+				rendering/Color.cpp,
+				rendering/common.cpp,
+				scene/MainMenuScene.cpp,
+				scene/play/BMSRenderer.cpp,
+				scene/play/GamePlayScene.cpp,
+				scene/play/Judge.cpp,
+				scene/SceneManager.cpp,
+				SDL_uikit_main.c,
+				sqlite3.c,
+				tinyfiledialogs.c,
+				Utils.cpp,
+				utils/SpriteLoader.cpp,
+				utils/Stopwatch.cpp,
+				video/transcode.c,
+				video/VideoPlayer.cpp,
+				view/Button.cpp,
+				view/ChartListItemView.cpp,
+				view/ImageView.cpp,
+				view/TextInputBox.cpp,
+				view/TextView.cpp,
+				view/View.cpp,
 			);
 			target = B70027002BF7A8D8000DB8EC /* OpenBMS */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B70A137E2D1C844800111D5C /* src */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (B70A13B22D1C846500111D5C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {audio/AudioWrapper.cpp = sourcecode.cpp.objcpp; }; explicitFolders = (); name = src; path = /Users/xf/workspace/SNURhythm/OpenBMS/src; sourceTree = "<absolute>"; };
+		B76AAF3F2DA4A1C400E8327C /* src */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B76AAF692DA4A1C400E8327C /* Exceptions for "src" folder in "OpenBMS" target */,
+			);
+			explicitFileTypes = {
+				audio/AudioWrapper.cpp = sourcecode.cpp.objcpp;
+			};
+			name = src;
+			path = ../../../../src;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -845,6 +890,7 @@
 				B77B0DFD2BF7BD3900945F27 /* SDL2.framework in Frameworks */,
 				B7FFC3A92BFAAFF3000C838E /* libbimg.a in Frameworks */,
 				B7D7520F2C90026F00CC4FF8 /* libluajit.a in Frameworks */,
+				E6E33EB08676F3525400255A /* libPods-OpenBMS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -860,6 +906,7 @@
 				B70027032BF7A8D8000DB8EC /* OpenBMS */,
 				B70027022BF7A8D8000DB8EC /* Products */,
 				B72522F62BF7AD7100C6C414 /* Frameworks */,
+				F54AEE91B69E2DD70E7020CA /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -874,10 +921,10 @@
 		B70027032BF7A8D8000DB8EC /* OpenBMS */ = {
 			isa = PBXGroup;
 			children = (
-				B70A137E2D1C844800111D5C /* src */,
-				B71B9EE12BFDA44500D789A5 /* assets */,
+				B7BAA5572DA3F857008F6FCD /* shaders */,
+				B7BAA5AD2DA3F87D008F6FCD /* assets */,
+				B76AAF3F2DA4A1C400E8327C /* src */,
 				B799B7B52BFD224200115C26 /* Info.plist */,
-				B7459F6A2BFC2A58002C5A6F /* shaders */,
 				B77B0D532BF7B15900945F27 /* include */,
 				B70027132BF7A8DA000DB8EC /* Assets.xcassets */,
 				B70027152BF7A8DA000DB8EC /* LaunchScreen.storyboard */,
@@ -942,6 +989,7 @@
 				B79B1BCB2BFAC19F00FAD60F /* Metal.framework */,
 				B77B0E222BF7C48700945F27 /* CoreFoundation.framework */,
 				B77B0E1E2BF7C46700945F27 /* Foundation.framework */,
+				2CD33E8E87F5C66C37827A03 /* libPods-OpenBMS.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1154,6 +1202,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		F54AEE91B69E2DD70E7020CA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				FAAD4CE37952A091955C8A78 /* Pods-OpenBMS.debug.xcconfig */,
+				8BB58BF3E3216A181DA42E9C /* Pods-OpenBMS.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1161,17 +1218,16 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B700271C2BF7A8DA000DB8EC /* Build configuration list for PBXNativeTarget "OpenBMS" */;
 			buildPhases = (
+				1A3EB0595D79BE96F6E16C91 /* [CP] Check Pods Manifest.lock */,
 				B70026FD2BF7A8D8000DB8EC /* Sources */,
 				B70026FE2BF7A8D8000DB8EC /* Frameworks */,
+				B7BAA5562DA3F719008F6FCD /* ShellScript */,
 				B70026FF2BF7A8D8000DB8EC /* Resources */,
 				B72522FA2BF7AD8200C6C414 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				B70A137E2D1C844800111D5C /* src */,
 			);
 			name = OpenBMS;
 			productName = OpenBMS;
@@ -1193,7 +1249,6 @@
 				};
 			};
 			buildConfigurationList = B70026FC2BF7A8D8000DB8EC /* Build configuration list for PBXProject "OpenBMS" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -1201,6 +1256,7 @@
 				Base,
 			);
 			mainGroup = B70026F82BF7A8D8000DB8EC;
+			preferredProjectObjectVersion = 77;
 			productRefGroup = B70027022BF7A8D8000DB8EC /* Products */;
 			projectDirPath = "";
 			projectReferences = (
@@ -1815,14 +1871,56 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B7459FBC2BFC2A58002C5A6F /* shaders in Resources */,
 				B70027172BF7A8DA000DB8EC /* LaunchScreen.storyboard in Resources */,
-				B71B9EE22BFDA44500D789A5 /* assets in Resources */,
 				B70027142BF7A8DA000DB8EC /* Assets.xcassets in Resources */,
+				B76AB0592DA4A70600E8327C /* shaders in Resources */,
+				B76AB0582DA4A70300E8327C /* assets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		1A3EB0595D79BE96F6E16C91 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-OpenBMS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B7BAA5562DA3F719008F6FCD /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "find \"${SRCROOT}/../../../shaders/$1\" -type f -print0 | xargs -0 touch\nfind \"${SRCROOT}/../../../assets/$1\" -type f -print0 | xargs -0 touch\n\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		B70026FD2BF7A8D8000DB8EC /* Sources */ = {
@@ -1966,12 +2064,13 @@
 		};
 		B700271D2BF7A8DA000DB8EC /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FAAD4CE37952A091955C8A78 /* Pods-OpenBMS.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 4U66W7TDBL;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -1983,6 +2082,7 @@
 					"\"$(SRCROOT)/../../../include\"",
 					"\"$(SRCROOT)/../../../SDL/include\"",
 					"\"$(SRCROOT)/../../../bgfx/bgfx/include\"",
+					"\"$(SRCROOT)/Pods/Headers/Public\"",
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
 				);
 				INFOPLIST_FILE = OpenBMS/Info.plist;
@@ -2018,12 +2118,13 @@
 		};
 		B700271E2BF7A8DA000DB8EC /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8BB58BF3E3216A181DA42E9C /* Pods-OpenBMS.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 4U66W7TDBL;
 				GCC_PREPROCESSOR_DEFINITIONS = "BX_CONFIG_DEBUG=0";
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2031,6 +2132,7 @@
 					"\"$(SRCROOT)/../../../include\"",
 					"\"$(SRCROOT)/../../../SDL/include\"",
 					"\"$(SRCROOT)/../../../bgfx/bgfx/include\"",
+					"\"$(SRCROOT)/Pods/Headers/Public\"",
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
 				);
 				INFOPLIST_FILE = OpenBMS/Info.plist;

@@ -18,8 +18,18 @@ default_platform(:ios)
 platform :ios do
   desc "Push a new beta build to TestFlight"
   lane :beta do
+    match(type: "appstore", git_basic_authorization: ENV["GIT_BASIC_AUTHORIZATION"])
     increment_build_number(xcodeproj: "OpenBMS.xcodeproj")
     build_app(scheme: "OpenBMS")
+    temporary_fix_ios_post_build
     upload_to_testflight
   end
+end
+
+desc "Temporary workaround to remove unwanted files from the IPA"
+private_lane :temporary_fix_ios_post_build do
+  # Workaround to remove ._Symbols from ipa.
+  ipa_location = lane_context[SharedValues::IPA_OUTPUT_PATH]
+  sh("unzip -l #{ipa_location} | grep ._Symbols || true")
+  sh("zip -d #{ipa_location} ._Symbols/ || true")
 end
