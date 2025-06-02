@@ -25,9 +25,9 @@ platform :ios do
       export_method: "app-store",
       export_options: {
         provisioningProfiles: {
-          "com.snurhythm.openbms" => "match AppStore com.snurhythm.openbms",
-          "org.libsdl.SDL2" => "match AppStore com.snurhythm.openbms",
-          "org.libsdl.SDL2-ttf" => "match AppStore com.snurhythm.openbms"
+          "com.snurhythm.OpenBMS" => "match AppStore com.snurhythm.OpenBMS",
+          "org.libsdl.SDL2" => "match AppStore com.snurhythm.OpenBMS",
+          "org.libsdl.SDL2-ttf" => "match AppStore com.snurhythm.OpenBMS"
         },
         signingStyle: "manual",
       }
