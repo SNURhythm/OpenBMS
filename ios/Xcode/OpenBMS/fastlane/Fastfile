@@ -30,7 +30,8 @@ platform :ios do
           "org.libsdl.SDL2-ttf" => "match AppStore com.snurhythm.OpenBMS"
         },
         signingStyle: "manual",
-      }
+      },
+      xcargs: "-allowProvisioningUpdates"
     )
     temporary_fix_ios_post_build
     upload_to_testflight
