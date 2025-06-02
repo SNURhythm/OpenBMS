@@ -1,4 +1,6 @@
-*.lib eol=lf
-*.hpp eol=lf
-*.h eol=lf
-*.cpp eol=lf
+* text=auto
+*.dylib binary
+*.lib binary
+*.hpp text
+*.h text
+*.cpp text

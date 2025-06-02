@@ -57,7 +57,7 @@ private:
   std::vector<AVFrame *> frameBuffer; // Fixed-size ring buffer
   std::atomic<size_t> bufferHead = 0;
   std::atomic<size_t> bufferTail = 0;
-  static const size_t maxBufferSize = 10; // Adjust as needed
+  static const int maxBufferSize = 10; // Adjust as needed
   std::atomic<size_t> bufferSize = 0;
   std::condition_variable freeSpace;
   std::mutex bufferMutex; // Protect ring buffer operations

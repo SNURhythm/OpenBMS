@@ -96,6 +96,10 @@ int rendering::window_height = 600;
 Camera *rendering::main_camera = nullptr;
 Camera rendering::game_camera{rendering::main_view};
 int main(int argv, char **args) {
+#ifdef _WIN32
+  // search dll in ./lib
+  SetDllDirectoryA("lib");
+#endif
   // set QoS class for macOS, for best performance
 #if TARGET_OS_OSX
   pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
