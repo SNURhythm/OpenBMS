@@ -33,7 +33,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
       - run: cd ios/Xcode/OpenBMS && bundle install && bundle exec pod repo update && bundle exec pod install
-      - uses: mikehardy/buildcache-action@v2.1.0
+      # - uses: mikehardy/buildcache-action@v2.1.0
       - working-directory: ./ios/Xcode/OpenBMS
         run: bundle exec fastlane ios beta --verbose
         env:
