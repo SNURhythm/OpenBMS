@@ -53,4 +53,14 @@ public:
 
 private:
   bms_parser::ChartMeta ReadChartMeta(sqlite3_stmt *stmt);
+  path_t ReadPath(sqlite3_stmt *stmt, int idx) {
+#ifdef _WIN32
+    const path_t t =
+        reinterpret_cast<const wchar_t *>(sqlite3_column_text16(stmt, idx));
+#else
+    const path_t t =
+        reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx));
+#endif
+    return t;
+  }
 };

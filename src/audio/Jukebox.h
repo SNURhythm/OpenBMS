@@ -8,6 +8,7 @@
 #include "../path.h"
 #include "../video/VideoPlayer.h"
 #include "../utils/Stopwatch.h"
+#include <functional>
 
 #include <cassert>
 

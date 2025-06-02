@@ -386,7 +386,7 @@ void VideoPlayer::seek(int64_t micro) {
 
   // Convert microseconds to stream time base
   int64_t seekTarget =
-      av_rescale_q(micro, AV_TIME_BASE_Q,
+      av_rescale_q(micro, {1, AV_TIME_BASE},
                    formatContext->streams[videoStreamIndex]->time_base);
 
   {
@@ -402,7 +402,6 @@ void VideoPlayer::seek(int64_t micro) {
       }
     }
     bufferHead = bufferTail = 0; // Reset buffer indices
-    bufferSize = 0;
 
     // Reset freeSpace
     bufferSize = 0;
