@@ -5,8 +5,11 @@ OpenBMS is a crossplatform BMS player which depends on open source libraries onl
 ## Current Progress 
 - [x] Implement basic chart select screen 
 - [x] Implement audio output
-- [ ] Implement BGA playback
+- [x] Implement BGA playback
 - [ ] Implement gameplay
+  - [x] Implement basic judgement system
+- [ ] Support skin
+
 ## Dependency
 
 - SDL2 + bgfx
