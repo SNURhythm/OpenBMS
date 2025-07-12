@@ -17,7 +17,7 @@
 		B76AB0592DA4A70600E8327C /* shaders in Resources */ = {isa = PBXBuildFile; fileRef = B7BAA5572DA3F857008F6FCD /* shaders */; };
 		B77B0DFD2BF7BD3900945F27 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; };
 		B77B0E1C2BF7BDC400945F27 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E062BF7BD6000945F27 /* SDL2_ttf.framework */; };
-		B77B0E1D2BF7BDC400945F27 /* SDL2_ttf.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E062BF7BD6000945F27 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B77B0E1D2BF7BDC400945F27 /* SDL2_ttf.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E062BF7BD6000945F27 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B77B0E202BF7C46D00945F27 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E1E2BF7C46700945F27 /* Foundation.framework */; };
 		B79B1BCC2BFAC19F00FAD60F /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B79B1BCB2BFAC19F00FAD60F /* Metal.framework */; };
 		B79B1BCE2BFAC1E700FAD60F /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B79B1BCD2BFAC1E700FAD60F /* MetalKit.framework */; };
@@ -52,7 +52,7 @@
 		B7FA8B0D2C7D06D800B7EAAF /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FA8B0C2C7D06D700B7EAAF /* GLKit.framework */; };
 		B7FA8B0F2C7D06F200B7EAAF /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FA8B0E2C7D06F200B7EAAF /* OpenGLES.framework */; };
 		B7FA8B142C7D0A2600B7EAAF /* libcompat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D27AF12C7CE2FA00189ED7 /* libcompat.a */; };
-		B7FFC2C32BF7D834000C838E /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B7FFC2C32BF7D834000C838E /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B7FFC39F2BFAAFA7000C838E /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E222BF7C48700945F27 /* CoreFoundation.framework */; };
 		B7FFC3A72BFAAFF3000C838E /* libbimg_decode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3172BFAAF67000C838E /* libbimg_decode.a */; };
 		B7FFC3A82BFAAFF3000C838E /* libbimg_encode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3192BFAAF67000C838E /* libbimg_encode.a */; };
