@@ -25,13 +25,12 @@ platform :ios do
       export_method: "app-store",
       export_options: {
         provisioningProfiles: {
-          "com.snurhythm.OpenBMS" => "match AppStore com.snurhythm.OpenBMS",
-          "org.libsdl.SDL2" => "match AppStore com.snurhythm.OpenBMS",
-          "org.libsdl.SDL2-ttf" => "match AppStore com.snurhythm.OpenBMS"
+          "com.snurhythm.OpenBMS" => "match AppStore com.snurhythm.OpenBMS"
         },
-        signingStyle: "manual",
+        signingStyle: "manual"
       },
-      xcargs: "-allowProvisioningUpdates"
+      xcargs: "-allowProvisioningUpdates",
+      clean: true
     )
     temporary_fix_ios_post_build
     upload_to_testflight
