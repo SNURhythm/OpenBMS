@@ -239,6 +239,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
   searchBox->onSubmit([this, &context, searchBox](const std::string &text) {
     auto dbHelper = ChartDBHelper::GetInstance();
     if (text.empty()) {
+      // TODO: handle deleted files
       std::vector<bms_parser::ChartMeta> chartMetas;
       dbHelper.SelectAllChartMeta(db, chartMetas);
       recyclerView->setItems(std::move(chartMetas));
@@ -524,6 +525,10 @@ void MainMenuScene::FindFilesIOS(
     std::vector<std::filesystem::path> &directoriesToVisit,
     std::stop_token stop_token) {
   // use iosnatives
+  /* TODO: read from BMS/
+   * (or modify ChartDBHelper::ToAbsolutePath/ToRelativePath to allow document
+   * root path)
+   */
   auto files = ListDocumentFilesRecursively();
   SDL_Log("Found %d files", files.size());
   for (auto &file : files) {
