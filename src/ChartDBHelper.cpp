@@ -152,7 +152,7 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
   }
   std::filesystem::path path = chartMeta.BmsPath;
   ToRelativePath(path);
-  
+
   sqlite3_bind_text(stmt, 1, path_t_to_utf8(fspath_to_path_t(path)).c_str(), -1,
                     SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 2, (chartMeta.MD5).c_str(), -1, SQLITE_TRANSIENT);
@@ -164,19 +164,23 @@ bool ChartDBHelper::InsertChartMeta(sqlite3 *db,
   sqlite3_bind_text(stmt, 7, (chartMeta.Artist).c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 8, (chartMeta.SubArtist).c_str(), -1,
                     SQLITE_TRANSIENT);
-  
+
   std::filesystem::path folder = chartMeta.Folder;
   ToRelativePath(folder);
   sqlite3_bind_text(stmt, 9, path_t_to_utf8(fspath_to_path_t(folder)).c_str(),
                     -1, SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 10, path_t_to_utf8(fspath_to_path_t(chartMeta.StageFile)).c_str(), -1,
-                    SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 11, path_t_to_utf8(fspath_to_path_t(chartMeta.Banner)).c_str(), -1,
-                    SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 12, path_t_to_utf8(fspath_to_path_t(chartMeta.BackBmp)).c_str(), -1,
-                    SQLITE_TRANSIENT);
-  sqlite3_bind_text(stmt, 13, path_t_to_utf8(fspath_to_path_t(chartMeta.Preview)).c_str(), -1,
-                    SQLITE_TRANSIENT);
+  sqlite3_bind_text(
+      stmt, 10, path_t_to_utf8(fspath_to_path_t(chartMeta.StageFile)).c_str(),
+      -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 11,
+                    path_t_to_utf8(fspath_to_path_t(chartMeta.Banner)).c_str(),
+                    -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 12,
+                    path_t_to_utf8(fspath_to_path_t(chartMeta.BackBmp)).c_str(),
+                    -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 13,
+                    path_t_to_utf8(fspath_to_path_t(chartMeta.Preview)).c_str(),
+                    -1, SQLITE_TRANSIENT);
   sqlite3_bind_double(stmt, 14, chartMeta.PlayLevel);
   sqlite3_bind_int(stmt, 15, chartMeta.Difficulty);
   sqlite3_bind_double(stmt, 16, chartMeta.Total);
@@ -305,7 +309,7 @@ void ChartDBHelper::SearchChartMeta(
   sqlite3_finalize(stmt);
 }
 
-bool ChartDBHelper::DeleteChartMeta(sqlite3 *db, std::filesystem::path &path) {
+bool ChartDBHelper::DeleteChartMeta(sqlite3 *db, std::filesystem::path path) {
   ToRelativePath(path);
   auto query = "DELETE FROM chart_meta WHERE path = @path";
   sqlite3_stmt *stmt;
@@ -418,7 +422,8 @@ bool ChartDBHelper::CreateEntriesTable(sqlite3 *db) {
   return true;
 }
 
-bool ChartDBHelper::InsertEntry(sqlite3 *db, std::filesystem::path &path) {
+bool ChartDBHelper::InsertEntry(sqlite3 *db,
+                                const std::filesystem::path &path) {
   auto query = "REPLACE INTO entries ("
                "path"
                ") VALUES("
@@ -467,7 +472,8 @@ std::vector<path_t> ChartDBHelper::SelectAllEntries(sqlite3 *db) {
   return entries;
 }
 
-bool ChartDBHelper::DeleteEntry(sqlite3 *db, std::filesystem::path &path) {
+bool ChartDBHelper::DeleteEntry(sqlite3 *db,
+                                const std::filesystem::path &path) {
   auto query = "DELETE FROM entries WHERE path = @path";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);

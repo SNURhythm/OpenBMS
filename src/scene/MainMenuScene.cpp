@@ -350,6 +350,11 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
     if (stop_token.stop_requested()) {
       break;
     }
+    // check file exists
+    if (!std::filesystem::exists(chartMeta.BmsPath)) {
+      diffs.push_back({chartMeta.BmsPath, DiffType::Deleted});
+      continue;
+    }
     oldFilesWs.insert(fspath_to_path_t(chartMeta.BmsPath));
     // std::cout << "Old file: " << chartMeta.BmsPath << std::endl;
     // std::cout << "Folder: " << chartMeta.Folder << std::endl;
@@ -400,6 +405,8 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
         }
         dbHelper.InsertChartMeta(db, chart->Meta);
         delete chart;
+      } else {
+        dbHelper.DeleteChartMeta(db, diff.path);
       }
     }
   });

@@ -37,15 +37,15 @@ public:
                           std::vector<bms_parser::ChartMeta> &chartMetas);
   void SearchChartMeta(sqlite3 *db, const std::string &keyword,
                        std::vector<bms_parser::ChartMeta> &chartMetas);
-  bool DeleteChartMeta(sqlite3 *db, std::filesystem::path &path);
+  bool DeleteChartMeta(sqlite3 *db, std::filesystem::path path);
   bool ClearChartMeta(sqlite3 *db);
   void Close(sqlite3 *db);
   void BeginTransaction(sqlite3 *db);
   void CommitTransaction(sqlite3 *db);
   bool CreateEntriesTable(sqlite3 *db);
-  bool InsertEntry(sqlite3 *db, std::filesystem::path &path);
+  bool InsertEntry(sqlite3 *db, const std::filesystem::path &path);
   std::vector<path_t> SelectAllEntries(sqlite3 *db);
-  bool DeleteEntry(sqlite3 *db, std::filesystem::path &path);
+  bool DeleteEntry(sqlite3 *db, const std::filesystem::path &path);
   bool ClearEntries(sqlite3 *db);
 
   static void ToRelativePath(std::filesystem::path &path);
