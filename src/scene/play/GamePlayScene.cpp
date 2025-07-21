@@ -155,10 +155,13 @@ void GamePlayScene::renderScene() {
   laneStateText->render(renderContext);
 }
 void GamePlayScene::cleanupScene() {
+  SDL_Log("Cleaning up GamePlayScene");
   context.jukebox.removeOnTick();
+  SDL_Log("Stopping input handler");
   inputHandler->stopListen();
   delete inputHandler;
   inputHandler = nullptr;
+  SDL_Log("Cleaned up GamePlayScene");
 }
 int GamePlayScene::pressLane(int lane, double inputDelay) {
   return pressLane(lane, lane, inputDelay);

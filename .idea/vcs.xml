@@ -11,5 +11,6 @@
     <mapping directory="$PROJECT_DIR$/bgfx/bgfx" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/bgfx/bimg" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/bgfx/bx" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/yoga" vcs="Git" />
   </component>
 </project>

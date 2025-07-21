@@ -185,7 +185,7 @@ int main(int argv, char **args) {
   bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
   bgfx_init.resolution.width = rendering::window_width;
   bgfx_init.resolution.height = rendering::window_height;
-  bgfx_init.resolution.reset = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X2;
+  bgfx_init.resolution.reset = BGFX_RESET_MSAA_X2;
   bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
   // bgfx::setDebug(BGFX_DEBUG_TEXT);
@@ -287,7 +287,7 @@ void run() {
 
         // set bgfx resolution
         bgfx::reset(rendering::window_width, rendering::window_height,
-                    BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X2);
+                    BGFX_RESET_MSAA_X2);
         SDL_Log("Window size: %d x %d", rendering::window_width,
                 rendering::window_height);
         destroyFrameBuffers();
@@ -318,12 +318,12 @@ void run() {
     drawFinal(rendering::window_width, rendering::window_height);
 
     // render fps, rounded to 2 decimal places
-    // std::ostringstream oss;
-    // oss << std::fixed << std::setprecision(2) << 1.0f / deltaTime;
-    // fpsText.setText(oss.str());
-    // fpsText.setPosition(10, 10);
-    // RenderContext renderContext;
-    // fpsText.render(renderContext);
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << 1.0f / deltaTime;
+    fpsText.setText(oss.str());
+    fpsText.setPosition(10, 10);
+    RenderContext renderContext;
+    fpsText.render(renderContext);
     // shift left by 1
     // float translate[16];
     // bx::mtxTranslate(translate, 200.0f, 500.0f, 0.0f);
