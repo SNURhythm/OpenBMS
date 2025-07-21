@@ -45,16 +45,24 @@ void MainMenuScene::init() {
   initView(context);
   SDL_Log("Main Menu Scene Initialized");
   checkEntriesThread =
-      std::thread(CheckEntries, std::ref(context), std::ref(*this));
+      std::jthread(CheckEntries, std::ref(context), std::ref(*this));
 }
 
-void MainMenuScene::CheckEntries(ApplicationContext &context,
+void MainMenuScene::CheckEntries(std::stop_token stop_token,
+                                 ApplicationContext &context,
                                  MainMenuScene &scene) {
   auto dbHelper = ChartDBHelper::GetInstance();
   auto db = dbHelper.Connect();
   dbHelper.CreateChartMetaTable(db);
   dbHelper.CreateEntriesTable(db);
   auto entries = dbHelper.SelectAllEntries(db);
+
+  // Check for stop request before proceeding
+  if (stop_token.stop_requested()) {
+    dbHelper.Close(db);
+    return;
+  }
+
   // open folder select if no entries
   if (entries.empty()) {
 #if TARGET_OS_IOS
@@ -73,6 +81,12 @@ void MainMenuScene::CheckEntries(ApplicationContext &context,
       std::cout << "Failed to open folder select dialog.\n";
 
       while (folder.empty()) {
+        // Check for stop request during user input
+        if (stop_token.stop_requested()) {
+          dbHelper.Close(db);
+          return;
+        }
+
         std::cout << "Enter bms folder path: ";
         std::cin >> folder;
         if (std::cin.eof() || std::cin.fail()) {
@@ -92,6 +106,7 @@ void MainMenuScene::CheckEntries(ApplicationContext &context,
       }
 
       if (folder.empty()) {
+        dbHelper.Close(db);
         return;
       }
     } else {
@@ -102,7 +117,14 @@ void MainMenuScene::CheckEntries(ApplicationContext &context,
     entries = dbHelper.SelectAllEntries(db);
 #endif
   }
-  LoadCharts(dbHelper, db, entries, scene, context.quitFlag);
+
+  // Check for stop request before loading charts
+  if (stop_token.stop_requested()) {
+    dbHelper.Close(db);
+    return;
+  }
+
+  LoadCharts(dbHelper, db, entries, scene, stop_token);
   dbHelper.Close(db);
 }
 
@@ -298,10 +320,13 @@ void MainMenuScene::cleanupScene() {
   // Cleanup resources when exiting the scene
   ChartDBHelper::GetInstance().Close(db);
   if (checkEntriesThread.joinable()) {
+    SDL_Log("Joining checkEntriesThread");
+    checkEntriesThread.request_stop();
     checkEntriesThread.join();
   }
 
   if (loadThread.joinable()) {
+    SDL_Log("Joining loadThread");
     loadThread.join();
   }
 }
@@ -309,7 +334,7 @@ void MainMenuScene::cleanupScene() {
 void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
                                std::vector<path_t> &entries,
                                MainMenuScene &scene,
-                               std::atomic_bool &isCancelled) {
+                               std::stop_token stop_token) {
   std::vector<bms_parser::ChartMeta> chartMetas;
   dbHelper.SelectAllChartMeta(db, chartMetas);
   // sort by title
@@ -322,7 +347,7 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
   std::unordered_set<path_t> oldFilesWs;
 
   for (auto &chartMeta : chartMetas) {
-    if (isCancelled) {
+    if (stop_token.stop_requested()) {
       break;
     }
     oldFilesWs.insert(fspath_to_path_t(chartMeta.BmsPath));
@@ -330,10 +355,10 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
     // std::cout << "Folder: " << chartMeta.Folder << std::endl;
   }
   for (auto &entry : entries) {
-    if (isCancelled) {
+    if (stop_token.stop_requested()) {
       break;
     }
-    FindNewBmsFiles(diffs, oldFilesWs, entry, isCancelled);
+    FindNewBmsFiles(diffs, oldFilesWs, entry, stop_token);
   }
 
   SDL_Log("Found %zu new bms files", diffs.size());
@@ -344,7 +369,7 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
   dbHelper.BeginTransaction(db);
   parallel_for(diffs.size(), [&](int start, int end) {
     for (int i = start; i < end; i++) {
-      if (isCancelled) {
+      if (stop_token.stop_requested()) {
         break;
       }
       auto &diff = diffs[i];
@@ -392,14 +417,14 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
                                  std::vector<Diff> &diffs,
                                  const std::unordered_set<path_t> &oldFilesWs,
                                  std::vector<path_t> &directoriesToVisit,
-                                 std::atomic_bool &isCancelled) {
+                                 std::stop_token stop_token) {
   WIN32_FIND_DATAW findFileData;
   HANDLE hFind =
       FindFirstFileW((path.wstring() + L"\\*.*").c_str(), &findFileData);
 
   if (hFind != INVALID_HANDLE_VALUE) {
     do {
-      if (isCancelled) {
+      if (stop_token.stop_requested()) {
         break;
       }
       if (!(findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
@@ -448,12 +473,12 @@ void MainMenuScene::FindFilesUnix(
     const std::filesystem::path &directoryPath, std::vector<Diff> &diffs,
     const std::unordered_set<path_t> &oldFiles,
     std::vector<std::filesystem::path> &directoriesToVisit,
-    std::atomic_bool &isCancelled) {
+    std::stop_token stop_token) {
   DIR *dir = opendir(directoryPath.c_str());
   if (dir) {
     struct dirent *entry;
     while ((entry = readdir(dir)) != nullptr) {
-      if (isCancelled) {
+      if (stop_token.stop_requested()) {
         closedir(dir);
         break;
       }
@@ -490,11 +515,14 @@ void MainMenuScene::FindFilesIOS(
     const std::filesystem::path &path, std::vector<Diff> &diffs,
     const std::unordered_set<path_t> &oldFilesWs,
     std::vector<std::filesystem::path> &directoriesToVisit,
-    std::atomic_bool &isCancelled) {
+    std::stop_token stop_token) {
   // use iosnatives
   auto files = ListDocumentFilesRecursively();
   SDL_Log("Found %d files", files.size());
   for (auto &file : files) {
+    if (stop_token.stop_requested()) {
+      break;
+    }
     // SDL_Log("File: %s", file.c_str());
     if (file.size() > 4) {
       std::string ext = file.substr(file.size() - 4);
@@ -512,7 +540,7 @@ void MainMenuScene::FindFilesIOS(
 
 void MainMenuScene::FindNewBmsFiles(
     std::vector<Diff> &diffs, const std::unordered_set<path_t> &oldFilesWs,
-    const std::filesystem::path &path, std::atomic_bool &isCancelled) {
+    const std::filesystem::path &path, std::stop_token stop_token) {
 #ifdef _WIN32
   std::vector<path_t> directoriesToVisit;
   directoriesToVisit.push_back(path.wstring());
@@ -522,22 +550,19 @@ void MainMenuScene::FindNewBmsFiles(
 #endif
   SDL_Log("Finding new bms files in %s", path_t_to_utf8(path).c_str());
   while (!directoriesToVisit.empty()) {
-    if (isCancelled) {
+    if (stop_token.stop_requested()) {
       break;
     }
     std::filesystem::path currentDir = directoriesToVisit.back();
     directoriesToVisit.pop_back();
 
 #ifdef _WIN32
-
-    FindFilesWin(currentDir, diffs, oldFilesWs, directoriesToVisit,
-                 isCancelled);
+    FindFilesWin(currentDir, diffs, oldFilesWs, directoriesToVisit, stop_token);
 #elif TARGET_OS_OSX || TARGET_OS_LINUX
     FindFilesUnix(currentDir, diffs, oldFilesWs, directoriesToVisit,
-                  isCancelled);
+                  stop_token);
 #elif TARGET_OS_IOS
-    FindFilesIOS(currentDir, diffs, oldFilesWs, directoriesToVisit,
-                 isCancelled);
+    FindFilesIOS(currentDir, diffs, oldFilesWs, directoriesToVisit, stop_token);
 #endif
   }
 }

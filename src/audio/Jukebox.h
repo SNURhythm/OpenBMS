@@ -48,6 +48,8 @@ private:
   bgfx::UniformHandle s_texColor;
   // seek lock
   std::mutex seekLock;
+  // playthread lock
+  std::mutex playThreadLock;
   void loadSounds(bms_parser::Chart &chart, std::atomic_bool &isCancelled);
   void loadBMPs(bms_parser::Chart &chart, std::atomic_bool &isCancelled);
   void renderImage(ImageData &image, int viewId);
@@ -67,6 +69,9 @@ private:
   std::unordered_map<int, ImageData> imageTable;
   std::mutex imageTableMutex;
   std::vector<std::future<bool>> asyncVideoLoads;
+  long long lastPositionMicro = 0;
+  double diffSamples[100];
+  int diffSampleCount = 0;
   int currentBga = -1;
   int currentBmpLayer = -1;
   const std::string audioExtensions[4] = {"flac", "wav", "ogg", "mp3"};

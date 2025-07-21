@@ -7,6 +7,11 @@
 #include "../rendering/ShaderManager.h"
 #include "bgfx/bgfx.h"
 #include <stb_image.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <avrt.h>
+#pragma comment(lib, "avrt.lib")
+#endif
 Jukebox::Jukebox(Stopwatch *stopwatch)
     : audio(stopwatch), stopwatch(stopwatch) {
   s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
@@ -57,6 +62,10 @@ void Jukebox::render() {
 
 void Jukebox::loadSounds(bms_parser::Chart &chart,
                          std::atomic_bool &isCancelled) {
+  std::mutex wavTableLock;
+
+  wavTableAbs.clear();
+
   parallel_for(chart.WavTable.size(), [&](int start, int end) {
     auto wav = std::next(chart.WavTable.begin(), start);
     for (int i = start; i < end; i++, ++wav) {
@@ -76,7 +85,10 @@ void Jukebox::loadSounds(bms_parser::Chart &chart,
           continue;
         }
         if (audio.loadSound(path.c_str(), isCancelled)) {
-          wavTableAbs[wav->first] = path;
+          std::lock_guard<std::mutex> lock(wavTableLock);
+          auto idx = wav->first;
+          SDL_Log("Loaded sound %d: %s", idx, path_t_to_utf8(path).c_str());
+          wavTableAbs[idx] = path;
           found = true;
           break;
         }
@@ -190,12 +202,14 @@ void Jukebox::loadBMPs(bms_parser::Chart &chart,
 void Jukebox::loadChart(bms_parser::Chart &chart, bool scheduleNotes,
                         std::atomic_bool &isCancelled) {
   isPlaying = false;
-  if (playThread.joinable())
+  if (playThread.joinable()) {
+    SDL_Log("Joining playThread");
     playThread.join();
+  }
 
   audio.stopSounds();
   audio.unloadSounds();
-  wavTableAbs.clear();
+
   currentBga = -1;
   currentBmpLayer = -1;
   for (auto &videoPlayer : videoPlayerTable) {
@@ -249,12 +263,20 @@ void Jukebox::schedule(bms_parser::Chart &chart, bool scheduleNotes,
             return;
           if (note == nullptr)
             continue;
+          if (note->Wav == bms_parser::Parser::NoWav)
+            continue;
+          if (!wavTableAbs.contains(note->Wav))
+            continue;
           notes.emplace_back(timeline->Timing, note->Wav);
         }
       }
       for (auto &bgNote : timeline->BackgroundNotes) {
         if (isCancelled)
           return;
+        if (bgNote->Wav == bms_parser::Parser::NoWav)
+          continue;
+        if (!wavTableAbs.contains(bgNote->Wav))
+          continue;
         notes.emplace_back(timeline->Timing, bgNote->Wav);
       }
       std::sort(notes.begin(), notes.end());
@@ -267,12 +289,13 @@ void Jukebox::schedule(bms_parser::Chart &chart, bool scheduleNotes,
   }
 }
 void Jukebox::playKeySound(int wav) {
-  if (isPlaying) {
+  if (isPlaying && wavTableAbs.contains(wav)) {
     audio.playSound(wavTableAbs[wav].c_str());
   }
 }
 
 void Jukebox::play() {
+  std::lock_guard<std::mutex> lock(playThreadLock);
   if (playThread.joinable())
     playThread.join();
   audio.startDevice();
@@ -280,16 +303,41 @@ void Jukebox::play() {
   stopwatch->reset();
   stopwatch->start();
   auto hz = 8000;
+
   playThread = std::thread([this, hz] {
+#ifdef _WIN32
+    // Set thread priority using MMCS for audio playback
+    HANDLE taskHandle = nullptr;
+    DWORD taskIndex = 0;
+    taskHandle = AvSetMmThreadCharacteristicsW(L"Pro Audio", &taskIndex);
+    if (taskHandle) {
+      // Set thread priority to high
+      AvSetMmThreadPriority(taskHandle, AVRT_PRIORITY_CRITICAL);
+    }
+#endif
     while (isPlaying) {
+      auto now = std::chrono::high_resolution_clock::now();
       if (!stopwatch->isRunning()) {
         std::this_thread::sleep_for(std::chrono::microseconds(1000000 / hz));
         continue;
       }
       // lock seek
       std::lock_guard<std::mutex> lock(seekLock);
-      auto now = std::chrono::high_resolution_clock::now();
       auto positionMicro = stopwatch->elapsedMicros();
+      // auto diffMs = (positionMicro - lastPositionMicro) / 1000.0;
+      // diffSamples[diffSampleCount] = diffMs;
+      // diffSampleCount++;
+      // if (diffSampleCount >= 100) {
+      //   diffSampleCount = 0;
+      //   auto diffMs = 0.0;
+      //   for (int i = 0; i < 100; i++) {
+      //     diffMs += diffSamples[i];
+      //   }
+      //   diffMs /= 100.0;
+      //   // SDL_Log("diffMs: %lf", diffMs);
+      //   // SDL_Log("measured hz: %lf", 1000.0 / diffMs);
+      // }
+      lastPositionMicro = positionMicro;
       if (onTickCb) {
         onTickCb(positionMicro);
       }
@@ -345,9 +393,21 @@ void Jukebox::play() {
         }
       }
       auto loopRunTime = std::chrono::high_resolution_clock::now() - now;
+      // SDL_Log("loopRunTimeMicros: %lld",
+      // std::chrono::duration_cast<std::chrono::microseconds>(loopRunTime)
+      // .count());
       auto sleepTime = std::chrono::microseconds(1000000 / hz) - loopRunTime;
+      // SDL_Log("sleepTimeMicros: %lld",
+      // std::chrono::duration_cast<std::chrono::microseconds>(sleepTime)
+      // .count());
       std::this_thread::sleep_for(sleepTime);
     }
+#ifdef _WIN32
+    // Clean up MMCS handle
+    if (taskHandle) {
+      AvRevertMmThreadCharacteristics(taskHandle);
+    }
+#endif
   });
 }
 void Jukebox::renderImage(ImageData &image, int viewId) {
