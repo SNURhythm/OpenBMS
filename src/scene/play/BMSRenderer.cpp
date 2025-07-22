@@ -426,7 +426,6 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
       0.6f; // 0.6: need to convert green number to milliseconds.
             // (300green = 0.5s)
             // ... / ( greenNumber / 0.6f ) = ... / (greenNumber * 0.6f)
-  SDL_Log("visibleLaneTop: %f", visibleLaneTop);
   float visibleLaneBottom = judgeY;
   float rxhs = (visibleLaneTop - visibleLaneBottom) * hispeed;
   float y = judgeY;
