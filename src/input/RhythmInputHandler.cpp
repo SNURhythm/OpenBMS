@@ -95,8 +95,11 @@ int RhythmInputHandler::clampLane(int lane) const
 	return lane;
 }
 int RhythmInputHandler::touchToLane(Vector3 location) {
-  float distance = rendering::game_camera.getDistanceFromEye({4.0, 2, 0});
-  float z = distance - sin(atan2(0.5, 2.1)) * 2;
+  SDL_Log("Touch to lane: %f, %f, %f", location.x, location.y, location.z);
+  auto lookAt = rendering::game_camera.getLookAt();
+  auto eye = rendering::game_camera.getEye();
+  float distance = rendering::game_camera.getDistanceFromEye(lookAt);
+  float z = distance - sin(atan2(lookAt.y - eye.y, lookAt.z - eye.z)) * 2;
   bx::Vec3 position =
       rendering::game_camera.deproject(location.x, location.y, z);
   int line = (int)(position.x * totalLaneCount / 8.0f) - 1;

@@ -12,6 +12,9 @@
 #include "../../rendering/Color.h"
 #include "../../scene/play/RhythmState.h"
 #include "../../view/TextView.h"
+#include "../../rendering/Camera.h"
+#include "../../rendering/common.h"
+#include <bx/math.h>
 
 #include <list>
 struct LaneState {
@@ -59,6 +62,7 @@ private:
   float lowerBound = -1.0f;
   float upperBound = 10.0f;
   float judgeY = 0.0f;
+  float visibleLaneTop = 8.5f; // Calculated from camera projection
   long long latePoorTiming;
   GameObject *getInstance(ObjectType type);
   void recycleInstance(ObjectType type, GameObject *object);
@@ -75,6 +79,7 @@ private:
   bool isRightScratch(int lane);
   bool isScratch(int lane);
   float laneToX(int lane);
+  float calculateLanePlaneScreenTopIntersection();
   bgfx::TextureHandle noteTexture = BGFX_INVALID_HANDLE;
   bgfx::TextureHandle noteTexture2 = BGFX_INVALID_HANDLE;
   bgfx::TextureHandle longHeadTexture = BGFX_INVALID_HANDLE;
