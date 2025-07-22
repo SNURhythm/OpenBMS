@@ -24,9 +24,9 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
       timelines.push_back(timeLine);
     }
   }
-  SpriteLoader spriteLoader(PATH("assets/img/piano_w.png"));
+  SpriteLoader spriteLoader(PATH("assets/img/simple_gray.png"));
   if (!spriteLoader.load()) {
-    throw std::runtime_error("Failed to load piano_b.png");
+    throw std::runtime_error("Failed to load simple_gray.png");
   }
 
   // int width, height, channels;
@@ -99,9 +99,9 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
                             bgfx::copy(data, 128 * 40 * channels));
   SDL_free(data);
 
-  SpriteLoader spriteLoader2(PATH("assets/img/piano_b.png"));
+  SpriteLoader spriteLoader2(PATH("assets/img/simple_blue.png"));
   if (!spriteLoader2.load()) {
-    throw std::runtime_error("Failed to load piano_w.png");
+    throw std::runtime_error("Failed to load simple_blue.png");
   }
   channels = spriteLoader2.getChannels();
   data = spriteLoader2.crop(0, 0, width, height);
@@ -418,6 +418,10 @@ float BMSRenderer::calculateLanePlaneScreenTopIntersection() {
 }
 
 void BMSRenderer::render(RenderContext &context, long long micro) {
+  // background
+  drawRect(context, 8.0f, upperBound - judgeY, 0.0f, judgeY,
+           Color(20, 20, 20, 122));
+  // judge line
   drawRect(context, 8.0f, noteRenderHeight, 0.0f, judgeY,
            Color(255, 255, 255, 255));
   float greenNumber = 400.0f;
