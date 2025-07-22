@@ -205,7 +205,7 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   scoreText->setAlign(TextView::LEFT);
 
   // Calculate the lane plane screen top intersection
-  visibleLaneTop = calculateLanePlaneScreenTopIntersection();
+  upperBound = calculateLanePlaneScreenTopIntersection();
 }
 void BMSRenderer::drawJudgement(RenderContext context) const {
   if (state.latestJudgeResult.judgement == None) {
@@ -427,7 +427,7 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
             // (300green = 0.5s)
             // ... / ( greenNumber / 0.6f ) = ... / (greenNumber * 0.6f)
   float visibleLaneBottom = judgeY;
-  float rxhs = (visibleLaneTop - visibleLaneBottom) * hispeed;
+  float rxhs = (upperBound - visibleLaneBottom) * hispeed;
   float y = judgeY;
   std::map<bms_parser::LongNote *, float> longNoteLookahead;
   for (auto &orphanLongNote : state.orphanLongNotes) {

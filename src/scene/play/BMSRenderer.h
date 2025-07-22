@@ -60,9 +60,8 @@ private:
   float longBodyRenderHeightOff = 1.0f;
   float longBodyRenderHeightOn = 1.0f;
   float lowerBound = -1.0f;
-  float upperBound = 10.0f;
+  float upperBound = 10.0f; // Calculated from camera projection
   float judgeY = 0.0f;
-  float visibleLaneTop = 8.5f; // Calculated from camera projection
   long long latePoorTiming;
   GameObject *getInstance(ObjectType type);
   void recycleInstance(ObjectType type, GameObject *object);
