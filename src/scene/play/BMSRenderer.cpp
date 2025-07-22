@@ -351,6 +351,11 @@ void BMSRenderer::drawNormalNote(RenderContext &context, float y,
 void BMSRenderer::render(RenderContext &context, long long micro) {
   drawRect(context, 8.0f, noteRenderHeight, 0.0f, judgeY,
            Color(255, 255, 255, 255));
+  float greenNumber = 400.0f;
+  float hispeed = 240000.0f / chart->Meta.Bpm / greenNumber;
+  float visibleLaneTop = 8.5f; // TODO: calculate from camera projection
+  float visibleLaneBottom = judgeY;
+  float rxhs = (visibleLaneTop - visibleLaneBottom) * hispeed;
   float y = judgeY;
   std::map<bms_parser::LongNote *, float> longNoteLookahead;
   for (auto &orphanLongNote : state.orphanLongNotes) {
@@ -366,18 +371,19 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
       if (i > 0) {
         if (const auto &prevTimeLine = timelines[i - 1];
             prevTimeLine->Timing + prevTimeLine->GetStopDuration() > micro) {
+          // when the previous timeline is stopped
           y += (timeLine->BeatPosition - prevTimeLine->BeatPosition) *
-               prevTimeLine->Scroll * 10.0f;
+               prevTimeLine->Scroll * rxhs;
         } else {
           y += (timeLine->BeatPosition - prevTimeLine->BeatPosition) *
                prevTimeLine->Scroll * (timeLine->Timing - micro) /
                (timeLine->Timing - prevTimeLine->Timing -
                 prevTimeLine->GetStopDuration()) *
-               10.0f;
+               rxhs;
         }
       } else {
         y += timeLine->BeatPosition * (timeLine->Timing - micro) /
-             timeLine->Timing * 10.0f;
+             timeLine->Timing * rxhs;
       }
 
       if (timeLine->IsFirstInMeasure) {
@@ -556,8 +562,13 @@ inline float BMSRenderer::laneToX(int lane) {
   if (isLeftScratch(lane)) {
     return 0.0f;
   }
-  if(lane >= 8){
-    lane -= keyLaneCount == 14 ? 1 : (isRightScratch(lane) ? 5 : 3); // skip left scratch index (7), since 7 is already placed in the leftmost
+  if (lane >= 8) {
+    lane -=
+        keyLaneCount == 14
+            ? 1
+            : (isRightScratch(lane) ? 5
+                                    : 3); // skip left scratch index (7), since
+                                          // 7 is already placed in the leftmost
   }
 
   return (lane + 1) * noteRenderWidth;

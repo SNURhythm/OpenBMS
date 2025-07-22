@@ -57,7 +57,7 @@ private:
   float longBodyRenderHeightOff = 1.0f;
   float longBodyRenderHeightOn = 1.0f;
   float lowerBound = -1.0f;
-  float upperBound = 20.0f;
+  float upperBound = 10.0f;
   float judgeY = 0.0f;
   long long latePoorTiming;
   GameObject *getInstance(ObjectType type);
