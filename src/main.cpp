@@ -185,7 +185,7 @@ int main(int argv, char **args) {
   bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
   bgfx_init.resolution.width = rendering::window_width;
   bgfx_init.resolution.height = rendering::window_height;
-  bgfx_init.resolution.reset = BGFX_RESET_MSAA_X2 | (TARGET_IS_IOS ? BGFX_RESET_VSYNC : 0);
+  bgfx_init.resolution.reset = BGFX_RESET_MSAA_X2 | (TARGET_PLATFORM == iOS ? BGFX_RESET_VSYNC : 0);
   bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
   // bgfx::setDebug(BGFX_DEBUG_TEXT);
@@ -287,7 +287,7 @@ void run() {
 
         // set bgfx resolution
         bgfx::reset(rendering::window_width, rendering::window_height,
-                    BGFX_RESET_MSAA_X2 | (TARGET_IS_IOS ? BGFX_RESET_VSYNC : 0));
+                    BGFX_RESET_MSAA_X2 | (TARGET_PLATFORM == iOS ? BGFX_RESET_VSYNC : 0));
         SDL_Log("Window size: %d x %d", rendering::window_width,
                 rendering::window_height);
         destroyFrameBuffers();
