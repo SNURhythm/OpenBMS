@@ -203,6 +203,9 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   scoreText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   scoreText->setPosition(0, rendering::window_height - 50);
   scoreText->setAlign(TextView::LEFT);
+
+  // Calculate the lane plane screen top intersection
+  visibleLaneTop = calculateLanePlaneScreenTopIntersection();
 }
 void BMSRenderer::drawJudgement(RenderContext context) const {
   if (state.latestJudgeResult.judgement == None) {
@@ -348,12 +351,78 @@ void BMSRenderer::drawNormalNote(RenderContext &context, float y,
   noteObject->setTexture(texture);
   noteObject->render(context);
 }
+
+float BMSRenderer::calculateLanePlaneScreenTopIntersection() {
+  // Get the camera from the rendering context
+  Camera &camera = rendering::game_camera;
+  
+  // Screen top in screen coordinates (Y=0 is top of screen)
+  float screenTopY = 0.0f;
+  float screenCenterX = rendering::window_width / 2.0f;
+  
+  // Get camera position from camera
+  bx::Vec3 eye = camera.getEye();
+  
+  // Deproject the screen top center to get a point in world space
+  float testDistance = 5.0f;
+  bx::Vec3 screenTopWorld =
+      camera.deproject(screenCenterX, screenTopY, testDistance);
+  
+  SDL_Log("Camera eye: (%.2f, %.2f, %.2f)", eye.x, eye.y, eye.z);
+  SDL_Log("Screen top world: (%.2f, %.2f, %.2f)", screenTopWorld.x,
+          screenTopWorld.y, screenTopWorld.z);
+  
+  // Calculate ray direction from camera to screen top
+  bx::Vec3 rayDir = {screenTopWorld.x - eye.x, screenTopWorld.y - eye.y,
+                     screenTopWorld.z - eye.z};
+  float rayLength = bx::length(rayDir);
+  rayDir = {rayDir.x / rayLength, rayDir.y / rayLength, rayDir.z / rayLength};
+  
+  SDL_Log("Ray direction: (%.2f, %.2f, %.2f)", rayDir.x, rayDir.y, rayDir.z);
+  
+  // The lane plane is parallel to X-axis at z=0 (facing the camera)
+  // We need to find where the ray from camera intersects this plane
+  // Ray equation: eye + t * rayDir
+  // At intersection: eye.z + t * rayDir.z = 0
+  
+  // Check if ray direction is nearly parallel to the lane plane (z=0)
+  if (std::abs(rayDir.z) < 0.001f) {
+    SDL_Log(
+        "Warning: Ray is nearly parallel to lane plane, using fallback value");
+    return 8.5f; // Fallback to original hardcoded value
+  }
+  
+  // Solve for t where z=0: eye.z + t * rayDir.z = 0
+  float t = -eye.z / rayDir.z;
+  
+  SDL_Log("Calculated t: %.2f", t);
+  
+  // Check if intersection is behind camera
+  if (t < 0) {
+    SDL_Log("Warning: Intersection is behind camera, using fallback value");
+    return 8.5f; // Fallback to original hardcoded value
+  }
+  
+  // Calculate the intersection point
+  bx::Vec3 intersection = {eye.x + t * rayDir.x, eye.y + t * rayDir.y,
+                           eye.z + t * rayDir.z};
+  
+  SDL_Log("Intersection point: (%.2f, %.2f, %.2f)", intersection.x,
+          intersection.y, intersection.z);
+  
+  // Verify that z is actually 0 at intersection
+  float actualZ = eye.z + t * rayDir.z;
+  SDL_Log("Actual Z at intersection: %.6f", actualZ);
+  
+  return intersection.y;
+}
+
 void BMSRenderer::render(RenderContext &context, long long micro) {
   drawRect(context, 8.0f, noteRenderHeight, 0.0f, judgeY,
            Color(255, 255, 255, 255));
   float greenNumber = 400.0f;
   float hispeed = 240000.0f / chart->Meta.Bpm / greenNumber;
-  float visibleLaneTop = 8.5f; // TODO: calculate from camera projection
+  SDL_Log("visibleLaneTop: %f", visibleLaneTop);
   float visibleLaneBottom = judgeY;
   float rxhs = (visibleLaneTop - visibleLaneBottom) * hispeed;
   float y = judgeY;

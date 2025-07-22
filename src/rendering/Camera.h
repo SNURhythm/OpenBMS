@@ -24,6 +24,8 @@ public:
   float getDistanceFromEye(bx::Vec3 point);
   [[nodiscard]] float getNearClip() const { return nearClip; }
   [[nodiscard]] float getFarClip() const { return farClip; }
+  [[nodiscard]] bx::Vec3 getEye() const { return eye; }
+  [[nodiscard]] bx::Vec3 getLookAt() const { return lookAt; }
 
 private:
   bool editing = false;
