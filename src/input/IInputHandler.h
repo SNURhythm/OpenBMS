@@ -12,4 +12,5 @@ public:
   virtual void onKeyUp(int keyCode, KeySource keySource) = 0;
   virtual void onFingerDown(int fingerIndex, Vector3 location) = 0;
   virtual void onFingerUp(int fingerIndex, Vector3 location) = 0;
+  virtual void onFingerMove(int fingerIndex, Vector3 location) = 0;
 };

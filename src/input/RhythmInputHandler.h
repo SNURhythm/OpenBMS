@@ -8,6 +8,13 @@
 #include "../bms_parser.hpp"
 #include "IRhythmControl.h"
 #include "IInputSource.h"
+
+struct FlickState {
+  float startX, startY;
+  Uint32 startTime;
+  bool active;
+  int lastFlickDirection; // 0: none, 1: up, -1: down
+};
 class RhythmInputHandler : public IInputHandler {
 private:
   IInputSource *sdlInputSource = nullptr;
@@ -17,15 +24,16 @@ private:
   bool isDP;
   std::map<int, int> fingerToLane;
   int clampLane(int lane) const;
-
+  std::map<int, FlickState> flickStates;
 public:
   IRhythmControl *control;
   RhythmInputHandler(IRhythmControl *control,
                      const bms_parser::ChartMeta &meta);
   void onKeyDown(int keyCode, KeySource keySource) override;
   void onKeyUp(int KeyCode, KeySource Source) override;
-  void onFingerDown(int fingerIndex, Vector3 location) override;
-  void onFingerUp(int fingerIndex, Vector3 location) override;
+  void onFingerDown(int fingerIndex, Vector3 normalizedLocation) override;
+  void onFingerUp(int fingerIndex, Vector3 normalizedLocation) override;
+  void onFingerMove(int fingerIndex, Vector3 normalizedLocation) override;
   bool startListenSDL();
   bool startListenTouch();
   void stopListen();
