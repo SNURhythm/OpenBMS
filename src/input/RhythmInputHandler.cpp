@@ -40,8 +40,12 @@ void RhythmInputHandler::onFingerDown(int fingerIndex,
   }
   fingerToLane[fingerIndex] = lane;
   if (!flickStates.contains(fingerIndex)) {
-    flickStates[fingerIndex] = FlickState{
-        normalizedLocation.x, normalizedLocation.y, SDL_GetTicks(), true, 0};
+    flickStates[fingerIndex] = FlickState{normalizedLocation.x,
+                                          normalizedLocation.y,
+                                          SDL_GetTicks(),
+                                          true,
+                                          0,
+                                          false};
   }
   if (lane == 7 || lane == 15)
     return;
@@ -81,7 +85,18 @@ void RhythmInputHandler::onFingerMove(int fingerIndex,
     float distance = sqrtf(dx * dx + dy * dy);
     flickState.startX = normalizedLocation.x;
     flickState.startY = normalizedLocation.y;
-    if (distance > (flickState.isLongNote ? 0.01 : 0.001)) {
+    float flickThreshold;
+    if (flickState.isLongNote) {
+      flickThreshold = 0.01;
+    } else {
+      if (flickState.lastFlickDirection == 0) {
+        // make first flick more sensitive
+        flickThreshold = 0.001;
+      } else {
+        flickThreshold = 0.002;
+      }
+    }
+    if (distance > flickThreshold) {
       int direction = dy < 0 ? 1 : -1;
       if (direction != flickState.lastFlickDirection) {
         SDL_Log("Distance: %f, Direction: %d", distance, direction);
