@@ -287,6 +287,7 @@ bms_parser::Note *GamePlayScene::releaseLane(int lane, double inputDelay) {
       return note;
     }
   }
+  return nullptr;
 }
 void GamePlayScene::checkPassedTimeline(long long time) {
   auto measures = chart->Measures;
