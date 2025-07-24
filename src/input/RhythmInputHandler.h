@@ -14,6 +14,7 @@ struct FlickState {
   Uint32 startTime;
   bool active;
   int lastFlickDirection; // 0: none, 1: up, -1: down
+  bool isLongNote;
 };
 class RhythmInputHandler : public IInputHandler {
 private:
@@ -25,6 +26,7 @@ private:
   std::map<int, int> fingerToLane;
   int clampLane(int lane) const;
   std::map<int, FlickState> flickStates;
+
 public:
   IRhythmControl *control;
   RhythmInputHandler(IRhythmControl *control,

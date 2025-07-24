@@ -163,13 +163,13 @@ void GamePlayScene::cleanupScene() {
   inputHandler = nullptr;
   SDL_Log("Cleaned up GamePlayScene");
 }
-int GamePlayScene::pressLane(int lane, double inputDelay) {
+bms_parser::Note *GamePlayScene::pressLane(int lane, double inputDelay) {
   return pressLane(lane, lane, inputDelay);
 }
-int GamePlayScene::pressLane(int mainLane, int compensateLane,
-                             double inputDelay) {
+bms_parser::Note *GamePlayScene::pressLane(int mainLane, int compensateLane,
+                                           double inputDelay) {
   if (context.jukebox.isPaused()) {
-    return mainLane;
+    return nullptr;
   }
   std::vector<int> candidates;
   if (lanePressed.contains(mainLane) && !lanePressed[mainLane]) {
@@ -179,11 +179,11 @@ int GamePlayScene::pressLane(int mainLane, int compensateLane,
     candidates.push_back(compensateLane);
   }
   if (candidates.empty()) {
-    return mainLane;
+    return nullptr;
   }
 
   if (isGamePaused) {
-    return mainLane;
+    return nullptr;
   }
 
   if (state == nullptr) {
@@ -193,11 +193,11 @@ int GamePlayScene::pressLane(int mainLane, int compensateLane,
         std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::system_clock::now().time_since_epoch())
             .count());
-    return mainLane;
+    return nullptr;
   }
   if (!state->isPlaying) {
     lanePressed[mainLane] = true;
-    return mainLane;
+    return nullptr;
   }
 
   const auto &measures = chart->Measures;
@@ -234,7 +234,7 @@ int GamePlayScene::pressLane(int mainLane, int compensateLane,
             std::chrono::duration_cast<std::chrono::microseconds>(
                 std::chrono::system_clock::now().time_since_epoch())
                 .count());
-        return lane;
+        return note;
       }
     }
   }
@@ -244,11 +244,11 @@ int GamePlayScene::pressLane(int mainLane, int compensateLane,
       std::chrono::duration_cast<std::chrono::microseconds>(
           std::chrono::system_clock::now().time_since_epoch())
           .count());
-  return mainLane;
+  return nullptr;
 }
-void GamePlayScene::releaseLane(int lane, double inputDelay) {
+bms_parser::Note *GamePlayScene::releaseLane(int lane, double inputDelay) {
   if (!lanePressed.contains(lane) || !lanePressed[lane]) {
-    return;
+    return nullptr;
   }
   lanePressed[lane] = false;
   renderer->onLaneReleased(
@@ -259,10 +259,10 @@ void GamePlayScene::releaseLane(int lane, double inputDelay) {
                             static_cast<long long>(inputDelay * 1000000);
 
   if (state == nullptr) {
-    return;
+    return nullptr;
   }
   if (!state->isPlaying) {
-    return;
+    return nullptr;
   }
 
   const auto &Measures = chart->Measures;
@@ -284,7 +284,7 @@ void GamePlayScene::releaseLane(int lane, double inputDelay) {
         continue;
       }
       releaseNote(note, releasedTime);
-      return;
+      return note;
     }
   }
 }

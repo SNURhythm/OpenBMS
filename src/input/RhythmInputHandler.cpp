@@ -28,25 +28,31 @@ void RhythmInputHandler::onKeyUp(int keyCode, KeySource keySource) {
     control->releaseLane(lane);
   }
 }
-void RhythmInputHandler::onFingerDown(int fingerIndex, Vector3 normalizedLocation) {
+void RhythmInputHandler::onFingerDown(int fingerIndex,
+                                      Vector3 normalizedLocation) {
 
-  int lane = touchToLane({normalizedLocation.x * rendering::window_width, normalizedLocation.y * rendering::window_height, normalizedLocation.z});
+  int lane = touchToLane({normalizedLocation.x * rendering::window_width,
+                          normalizedLocation.y * rendering::window_height,
+                          normalizedLocation.z});
   for (auto &[index, fingerLane] : fingerToLane) {
     if (fingerLane == lane)
       return;
   }
   fingerToLane[fingerIndex] = lane;
-  if(!flickStates.contains(fingerIndex)) {
-    flickStates[fingerIndex] = FlickState{normalizedLocation.x, normalizedLocation.y, SDL_GetTicks(), true, 0};
+  if (!flickStates.contains(fingerIndex)) {
+    flickStates[fingerIndex] = FlickState{
+        normalizedLocation.x, normalizedLocation.y, SDL_GetTicks(), true, 0};
   }
-  if(lane == 7 || lane == 15) return;
+  if (lane == 7 || lane == 15)
+    return;
 
   control->pressLane(lane);
 }
-void RhythmInputHandler::onFingerUp(int fingerIndex, Vector3 normalizedLocation) {
-  SDL_Log("FingerUp: %d, (%f, %f, %f)", fingerIndex, normalizedLocation.x, normalizedLocation.y,
-          normalizedLocation.z);
-  if(flickStates.contains(fingerIndex)) {
+void RhythmInputHandler::onFingerUp(int fingerIndex,
+                                    Vector3 normalizedLocation) {
+  SDL_Log("FingerUp: %d, (%f, %f, %f)", fingerIndex, normalizedLocation.x,
+          normalizedLocation.y, normalizedLocation.z);
+  if (flickStates.contains(fingerIndex)) {
     flickStates.erase(fingerIndex);
   }
   if (fingerToLane.contains(fingerIndex)) {
@@ -55,29 +61,44 @@ void RhythmInputHandler::onFingerUp(int fingerIndex, Vector3 normalizedLocation)
     control->releaseLane(lane);
   }
 }
-void RhythmInputHandler::onFingerMove(int fingerIndex, Vector3 normalizedLocation) {
-//  SDL_Log("FingerMove: %d, (%f, %f, %f)", fingerIndex, normalizedLocation.x, normalizedLocation.y,
-//          normalizedLocation.z);
+void RhythmInputHandler::onFingerMove(int fingerIndex,
+                                      Vector3 normalizedLocation) {
+  //  SDL_Log("FingerMove: %d, (%f, %f, %f)", fingerIndex, normalizedLocation.x,
+  //  normalizedLocation.y,
+  //          normalizedLocation.z);
   if (fingerToLane.contains(fingerIndex)) {
     int lane = fingerToLane[fingerIndex];
     // is scratch lane
-    if(!(lane == 7 || lane == 15)) return;
-    if(!flickStates.contains(fingerIndex)) return;
+    if (!(lane == 7 || lane == 15))
+      return;
+    if (!flickStates.contains(fingerIndex))
+      return;
     FlickState &flickState = flickStates[fingerIndex];
-    if(!flickState.active) return;
+    if (!flickState.active)
+      return;
     float dx = normalizedLocation.x - flickState.startX;
     float dy = normalizedLocation.y - flickState.startY;
     float distance = sqrtf(dx * dx + dy * dy);
     flickState.startX = normalizedLocation.x;
     flickState.startY = normalizedLocation.y;
-    if(distance > 0.001) {
+    if (distance > (flickState.isLongNote ? 0.01 : 0.001)) {
       int direction = dy < 0 ? 1 : -1;
-      if(direction != flickState.lastFlickDirection) {
+      if (direction != flickState.lastFlickDirection) {
         SDL_Log("Distance: %f, Direction: %d", distance, direction);
         flickState.lastFlickDirection = direction;
-
-        control->releaseLane(lane);
-        control->pressLane(lane);
+        if (flickState.isLongNote) {
+          control->releaseLane(lane);
+          return;
+        }
+        auto note = control->pressLane(lane);
+        if (note != nullptr) {
+          flickState.isLongNote = note->IsLongNote();
+        } else {
+          flickState.isLongNote = false;
+        }
+        if (!flickState.isLongNote) {
+          control->releaseLane(lane);
+        }
       }
     }
   }
@@ -107,27 +128,22 @@ void RhythmInputHandler::stopListen() {
     }
   }
 }
-int RhythmInputHandler::clampLane(int lane) const
-{
-	if (lane < 0)
-	{
-		return 7; // left scratch
-	}
-	if (lane >= keyLaneCount)
-	{
-		return isDP ? 15 : 7; // right scratch
-	}
-	if (lane >= 7 && keyLaneCount == 14)
-	{
-		// 14Keys: 7 is scratch, so we should map 7~13 to 8~14
-		lane += 1;
-	}
-	if (lane >= 5 && keyLaneCount == 10)
-	{
-		// 10Keys: 5,6 is empty and 7 is scratch, so we should map 5~9 to 8~12
-		lane += 3;
-	}
-	return lane;
+int RhythmInputHandler::clampLane(int lane) const {
+  if (lane < 0) {
+    return 7; // left scratch
+  }
+  if (lane >= keyLaneCount) {
+    return isDP ? 15 : 7; // right scratch
+  }
+  if (lane >= 7 && keyLaneCount == 14) {
+    // 14Keys: 7 is scratch, so we should map 7~13 to 8~14
+    lane += 1;
+  }
+  if (lane >= 5 && keyLaneCount == 10) {
+    // 10Keys: 5,6 is empty and 7 is scratch, so we should map 5~9 to 8~12
+    lane += 3;
+  }
+  return lane;
 }
 int RhythmInputHandler::touchToLane(Vector3 location) {
   SDL_Log("Touch to lane: %f, %f, %f", location.x, location.y, location.z);

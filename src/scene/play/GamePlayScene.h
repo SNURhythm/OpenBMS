@@ -36,9 +36,10 @@ public:
   void update(float dt) override;
   void renderScene() override;
   void cleanupScene() override;
-  int pressLane(int lane, double inputDelay) override;
-  int pressLane(int mainLane, int compensateLane, double inputDelay) override;
-  void releaseLane(int lane, double inputDelay) override;
+  bms_parser::Note *pressLane(int lane, double inputDelay) override;
+  bms_parser::Note *pressLane(int mainLane, int compensateLane,
+                              double inputDelay) override;
+  bms_parser::Note *releaseLane(int lane, double inputDelay) override;
   EventHandleResult handleEvents(SDL_Event &event) override;
 
 private:
