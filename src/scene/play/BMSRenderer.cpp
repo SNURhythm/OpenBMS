@@ -477,6 +477,7 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
     for (const auto &note : timeLine->Notes) {
       if (note != nullptr) {
         if (timeLine->Timing >= micro - latePoorTiming) {
+          // note is in the hittable timing
           if (note->IsDead) {
             continue;
           }
@@ -504,6 +505,7 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
             drawNormalNote(context, y, note);
           }
         } else {
+          // note has passed the last hittable timing
           if (note->IsLongNote()) {
             if (auto *longNote = dynamic_cast<bms_parser::LongNote *>(note);
                 longNote->IsTail()) {
@@ -518,9 +520,13 @@ void BMSRenderer::render(RenderContext &context, long long micro) {
             } else {
               // add to orphan long note
               state.orphanLongNotes.push_back(longNote);
+
+              // setting to lowerBound in all cases is OK because the played
+              // state will be correctly handled by drawLongNote
+              longNoteLookahead[longNote] = lowerBound;
             }
           }
-          if (state.noteObjectMap.find(note) != state.noteObjectMap.end()) {
+          if (state.noteObjectMap.contains(note)) {
             recycleInstance(ObjectType::Note, state.noteObjectMap[note]);
             state.noteObjectMap.erase(note);
           }
