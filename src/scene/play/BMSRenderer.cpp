@@ -611,10 +611,10 @@ void BMSRenderer::drawLaneBeam(RenderContext &context, int lane,
   // alpha
   double alpha;
   if (laneState.isPressed) {
-    alpha = 0.5;
+    alpha = 0.2;
   } else {
     // fade out
-    alpha = 0.5 - (time - laneState.lastStateTime) / 1000000.0 / 1.0;
+    alpha = 0.2 - (time - laneState.lastStateTime) / 1000000.0 / 1.0;
   }
   if (alpha <= 0.0) {
     return;
