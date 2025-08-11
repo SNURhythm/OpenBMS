@@ -119,11 +119,38 @@ elseif (UNIX AND NOT APPLE)
     set(SDL2_LIB SDL2)
     set(SDL2MAIN_LIB SDL2main)
     set(SDL2_TFF_LIB SDL2_ttf)
-    find_library(FFMPEG_LIBS avcodec avfilter avformat avutil avdevice swresample swscale postproc vpx x264 x265 PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    # Find FFmpeg components individually on Linux to ensure all are present
+    find_library(FFMPEG_AVCODEC avcodec PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    find_library(FFMPEG_AVFILTER avfilter PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    find_library(FFMPEG_AVFORMAT avformat PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    find_library(FFMPEG_AVUTIL avutil PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    find_library(FFMPEG_AVDEVICE avdevice PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    find_library(FFMPEG_SWRESAMPLE swresample PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    find_library(FFMPEG_SWSCALE swscale PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    find_library(FFMPEG_POSTPROC postproc PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    # Optional codecs
+    find_library(FFMPEG_VPX vpx PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    find_library(FFMPEG_X264 x264 PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    find_library(FFMPEG_X265 x265 PATHS ${LIB_DIR}/linux NO_DEFAULT_PATH)
+    set(FFMPEG_LIBS
+        ${FFMPEG_AVCODEC}
+        ${FFMPEG_AVFILTER}
+        ${FFMPEG_AVFORMAT}
+        ${FFMPEG_AVUTIL}
+        ${FFMPEG_AVDEVICE}
+        ${FFMPEG_SWRESAMPLE}
+        ${FFMPEG_SWSCALE}
+        ${FFMPEG_POSTPROC}
+        ${FFMPEG_VPX}
+        ${FFMPEG_X264}
+        ${FFMPEG_X265}
+    )
     file(GLOB DLLS ${LIB_DIR}/linux/*.so)
     set(EXTRA_LIBS X11 sndfile)
     add_definitions(-DSDL_VIDEO_DRIVER_X11=ON)
 elseif (APPLE)
+    # for std::stop_token and std::jthread
+    add_compile_options(-fexperimental-library)
     link_directories(${LIB_DIR}/darwin)
     find_package(SndFile CONFIG REQUIRED)
     set(CP_ASSETS "cp -r assets ${BUILD_DIR}")
@@ -164,12 +191,13 @@ elseif (IOS)
     # TODO
     find_library(UIKIT UIKit)
     find_library(FOUNDATION Foundation)
-    target_link_libraries(main PRIVATE ${UIKIT} ${FOUNDATION})
+    # Link frameworks after the target is created; store for later
+    set(IOS_FRAMEWORKS ${UIKIT} ${FOUNDATION})
 endif ()
 
 if (WIN32)
     string(REPLACE ".lib" ".dll" SDL2_LIB_DLL ${SDL2_LIB})
-    set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${SDL2_LIB_DLL} IMPORTED_IMPLIB ${SDL2_LIB})
+    set_target_properties(SDL2 PROPERTIES IMPORTED_LOCATION ${LIB_DIR}/win32/SDL2.dll IMPORTED_IMPLIB ${SDL2_LIB})
 endif ()
 
 add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
@@ -178,7 +206,20 @@ add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 # Main executable
 add_executable(main)
 
-target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${FFMPEG_LIBS} ${LUA_LIB} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx yogacore)
+# On iOS, now that target exists, link frameworks
+if (IOS)
+    target_link_libraries(main PRIVATE ${IOS_FRAMEWORKS})
+endif ()
+
+# Only link Lua if found on this platform
+if (DEFINED LUA_LIB)
+    list(APPEND EXTRA_LIBS ${LUA_LIB})
+endif ()
+if (DEFINED LUAJIT_LIB)
+    list(APPEND EXTRA_LIBS ${LUAJIT_LIB})
+endif ()
+
+target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${FFMPEG_LIBS} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx yogacore)
 
 # Custom target for copying assets
 add_custom_command(

@@ -28,7 +28,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #endif
-#elif __linux
+#elif __linux__
 // linux
 #include <dirent.h>
 #include <sys/stat.h>
@@ -155,7 +155,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
   auto jacketView = new ImageView(0, 0, 0, 0);
   recyclerView->onSelected = [this, &context, jacketView](
                                  const bms_parser::ChartMeta &item, int idx) {
-    if (willStart)
+    if (willStart.load())
       return;
     auto selectedView = recyclerView->getViewByIndex(idx);
     SDL_Log("Selected: %s; path: %s", item.Title.c_str(),
@@ -169,20 +169,20 @@ void MainMenuScene::initView(ApplicationContext &context) {
       SDL_Log("Joining preview thread");
       loadThread.join();
     }
-    if (selectedChart) {
-      delete selectedChart;
-      selectedChart = nullptr;
+    if (selectedChart.load()) {
+      delete selectedChart.load();
+      selectedChart.store(nullptr);
     }
     loadThread = std::thread([this, item, &context]() {
       SDL_Log("Previewing %s", path_t_to_utf8(item.BmsPath).c_str());
 
-      previewLoadCancelled = false;
+      previewLoadCancelled.store(false);
       // dumb implementation of debounce
       for (int i = 0; i < 50; i++) {
-        if (previewLoadCancelled) {
+        if (previewLoadCancelled.load()) {
           return;
         }
-        if (willStart)
+        if (willStart.load())
           break;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
       }
@@ -204,13 +204,13 @@ void MainMenuScene::initView(ApplicationContext &context) {
         SDL_Log("Chart is null");
         return;
       }
-      selectedChart = chart;
+      selectedChart.store(chart);
 
       context.jukebox.loadChart(*chart, true, previewLoadCancelled);
-      if (previewLoadCancelled) {
+      if (previewLoadCancelled.load()) {
         return;
       }
-      if (!willStart) {
+      if (!willStart.load()) {
         context.jukebox.play();
       }
     });
@@ -269,7 +269,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
     auto selected = recyclerView->selectedIndex;
     SDL_Log("Selected: %d", selected);
     if (selected >= 0) {
-      willStart = true;
+      willStart.store(true);
       buttonText->setText("Loading...");
 
       defer(
@@ -281,7 +281,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
             }
             context.jukebox.stop();
             context.sceneManager->changeScene(
-                new GamePlayScene(context, selectedChart,
+                new GamePlayScene(context, selectedChart.load(),
                                   {
                                       .startPosition = 0,
                                       .autoKeySound = false,
@@ -314,6 +314,7 @@ void MainMenuScene::renderScene() {
   // Render the scene
   // SDL_Log("Rendering Main Menu Scene");
   rootLayout->setSize(rendering::window_width, rendering::window_height);
+  rootLayout->applyYogaLayout();
   context.jukebox.render();
 }
 
@@ -372,45 +373,34 @@ void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
     return;
   std::atomic_bool is_committing(false);
   std::atomic_int success_count(0);
+  // Serialize DB writes to be safe with SQLite; parse in this thread
   dbHelper.BeginTransaction(db);
-  parallel_for(diffs.size(), [&](int start, int end) {
-    for (int i = start; i < end; i++) {
-      if (stop_token.stop_requested()) {
-        break;
-      }
-      auto &diff = diffs[i];
-      if (diff.type == Added) {
-        bms_parser::Parser parser;
-        bms_parser::Chart *chart;
-        std::atomic_bool cancel(false);
-        bms_parser::ChartMeta chartMeta;
-        // try {
-        parser.Parse(diffs[i].path, &chart, false, true, cancel);
-        // } catch (std::exception &e) {
-        //   delete chart;
-        //   SDL_Log("Error parsing %s:",
-        //   path_t_to_utf8(diffs[i].path).c_str()); std::cerr << "Error parsing
-        //   " << diffs[i].path << ": " << e.what()
-        //             << std::endl;
-        //   continue;
-        // }
-
-        if (chart == nullptr)
-          continue;
-        ++success_count;
-        if (success_count % 1000 == 0 && !is_committing) {
-          is_committing = true;
-          dbHelper.CommitTransaction(db);
-          dbHelper.BeginTransaction(db);
-          is_committing = false;
-        }
-        dbHelper.InsertChartMeta(db, chart->Meta);
-        delete chart;
-      } else {
-        dbHelper.DeleteChartMeta(db, diff.path);
-      }
+  for (size_t i = 0; i < diffs.size(); ++i) {
+    if (stop_token.stop_requested()) {
+      break;
     }
-  });
+    auto &diff = diffs[i];
+    if (diff.type == Added) {
+      bms_parser::Parser parser;
+      bms_parser::Chart *chart = nullptr;
+      std::atomic_bool cancel(false);
+      parser.Parse(diffs[i].path, &chart, false, true, cancel);
+      if (chart == nullptr) {
+        continue;
+      }
+      ++success_count;
+      if (success_count % 1000 == 0 && !is_committing) {
+        is_committing = true;
+        dbHelper.CommitTransaction(db);
+        dbHelper.BeginTransaction(db);
+        is_committing = false;
+      }
+      dbHelper.InsertChartMeta(db, chart->Meta);
+      delete chart;
+    } else {
+      dbHelper.DeleteChartMeta(db, diff.path);
+    }
+  }
   dbHelper.CommitTransaction(db);
   SDL_Log("Inserted %d new charts", success_count.load());
   // set items
