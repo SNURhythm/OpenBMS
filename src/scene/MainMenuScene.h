@@ -25,8 +25,8 @@ public:
 private:
   sqlite3 *db;
   std::atomic_bool previewLoadCancelled = false;
-  bool willStart = false;
-  bms_parser::Chart *selectedChart = nullptr;
+  std::atomic_bool willStart = false;
+  std::atomic<bms_parser::Chart*> selectedChart{nullptr};
 
   std::thread loadThread;
   std::jthread checkEntriesThread;

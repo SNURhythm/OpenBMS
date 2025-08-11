@@ -40,7 +40,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #endif
-#elif __linux
+#elif __linux__
 // linux
 #include <dirent.h>
 #include <sys/stat.h>
@@ -168,8 +168,6 @@ int main(int argv, char **args) {
   SDL_VERSION(&wmi.version);
   SDL_Log("SDL_major: %d, SDL_minor: %d, SDL_patch: %d\n", wmi.version.major,
           wmi.version.minor, wmi.version.patch);
-  wmi.version.major = 2.0;
-  wmi.version.minor = 0;
   if (!SDL_GetWindowWMInfo(win, &wmi)) {
     printf("SDL_SysWMinfo could not be retrieved. SDL_Error: %s\n",
            SDL_GetError());
@@ -310,7 +308,6 @@ void run() {
     bgfx::touch(rendering::final_view);
     bgfx::touch(rendering::blur_view_h);
     bgfx::touch(rendering::blur_view_v);
-    bgfx::submit(rendering::clear_view, program);
 
     sceneManager.render();
     blurHorizontal();
@@ -319,7 +316,8 @@ void run() {
 
     // render fps, rounded to 2 decimal places
     std::ostringstream oss;
-    oss << std::fixed << std::setprecision(2) << 1.0f / deltaTime;
+    float safeDt = (deltaTime <= 0.0f ? 1e-6f : deltaTime);
+    oss << std::fixed << std::setprecision(2) << 1.0f / safeDt;
     fpsText.setText(oss.str());
     fpsText.setPosition(10, 10);
     RenderContext renderContext;
@@ -362,6 +360,14 @@ void run() {
     //
   }
   sceneManager.cleanup();
+  // Destroy resources
+  destroyFrameBuffers();
+  if (bgfx::isValid(s_ProgBlurH)) bgfx::destroy(s_ProgBlurH);
+  if (bgfx::isValid(s_ProgBlurV)) bgfx::destroy(s_ProgBlurV);
+  if (bgfx::isValid(s_ProgRect))  bgfx::destroy(s_ProgRect);
+  if (bgfx::isValid(s_uTexColor)) bgfx::destroy(s_uTexColor);
+  if (bgfx::isValid(s_uTexelSize)) bgfx::destroy(s_uTexelSize);
+  if (bgfx::isValid(s_uTintColor)) bgfx::destroy(s_uTintColor);
   // bgfx::destroy(vbh);
   // bgfx::destroy(ibh);
 }
