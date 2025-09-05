@@ -46,3 +46,4 @@ jobs:
           FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           SPACESHIP_ONLY_ALLOW_INTERACTIVE_2FA: 1
+          APP_STORE_KEY: ${{ secrets.APP_STORE_KEY }}
