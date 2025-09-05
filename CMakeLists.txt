@@ -124,6 +124,8 @@ elseif (UNIX AND NOT APPLE)
     set(EXTRA_LIBS X11 sndfile)
     add_definitions(-DSDL_VIDEO_DRIVER_X11=ON)
 elseif (APPLE)
+    # for std::stop_token and std::jthread in Xcode lower than 26
+    add_compile_options(-fexperimental-library)
     link_directories(${LIB_DIR}/darwin)
     find_package(SndFile CONFIG REQUIRED)
     set(CP_ASSETS "cp -r assets ${BUILD_DIR}")
