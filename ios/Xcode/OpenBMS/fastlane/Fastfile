@@ -21,7 +21,14 @@ platform :ios do
     unlock_keychain(
       password: ENV["KEYCHAIN_PASSWORD"]
     )
-    match(type: "appstore", git_basic_authorization: ENV["GIT_BASIC_AUTHORIZATION"])
+    api_key = app_store_connect_api_key(
+      key_id: "7459U6UPUW",
+      issuer_id: "5e03957a-e681-458f-8011-a8f608b71a70",
+      key_content: ENV["APP_STORE_KEY"],
+      duration: 1200,
+      in_house: false,
+    )
+    match(type: "appstore", git_basic_authorization: ENV["GIT_BASIC_AUTHORIZATION"], api_key: api_key)
     increment_build_number(
       build_number: latest_testflight_build_number + 1,
       xcodeproj: "OpenBMS.xcodeproj"
