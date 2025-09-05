@@ -26,7 +26,7 @@ private:
   sqlite3 *db;
   std::atomic_bool previewLoadCancelled = false;
   bool willStart = false;
-  bms_parser::Chart *selectedChart = nullptr;
+  std::atomic<bms_parser::Chart *> selectedChart{nullptr};
 
   std::thread loadThread;
   std::jthread checkEntriesThread;
@@ -34,12 +34,12 @@ private:
   View *rootLayout = nullptr;
 
   void initView(ApplicationContext &context);
-  static void CheckEntries(std::stop_token stop_token,
+  static void CheckEntries(const std::stop_token &stop_token,
                            ApplicationContext &context, MainMenuScene &scene);
 
   static void LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
                          std::vector<path_t> &entries, MainMenuScene &scene,
-                         std::stop_token stop_token);
+                         const std::stop_token &stop_token);
   enum DiffType { Deleted, Added };
   struct Diff {
     std::filesystem::path path;
@@ -50,24 +50,24 @@ private:
                            std::vector<Diff> &diffs,
                            const std::unordered_set<path_t> &oldFilesWs,
                            std::vector<path_t> &directoriesToVisit,
-                           std::stop_token stop_token);
+                           const std::stop_token &stop_token);
 #elif TARGET_OS_OSX || TARGET_OS_LINUX
   static void
   FindFilesUnix(const std::filesystem::path &path, std::vector<Diff> &diffs,
                 const std::unordered_set<path_t> &oldFilesWs,
                 std::vector<std::filesystem::path> &directoriesToVisit,
-                std::stop_token stop_token);
+                const std::stop_token &stop_token);
 #elif TARGET_OS_IPHONE
   static void
   FindFilesIOS(const std::filesystem::path &path, std::vector<Diff> &diffs,
                const std::unordered_set<path_t> &oldFilesWs,
                std::vector<std::filesystem::path> &directoriesToVisit,
-               std::stop_token stop_token);
+               const std::stop_token &stop_token);
 #endif
   static void FindNewBmsFiles(std::vector<Diff> &diffs,
                               const std::unordered_set<path_t> &oldFilesWs,
                               const std::filesystem::path &path,
-                              std::stop_token stop_token);
+                              const std::stop_token &stop_token);
   static void resolveDType(const std::filesystem::path &directoryPath,
                            struct dirent *entry);
 };
