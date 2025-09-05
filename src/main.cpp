@@ -206,7 +206,8 @@ void run() {
   ApplicationContext context;
   bgfx::setViewMode(rendering::ui_view, bgfx::ViewMode::Sequential);
   SceneManager sceneManager(context);
-  sceneManager.changeScene(new MainMenuScene(context));
+  sceneManager.registerScene("MainMenu", std::make_unique<MainMenuScene>(context));
+  sceneManager.changeScene("MainMenu");
 
   // SDL_RenderClear(ren);
   // SDL_RenderCopy(ren, tex, nullptr, nullptr);

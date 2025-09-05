@@ -89,7 +89,7 @@ void GamePlayScene::init() {
         context.jukebox.stop();
         defer(
             [this]() {
-              context.sceneManager->changeScene(new MainMenuScene(context));
+              context.sceneManager->changeScene("MainMenu");
               return false;
             },
             0, true);

@@ -273,7 +273,7 @@ void MainMenuScene::initView(ApplicationContext &context) {
       buttonText->setText("Loading...");
 
       defer(
-          [this, &context]() {
+          [this, &context, buttonText]() {
             SDL_Log("Starting game play scene");
             ImageView::dropAllCache();
             if (loadThread.joinable()) {
@@ -286,8 +286,11 @@ void MainMenuScene::initView(ApplicationContext &context) {
                                       .startPosition = 0,
                                       .autoKeySound = false,
                                       .autoPlay = false,
-                                  }));
-            return false;
+                                  }),
+                true);
+            willStart = false;
+            buttonText->setText("Start");
+            return true;
           },
           0, true);
     }
