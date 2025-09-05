@@ -2109,6 +2109,10 @@
 					"$(SDKROOT)/usr/lib/swift",
 				);
 				MARKETING_VERSION = 0.0.1;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fexperimental-library",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.snurhythm.OpenBMS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2162,6 +2166,10 @@
 					"$(SDKROOT)/usr/lib/swift",
 				);
 				MARKETING_VERSION = 0.0.1;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fexperimental-library",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.snurhythm.OpenBMS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
