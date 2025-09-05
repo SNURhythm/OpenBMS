@@ -48,7 +48,7 @@ void MainMenuScene::init() {
       std::jthread(CheckEntries, std::ref(context), std::ref(*this));
 }
 
-void MainMenuScene::CheckEntries(std::stop_token stop_token,
+void MainMenuScene::CheckEntries(const std::stop_token &stop_token,
                                  ApplicationContext &context,
                                  MainMenuScene &scene) {
   auto dbHelper = ChartDBHelper::GetInstance();
@@ -335,7 +335,7 @@ void MainMenuScene::cleanupScene() {
 void MainMenuScene::LoadCharts(ChartDBHelper &dbHelper, sqlite3 *db,
                                std::vector<path_t> &entries,
                                MainMenuScene &scene,
-                               std::stop_token stop_token) {
+                               const std::stop_token &stop_token) {
   std::vector<bms_parser::ChartMeta> chartMetas;
   dbHelper.SelectAllChartMeta(db, chartMetas);
   // sort by title
@@ -425,7 +425,7 @@ void MainMenuScene::FindFilesWin(const std::filesystem::path &path,
                                  std::vector<Diff> &diffs,
                                  const std::unordered_set<path_t> &oldFilesWs,
                                  std::vector<path_t> &directoriesToVisit,
-                                 std::stop_token stop_token) {
+                                 const std::stop_token &stop_token) {
   WIN32_FIND_DATAW findFileData;
   HANDLE hFind =
       FindFirstFileW((path.wstring() + L"\\*.*").c_str(), &findFileData);
@@ -481,7 +481,7 @@ void MainMenuScene::FindFilesUnix(
     const std::filesystem::path &directoryPath, std::vector<Diff> &diffs,
     const std::unordered_set<path_t> &oldFiles,
     std::vector<std::filesystem::path> &directoriesToVisit,
-    std::stop_token stop_token) {
+    const std::stop_token &stop_token) {
   DIR *dir = opendir(directoryPath.c_str());
   if (dir) {
     struct dirent *entry;
@@ -523,7 +523,7 @@ void MainMenuScene::FindFilesIOS(
     const std::filesystem::path &path, std::vector<Diff> &diffs,
     const std::unordered_set<path_t> &oldFilesWs,
     std::vector<std::filesystem::path> &directoriesToVisit,
-    std::stop_token stop_token) {
+    const std::stop_token &stop_token) {
   // use iosnatives
   /* TODO: read from BMS/
    * (or modify ChartDBHelper::ToAbsolutePath/ToRelativePath to allow document
@@ -552,7 +552,7 @@ void MainMenuScene::FindFilesIOS(
 
 void MainMenuScene::FindNewBmsFiles(
     std::vector<Diff> &diffs, const std::unordered_set<path_t> &oldFilesWs,
-    const std::filesystem::path &path, std::stop_token stop_token) {
+    const std::filesystem::path &path, const std::stop_token &stop_token) {
 #ifdef _WIN32
   std::vector<path_t> directoriesToVisit;
   directoriesToVisit.push_back(path.wstring());
