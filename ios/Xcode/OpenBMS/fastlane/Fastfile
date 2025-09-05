@@ -30,7 +30,7 @@ platform :ios do
     )
     match(type: "appstore", git_basic_authorization: ENV["GIT_BASIC_AUTHORIZATION"], api_key: api_key)
     increment_build_number(
-      build_number: latest_testflight_build_number + 1,
+      build_number: latest_testflight_build_number + 2,
       xcodeproj: "OpenBMS.xcodeproj"
     )
     build_app(
