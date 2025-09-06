@@ -108,6 +108,7 @@ public:
   double Bpm = 0;
   bool BpmChange = false;
   bool BpmChangeApplied = false;
+  bool ScrollChange = false;
   int BgaBase = -1;
   int BgaLayer = -1;
   int BgaPoor = -1;
