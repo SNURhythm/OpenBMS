@@ -557,6 +557,7 @@ void Parser::Parse(const std::vector<unsigned char> &bytes, Chart **chart,
   int totalBackSpinNotes = 0;
   int totalLandmineNotes = 0;
   auto currentBpm = new_chart->Meta.Bpm;
+  auto currentScroll = 1.0;
   auto minBpm = new_chart->Meta.Bpm;
   auto maxBpm = new_chart->Meta.Bpm;
   auto lastNote = std::vector<Note *>();
@@ -729,8 +730,10 @@ void Parser::Parse(const std::vector<unsigned char> &bytes, Chart **chart,
             // UE_LOG(LogTemp, Warning, TEXT("Invalid Scroll id: %s"), *val);
             break;
           }
+          timeline->ScrollChange = true;
           if (ScrollTable.find(id) != ScrollTable.end()) {
             timeline->Scroll = ScrollTable[id];
+            
           } else {
             timeline->Scroll = 1;
           }
@@ -872,6 +875,12 @@ void Parser::Parse(const std::vector<unsigned char> &bytes, Chart **chart,
         maxBpm = std::max(maxBpm, timeline->Bpm);
       } else {
         timeline->Bpm = currentBpm;
+      }
+      
+      if (timeline->ScrollChange) {
+        currentScroll = timeline->Scroll;
+      } else {
+        timeline->Scroll = currentScroll;
       }
 
       // Debug.Log($"measure: {measureIdx}, position: {position}, lastPosition:
