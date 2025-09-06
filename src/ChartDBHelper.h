@@ -55,8 +55,10 @@ private:
   bms_parser::ChartMeta ReadChartMeta(sqlite3_stmt *stmt);
   path_t ReadPath(sqlite3_stmt *stmt, int idx) {
 #ifdef _WIN32
-    const path_t t =
-        reinterpret_cast<const wchar_t *>(sqlite3_column_text16(stmt, idx));
+    int n = sqlite3_column_bytes(stmt, idx);
+    const auto utf8 = std::string(
+        reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx)), n);
+    const path_t t = utf8_to_path_t(utf8);
 #else
     const path_t t =
         reinterpret_cast<const char *>(sqlite3_column_text(stmt, idx));
