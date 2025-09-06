@@ -310,20 +310,23 @@ void ChartDBHelper::SearchChartMeta(
 }
 
 bool ChartDBHelper::DeleteChartMeta(sqlite3 *db, std::filesystem::path path) {
+  // std::cout << "Deleting chart: " << path.string() << std::endl;
   ToRelativePath(path);
   auto query = "DELETE FROM chart_meta WHERE path = @path";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, query, -1, &stmt, nullptr);
   if (rc != SQLITE_OK) {
-    std::cerr << "SQL error while preparing statement to delete a chart: "
+    std::cout << "SQL error while preparing statement to delete a chart: "
               << sqlite3_errmsg(db) << "\n";
     sqlite3_free(stmt);
     return false;
   }
-  sqlite3_bind_text(stmt, 1, path.string().c_str(), -1, SQLITE_TRANSIENT);
+  auto target = path_t_to_utf8(fspath_to_path_t(path)).c_str();
+  SDL_Log("Deleting chart: %s", target);
+  sqlite3_bind_text(stmt, 1, target, -1, SQLITE_TRANSIENT);
   rc = sqlite3_step(stmt);
   if (rc != SQLITE_DONE) {
-    std::cerr << "SQL error while deleting a chart: " << sqlite3_errmsg(db)
+    std::cout << "SQL error while deleting a chart: " << sqlite3_errmsg(db)
               << "\n";
     sqlite3_close(db);
     return false;
