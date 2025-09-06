@@ -93,22 +93,20 @@ bool VideoPlayer::loadVideo(const std::string &videoPath,
       avformat_close_input(&tempFormatContext);
       return false;
     }
-
-    const AVCodec *codec = avcodec_find_decoder(
-        tempFormatContext->streams[videoStreamIndex]->codecpar->codec_id);
+    auto videoStream = tempFormatContext->streams[videoStreamIndex];
+    const AVCodec *codec =
+        avcodec_find_decoder(videoStream->codecpar->codec_id);
     if (!codec) {
       avformat_close_input(&tempFormatContext);
       return false;
     }
     codecContext = avcodec_alloc_context3(codec);
-    avcodec_parameters_to_context(
-        codecContext, tempFormatContext->streams[videoStreamIndex]->codecpar);
+    avcodec_parameters_to_context(codecContext, videoStream->codecpar);
 
     // Fix missing extradata (SPS/PPS)
     if (!codecContext->extradata || codecContext->extradata_size <= 0) {
       SDL_Log("Fixing missing SPS/PPS extradata");
-      AVCodecParameters *codecParams =
-          tempFormatContext->streams[videoStreamIndex]->codecpar;
+      AVCodecParameters *codecParams = videoStream->codecpar;
       if (codecParams->extradata_size > 0 && codecParams->extradata) {
         codecContext->extradata = (uint8_t *)av_mallocz(
             codecParams->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
@@ -122,7 +120,7 @@ bool VideoPlayer::loadVideo(const std::string &videoPath,
       avformat_close_input(&tempFormatContext);
       return false;
     }
-    startPTS = tempFormatContext->streams[videoStreamIndex]->start_time;
+    startPTS = videoStream->start_time;
     if (startPTS == AV_NOPTS_VALUE) {
       startPTS = 0; // Default to 0 if start_time is not available
     }
@@ -133,9 +131,13 @@ bool VideoPlayer::loadVideo(const std::string &videoPath,
                                 codecContext->pix_fmt, codecContext->width,
                                 codecContext->height, AV_PIX_FMT_YUV420P,
                                 SWS_BILINEAR, nullptr, nullptr, nullptr);
-
-    fps = tempFormatContext->streams[videoStreamIndex]->avg_frame_rate.num /
-          tempFormatContext->streams[videoStreamIndex]->avg_frame_rate.den;
+    // auto num = videoStream->avg_frame_rate.num;
+    // auto den = videoStream->avg_frame_rate.den;
+    // if (den == 0) {
+    //   SDL_Log("Warning: video stream has zero frame rate");
+    // } else {
+    //   fps = static_cast<float>(num) / static_cast<float>(den);
+    // }
 
     updateVideoTexture(codecContext->width, codecContext->height);
 

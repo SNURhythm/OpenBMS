@@ -34,7 +34,7 @@ public:
   int viewId = rendering::bga_view;
   float viewX = 0.0f;
   float viewY = 0.0f;
-  float fps = 60.0f;
+  // float fps = 60.0f;
 
 private:
   std::atomic<bool> isEOF = false;
