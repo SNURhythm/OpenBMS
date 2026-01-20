@@ -3,7 +3,6 @@
 #include "./audio/decoder.h"
 #include "bx/math.h"
 #include <cstdio>
-#include <algorithm>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
@@ -96,11 +95,12 @@ static SDL_Renderer *s_renderer = nullptr;
 // };
 int rendering::window_width = rendering::design_width;
 int rendering::window_height = rendering::design_height;
-int rendering::render_width = rendering::design_width;
-int rendering::render_height = rendering::design_height;
+int rendering::render_width = 1;
+int rendering::render_height = 1;
 float rendering::widthScale = 1.0f;
 float rendering::heightScale = 1.0f;
-float rendering::ui_scale = 1.0f;
+float rendering::ui_scale_x = 1.0f;
+float rendering::ui_scale_y = 1.0f;
 int rendering::ui_offset_x = 0;
 int rendering::ui_offset_y = 0;
 int rendering::ui_view_width = rendering::design_width;
@@ -110,14 +110,14 @@ Camera rendering::game_camera{rendering::main_view};
 void rendering::updateUIScale(int renderW, int renderH) {
   render_width = renderW;
   render_height = renderH;
-  float scaleX = static_cast<float>(renderW) / static_cast<float>(window_width);
-  float scaleY =
-      static_cast<float>(renderH) / static_cast<float>(window_height);
-  ui_scale = std::min(scaleX, scaleY);
-  ui_view_width = static_cast<int>(window_width * ui_scale);
-  ui_view_height = static_cast<int>(window_height * ui_scale);
-  ui_offset_x = (renderW - ui_view_width) / 2;
-  ui_offset_y = (renderH - ui_view_height) / 2;
+  window_width = design_width;
+  ui_scale_x = static_cast<float>(renderW) / static_cast<float>(window_width);
+  ui_scale_y = ui_scale_x;
+  window_height = static_cast<int>(renderH / ui_scale_y);
+  ui_view_width = renderW;
+  ui_view_height = renderH;
+  ui_offset_x = 0;
+  ui_offset_y = 0;
 }
 int main(int argv, char **args) {
 #ifdef _WIN32
