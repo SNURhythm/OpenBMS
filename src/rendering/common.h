@@ -3,6 +3,7 @@ class Camera;
 #include <SDL2/SDL.h>
 #include <bgfx/bgfx.h>
 #include <string>
+#include <algorithm>
 #define SHADER_SIMPLE "vs_simple.bin", "fs_simple.bin"
 #define SHADER_TEXT "vs_text.bin", "fs_text.bin"
 #define SHADER_YUVRGB "vs_yuvrgb.bin", "fs_yuvrgb.bin"
@@ -106,6 +107,39 @@ inline void normalizedToUiNormalized(float normX, float normY, float &outX,
                                      float &outY) {
   screenToUiNormalized(normX * static_cast<float>(render_width),
                        normY * static_cast<float>(render_height), outX, outY);
+}
+
+inline void setScissorUI(int x, int y, int width, int height) {
+  if (width < 0 || height < 0) {
+    bgfx::setScissor();
+    return;
+  }
+  int sx = ui_offset_x + static_cast<int>(x * ui_scale);
+  int sy = ui_offset_y + static_cast<int>(y * ui_scale);
+  int sw = static_cast<int>(width * ui_scale);
+  int sh = static_cast<int>(height * ui_scale);
+  if (sw <= 0 || sh <= 0) {
+    bgfx::setScissor();
+    return;
+  }
+  if (sx < 0) {
+    sw += sx;
+    sx = 0;
+  }
+  if (sy < 0) {
+    sh += sy;
+    sy = 0;
+  }
+  int maxW = render_width - sx;
+  int maxH = render_height - sy;
+  sw = std::min(sw, maxW);
+  sh = std::min(sh, maxH);
+  if (sw <= 0 || sh <= 0) {
+    bgfx::setScissor();
+    return;
+  }
+  bgfx::setScissor(static_cast<uint16_t>(sx), static_cast<uint16_t>(sy),
+                   static_cast<uint16_t>(sw), static_cast<uint16_t>(sh));
 }
 
 bgfx::TextureHandle sdlSurfaceToBgfxTexture(SDL_Surface *surface);

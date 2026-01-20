@@ -98,8 +98,8 @@ private:
     bgfx::setIndexBuffer(&ibh);
     auto program =
         rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
-    bgfx::setScissor(context.scissor.x, context.scissor.y,
-                     context.scissor.width, context.scissor.height);
+    rendering::setScissorUI(context.scissor.x, context.scissor.y,
+                            context.scissor.width, context.scissor.height);
     bgfx::submit(rendering::ui_view, program);
 
     // // scroll bar thumb
@@ -113,8 +113,8 @@ private:
     bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
     bgfx::setVertexBuffer(0, &thumbVbh);
     bgfx::setIndexBuffer(&ibh);
-    bgfx::setScissor(context.scissor.x, context.scissor.y,
-                     context.scissor.width, context.scissor.height);
+    rendering::setScissorUI(context.scissor.x, context.scissor.y,
+                            context.scissor.width, context.scissor.height);
     bgfx::submit(rendering::ui_view, program);
 
     // int itemsSize = std::max(6, static_cast<int>(items.size())) * itemHeight;
