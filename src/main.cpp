@@ -20,7 +20,6 @@
 #include "rendering/common.h"
 #include "context.h"
 #include "audio/AudioWrapper.h"
-#include "targets.h"
 #include "view/TextView.h"
 #ifdef _WIN32
 #include <windows.h>
@@ -145,7 +144,7 @@ int main(int argv, char **args) {
   rendering::window_height = 720;
   SDL_Window *win = SDL_CreateWindow(
       "OpenBMS", 100, 100, rendering::window_width, rendering::window_height,
-      SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | (TARGET_PLATFORM == iOS ? SDL_WINDOW_METAL | SDL_WINDOW_ALLOW_HIGHDPI : 0));
+      SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
   // this is intended to get actual window size on mobile devices
   SDL_GetWindowSize(win, &rendering::window_width, &rendering::window_height);
   SDL_Log("Window size: %d x %d", rendering::window_width,
@@ -180,7 +179,7 @@ int main(int argv, char **args) {
 #endif                 // !BX_PLATFORM_EMSCRIPTEN
 
   bgfx::PlatformData pd{};
-  setup_bgfx_platform_data(pd, wmi, win);
+  setup_bgfx_platform_data(pd, wmi);
 
   bgfx::Init bgfx_init;
   bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
