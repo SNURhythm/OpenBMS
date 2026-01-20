@@ -2,15 +2,13 @@
 #include <bx/platform.h>
 #include <cstdlib>
 #include <iostream>
-#include "SDL2/SDL_metal.h"
 #include "iOSNatives.hpp"
 void setup_bgfx_platform_data(bgfx::PlatformData &pd,
-                              const SDL_SysWMinfo &wmi, SDL_Window* sdlWindow) {
+                              const SDL_SysWMinfo &wmi) {
+
 #if BX_PLATFORM_IOS
-  SDL_MetalView metalView = SDL_Metal_CreateView(sdlWindow);
-  void* mtlLayer = SDL_Metal_GetLayer(metalView);
   pd.ndt = nullptr;
-  pd.nwh = mtlLayer;
+  pd.nwh = GetIOSWindowHandle(wmi.info.uikit.window);
   pd.context = nullptr;
   pd.backBuffer = nullptr;
   pd.backBufferDS = nullptr;
