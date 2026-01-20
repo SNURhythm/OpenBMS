@@ -104,7 +104,7 @@ void GamePlayScene::init() {
   addView(pauseLayout);
 
   /* pause button */
-  pauseButton = new Button(rendering::window_width - 40, 10, 40, 40);
+  pauseButton = new Button(rendering::window_width - 70, 50, 40, 40);
   auto pauseText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   pauseText->setText("| |");
   pauseText->setAlign(TextView::CENTER);
@@ -144,7 +144,7 @@ void GamePlayScene::update(float dt) {}
 void GamePlayScene::renderScene() {
   RenderContext renderContext;
   pauseLayout->setSize(rendering::window_width, rendering::window_height);
-  pauseButton->setPosition(rendering::window_width - 40, 10);
+  // pauseButton->setPosition(rendering::window_width - 40, 10);
   renderer->render(renderContext, context.jukebox.getTimeMicros());
   context.jukebox.render();
   std::string str;
