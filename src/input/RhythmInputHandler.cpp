@@ -31,8 +31,8 @@ void RhythmInputHandler::onKeyUp(int keyCode, KeySource keySource) {
 void RhythmInputHandler::onFingerDown(int fingerIndex,
                                       Vector3 normalizedLocation) {
 
-  int lane = touchToLane({normalizedLocation.x * rendering::window_width,
-                          normalizedLocation.y * rendering::window_height,
+  int lane = touchToLane({normalizedLocation.x * rendering::render_width,
+                          normalizedLocation.y * rendering::render_height,
                           normalizedLocation.z});
   for (auto &[index, fingerLane] : fingerToLane) {
     if (fingerLane == lane)
