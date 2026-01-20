@@ -40,6 +40,8 @@ bool Button::handleEventsImpl(SDL_Event &event) {
   if (event.type == SDL_MOUSEBUTTONDOWN) {
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
+    mouseX = mouseX * rendering::widthScale;
+    mouseY = mouseY * rendering::heightScale;
     if (mouseX >= getX() && mouseX <= getX() + getWidth() && mouseY >= getY() &&
         mouseY <= getY() + getHeight()) {
       if (onClickListener) {

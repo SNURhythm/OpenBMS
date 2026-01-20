@@ -59,6 +59,8 @@ extern Camera *main_camera;
 extern Camera game_camera;
 extern int window_width;
 extern int window_height;
+extern float widthScale;
+extern float heightScale;
 extern float near_clip;
 extern float far_clip;
 
