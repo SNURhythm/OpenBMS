@@ -106,8 +106,11 @@ bool TextInputBox::handleEventsImpl(SDL_Event &event) {
     composition = event.editExt.text;
     break;
   case SDL_MOUSEBUTTONDOWN: {
-    int x = event.button.x * rendering::widthScale;
-    int y = event.button.y * rendering::heightScale;
+    int screenX = static_cast<int>(event.button.x * rendering::widthScale);
+    int screenY = static_cast<int>(event.button.y * rendering::heightScale);
+    int x = 0;
+    int y = 0;
+    rendering::screenToUi(screenX, screenY, x, y);
     // check if the mouse is inside the text box
     if (event.button.button == SDL_BUTTON_LEFT && x >= getX() &&
         x <= getX() + getWidth() && y >= getY() && y <= getY() + getHeight()) {
@@ -128,8 +131,11 @@ bool TextInputBox::handleEventsImpl(SDL_Event &event) {
   }
   case SDL_MOUSEMOTION: {
     // change mouse pointer to I-beam
-    int x = event.motion.x * rendering::widthScale;
-    int y = event.motion.y * rendering::heightScale;
+    int screenX = static_cast<int>(event.motion.x * rendering::widthScale);
+    int screenY = static_cast<int>(event.motion.y * rendering::heightScale);
+    int x = 0;
+    int y = 0;
+    rendering::screenToUi(screenX, screenY, x, y);
     if (x >= getX() && x <= getX() + getWidth() && y >= getY() &&
         y <= getY() + getHeight()) {
       SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM));
