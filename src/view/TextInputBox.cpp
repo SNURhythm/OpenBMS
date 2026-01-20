@@ -225,8 +225,8 @@ void TextInputBox::renderImpl(RenderContext &context) {
       rendering::createRect(tvb, tib, caretX, getY(), 2, height, xcolor);
       bgfx::setVertexBuffer(0, &tvb);
       bgfx::setIndexBuffer(&tib);
-      bgfx::setScissor(context.scissor.x, context.scissor.y,
-                       context.scissor.width, context.scissor.height);
+      rendering::setScissorUI(context.scissor.x, context.scissor.y,
+                              context.scissor.width, context.scissor.height);
       bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
                      BGFX_STATE_BLEND_ALPHA);
       bgfx::submit(
@@ -244,8 +244,8 @@ void TextInputBox::renderImpl(RenderContext &context) {
       //         compositionY - 20, compositionWidth, 200);
       bgfx::setVertexBuffer(0, &tvb2);
       bgfx::setIndexBuffer(&tib2);
-      bgfx::setScissor(context.scissor.x, context.scissor.y,
-                       context.scissor.width, context.scissor.height);
+      rendering::setScissorUI(context.scissor.x, context.scissor.y,
+                              context.scissor.width, context.scissor.height);
       bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
                      BGFX_STATE_BLEND_ALPHA);
       bgfx::submit(
