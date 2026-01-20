@@ -66,7 +66,8 @@ extern int render_width;
 extern int render_height;
 extern float widthScale;
 extern float heightScale;
-extern float ui_scale;
+extern float ui_scale_x;
+extern float ui_scale_y;
 extern int ui_offset_x;
 extern int ui_offset_y;
 extern int ui_view_width;
@@ -77,8 +78,8 @@ extern float far_clip;
 void updateUIScale(int renderW, int renderH);
 
 inline void screenToUi(float screenX, float screenY, float &outX, float &outY) {
-  outX = (screenX - static_cast<float>(ui_offset_x)) / ui_scale;
-  outY = (screenY - static_cast<float>(ui_offset_y)) / ui_scale;
+  outX = (screenX - static_cast<float>(ui_offset_x)) / ui_scale_x;
+  outY = (screenY - static_cast<float>(ui_offset_y)) / ui_scale_y;
 }
 
 inline void screenToUi(int screenX, int screenY, int &outX, int &outY) {
@@ -114,10 +115,10 @@ inline void setScissorUI(int x, int y, int width, int height) {
     bgfx::setScissor();
     return;
   }
-  int sx = ui_offset_x + static_cast<int>(x * ui_scale);
-  int sy = ui_offset_y + static_cast<int>(y * ui_scale);
-  int sw = static_cast<int>(width * ui_scale);
-  int sh = static_cast<int>(height * ui_scale);
+  int sx = ui_offset_x + static_cast<int>(x * ui_scale_x);
+  int sy = ui_offset_y + static_cast<int>(y * ui_scale_y);
+  int sw = static_cast<int>(width * ui_scale_x);
+  int sh = static_cast<int>(height * ui_scale_y);
   if (sw <= 0 || sh <= 0) {
     bgfx::setScissor();
     return;
