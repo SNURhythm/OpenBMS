@@ -105,14 +105,17 @@ bool TextInputBox::handleEventsImpl(SDL_Event &event) {
     // Update the composition text.
     composition = event.editExt.text;
     break;
-  case SDL_MOUSEBUTTONDOWN:
-
+  case SDL_MOUSEBUTTONDOWN: {
+    int screenX = static_cast<int>(event.button.x * rendering::widthScale);
+    int screenY = static_cast<int>(event.button.y * rendering::heightScale);
+    int x = 0;
+    int y = 0;
+    rendering::screenToUi(screenX, screenY, x, y);
     // check if the mouse is inside the text box
-    if (event.button.button == SDL_BUTTON_LEFT && event.button.x >= getX() &&
-        event.button.x <= getX() + getWidth() && event.button.y >= getY() &&
-        event.button.y <= getY() + getHeight()) {
+    if (event.button.button == SDL_BUTTON_LEFT && x >= getX() &&
+        x <= getX() + getWidth() && y >= getY() && y <= getY() + getHeight()) {
 
-      cursorPos = posToCursor(event.button.x - getX(), event.button.y - getY());
+      cursorPos = posToCursor(x - getX(), y - getY());
       SDL_SetTextInputRect(&viewRect);
       onSelected();
       SDL_StartTextInput();
@@ -125,15 +128,22 @@ bool TextInputBox::handleEventsImpl(SDL_Event &event) {
     }
 
     break;
-  case SDL_MOUSEMOTION:
+  }
+  case SDL_MOUSEMOTION: {
     // change mouse pointer to I-beam
-    if (event.motion.x >= getX() && event.motion.x <= getX() + getWidth() &&
-        event.motion.y >= getY() && event.motion.y <= getY() + getHeight()) {
+    int screenX = static_cast<int>(event.motion.x * rendering::widthScale);
+    int screenY = static_cast<int>(event.motion.y * rendering::heightScale);
+    int x = 0;
+    int y = 0;
+    rendering::screenToUi(screenX, screenY, x, y);
+    if (x >= getX() && x <= getX() + getWidth() && y >= getY() &&
+        y <= getY() + getHeight()) {
       SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM));
     } else {
       SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
     }
     break;
+  }
   }
   if (shouldUpdate) {
     std::string composited = editingText;
@@ -215,8 +225,8 @@ void TextInputBox::renderImpl(RenderContext &context) {
       rendering::createRect(tvb, tib, caretX, getY(), 2, height, xcolor);
       bgfx::setVertexBuffer(0, &tvb);
       bgfx::setIndexBuffer(&tib);
-      bgfx::setScissor(context.scissor.x, context.scissor.y,
-                       context.scissor.width, context.scissor.height);
+      rendering::setScissorUI(context.scissor.x, context.scissor.y,
+                              context.scissor.width, context.scissor.height);
       bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
                      BGFX_STATE_BLEND_ALPHA);
       bgfx::submit(
@@ -234,8 +244,8 @@ void TextInputBox::renderImpl(RenderContext &context) {
       //         compositionY - 20, compositionWidth, 200);
       bgfx::setVertexBuffer(0, &tvb2);
       bgfx::setIndexBuffer(&tib2);
-      bgfx::setScissor(context.scissor.x, context.scissor.y,
-                       context.scissor.width, context.scissor.height);
+      rendering::setScissorUI(context.scissor.x, context.scissor.y,
+                              context.scissor.width, context.scissor.height);
       bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
                      BGFX_STATE_BLEND_ALPHA);
       bgfx::submit(

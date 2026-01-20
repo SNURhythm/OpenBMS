@@ -113,8 +113,8 @@ void ImageView::renderImpl(RenderContext &context) {
   bgfx::setIndexBuffer(&tib);
 
   bgfx::setTexture(0, s_texColor, texture);
-  bgfx::setScissor(context.scissor.x, context.scissor.y, context.scissor.width,
-                   context.scissor.height);
+  rendering::setScissorUI(context.scissor.x, context.scissor.y,
+                          context.scissor.width, context.scissor.height);
   bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A |
                  BGFX_STATE_BLEND_ALPHA);
   bgfx::submit(rendering::ui_view,
