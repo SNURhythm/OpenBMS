@@ -3,6 +3,7 @@
 #include "./audio/decoder.h"
 #include "bx/math.h"
 #include <cstdio>
+#include <algorithm>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_syswm.h>
@@ -80,6 +81,7 @@ static bgfx::FrameBufferHandle s_FbBlurB = BGFX_INVALID_HANDLE;
 // For downsampling
 static uint16_t s_SceneWidth = 0;
 static uint16_t s_SceneHeight = 0;
+static SDL_Renderer *s_renderer = nullptr;
 
 // static rendering::PosColorVertex cubeVertices[] = {
 //     {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
@@ -92,12 +94,31 @@ static uint16_t s_SceneHeight = 0;
 //     0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7, 0, 2, 4, 4, 2, 6,
 //     1, 5, 3, 5, 7, 3, 0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7,
 // };
-int rendering::window_width = 800;
-int rendering::window_height = 600;
+int rendering::window_width = rendering::design_width;
+int rendering::window_height = rendering::design_height;
+int rendering::render_width = rendering::design_width;
+int rendering::render_height = rendering::design_height;
 float rendering::widthScale = 1.0f;
 float rendering::heightScale = 1.0f;
+float rendering::ui_scale = 1.0f;
+int rendering::ui_offset_x = 0;
+int rendering::ui_offset_y = 0;
+int rendering::ui_view_width = rendering::design_width;
+int rendering::ui_view_height = rendering::design_height;
 Camera *rendering::main_camera = nullptr;
 Camera rendering::game_camera{rendering::main_view};
+void rendering::updateUIScale(int renderW, int renderH) {
+  render_width = renderW;
+  render_height = renderH;
+  float scaleX = static_cast<float>(renderW) / static_cast<float>(window_width);
+  float scaleY =
+      static_cast<float>(renderH) / static_cast<float>(window_height);
+  ui_scale = std::min(scaleX, scaleY);
+  ui_view_width = static_cast<int>(window_width * ui_scale);
+  ui_view_height = static_cast<int>(window_height * ui_scale);
+  ui_offset_x = (renderW - ui_view_width) / 2;
+  ui_offset_y = (renderH - ui_view_height) / 2;
+}
 int main(int argv, char **args) {
 #ifdef _WIN32
   // search dll in ./lib
@@ -143,17 +164,18 @@ int main(int argv, char **args) {
     return EXIT_FAILURE;
   }
 
-  rendering::window_width = 1280;
-  rendering::window_height = 720;
+  int windowCreateWidth = 1280;
+  int windowCreateHeight = 720;
   SDL_Window *win = SDL_CreateWindow(
-      "OpenBMS", 100, 100, rendering::window_width, rendering::window_height,
+      "OpenBMS", 100, 100, windowCreateWidth, windowCreateHeight,
       SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
           (TARGET_PLATFORM == iOS ? SDL_WINDOW_METAL | SDL_WINDOW_ALLOW_HIGHDPI
                                   : 0));
-  // this is intended to get actual window size on mobile devices
-  SDL_GetWindowSize(win, &rendering::window_width, &rendering::window_height);
-  SDL_Log("Window size: %d x %d", rendering::window_width,
-          rendering::window_height);
+  int windowLogicalWidth = 0;
+  int windowLogicalHeight = 0;
+  SDL_GetWindowSize(win, &windowLogicalWidth, &windowLogicalHeight);
+  SDL_Log("Window size (logical): %d x %d", windowLogicalWidth,
+          windowLogicalHeight);
   if (win == nullptr) {
     cerr << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
     return EXIT_FAILURE;
@@ -162,21 +184,24 @@ int main(int argv, char **args) {
   // this is intended; we don't need renderer for bgfx but SDL creates window
   // handler after renderer creation on iOS
 #if TARGET_OS_IPHONE
-  auto renderer = SDL_CreateRenderer(
+  s_renderer = SDL_CreateRenderer(
       win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
   int rw = 0, rh = 0;
-  SDL_GetRendererOutputSize(renderer, &rw, &rh);
-  if (rw != rendering::window_width) {
-    rendering::widthScale = (float)rw / (float)rendering::window_width;
-    rendering::heightScale = (float)rh / (float)rendering::window_height;
-    SDL_Log("Window size: %d x %d", rw, rh);
-    SDL_Log("Width scale: %f, Height scale: %f", rendering::widthScale,
-            rendering::heightScale);
-    SDL_RenderSetScale(renderer, rendering::widthScale, rendering::heightScale);
-    rendering::window_width = rw;
-    rendering::window_height = rh;
-  }
+  SDL_GetRendererOutputSize(s_renderer, &rw, &rh);
+  rendering::widthScale =
+      static_cast<float>(rw) / static_cast<float>(windowLogicalWidth);
+  rendering::heightScale =
+      static_cast<float>(rh) / static_cast<float>(windowLogicalHeight);
+  SDL_Log("Drawable size: %d x %d", rw, rh);
+  SDL_Log("Drawable scale: %f x %f", rendering::widthScale,
+          rendering::heightScale);
+  SDL_RenderSetScale(s_renderer, rendering::widthScale, rendering::heightScale);
+  rendering::updateUIScale(rw, rh);
+#else
+  rendering::widthScale = 1.0f;
+  rendering::heightScale = 1.0f;
+  rendering::updateUIScale(windowLogicalWidth, windowLogicalHeight);
 #endif
 #if !BX_PLATFORM_EMSCRIPTEN
   SDL_SysWMinfo wmi;
@@ -198,8 +223,8 @@ int main(int argv, char **args) {
 
   bgfx::Init bgfx_init;
   bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
-  bgfx_init.resolution.width = rendering::window_width;
-  bgfx_init.resolution.height = rendering::window_height;
+  bgfx_init.resolution.width = rendering::render_width;
+  bgfx_init.resolution.height = rendering::render_height;
   bgfx_init.resolution.reset =
       BGFX_RESET_MSAA_X2 | (TARGET_PLATFORM == iOS ? BGFX_RESET_VSYNC : 0);
   bgfx_init.platformData = pd;
@@ -211,6 +236,10 @@ int main(int argv, char **args) {
   run();
   bgfx::shutdown();
 
+  if (s_renderer != nullptr) {
+    SDL_DestroyRenderer(s_renderer);
+    s_renderer = nullptr;
+  }
   SDL_DestroyWindow(win);
   SDL_Quit();
   SDL_Log("SDL quit");
@@ -237,7 +266,7 @@ void run() {
   rendering::PosColorVertex::init();
   rendering::PosTexVertex::init();
   rendering::PosTexCoord0Vertex::init();
-  createFrameBuffers(rendering::window_width, rendering::window_height);
+  createFrameBuffers(rendering::render_width, rendering::render_height);
 
   s_ProgBlurH = rendering::ShaderManager::getInstance().getProgram(
       "blur/vs_blur.bin", "blur/fs_blurH.bin");
@@ -268,12 +297,15 @@ void run() {
                      0);
 
   // This is set to determine the size of the drawable surface
-  bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
-                    rendering::window_height);
-  bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
-                    rendering::window_height);
-  bgfx::setViewRect(rendering::bga_layer_view, 0, 0, rendering::window_width,
-                    rendering::window_height);
+  bgfx::setViewRect(rendering::ui_view, rendering::ui_offset_x,
+                    rendering::ui_offset_y, rendering::ui_view_width,
+                    rendering::ui_view_height);
+  bgfx::setViewRect(rendering::bga_view, rendering::ui_offset_x,
+                    rendering::ui_offset_y, rendering::ui_view_width,
+                    rendering::ui_view_height);
+  bgfx::setViewRect(rendering::bga_layer_view, rendering::ui_offset_x,
+                    rendering::ui_offset_y, rendering::ui_view_width,
+                    rendering::ui_view_height);
   auto program =
       rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
   resetViewTransform();
@@ -300,17 +332,30 @@ void run() {
       // on window resize
       if (e.type == SDL_WINDOWEVENT &&
           e.window.event == SDL_WINDOWEVENT_RESIZED) {
-        rendering::window_width = e.window.data1 * rendering::widthScale;
-        rendering::window_height = e.window.data2 * rendering::heightScale;
+        int logicalW = e.window.data1;
+        int logicalH = e.window.data2;
+#if TARGET_OS_IPHONE
+        int drawableW = 0;
+        int drawableH = 0;
+        SDL_GetRendererOutputSize(s_renderer, &drawableW, &drawableH);
+#else
+        int drawableW = logicalW;
+        int drawableH = logicalH;
+#endif
+        rendering::widthScale =
+            static_cast<float>(drawableW) / static_cast<float>(logicalW);
+        rendering::heightScale =
+            static_cast<float>(drawableH) / static_cast<float>(logicalH);
+        rendering::updateUIScale(drawableW, drawableH);
 
         // set bgfx resolution
-        bgfx::reset(rendering::window_width, rendering::window_height,
+        bgfx::reset(rendering::render_width, rendering::render_height,
                     BGFX_RESET_MSAA_X2 |
                         (TARGET_PLATFORM == iOS ? BGFX_RESET_VSYNC : 0));
-        SDL_Log("Window size: %d x %d", rendering::window_width,
-                rendering::window_height);
+        SDL_Log("Drawable size: %d x %d", rendering::render_width,
+                rendering::render_height);
         destroyFrameBuffers();
-        createFrameBuffers(rendering::window_width, rendering::window_height);
+        createFrameBuffers(rendering::render_width, rendering::render_height);
         resetViewTransform();
       }
     }
@@ -334,7 +379,7 @@ void run() {
     sceneManager.render();
     blurHorizontal();
     blurVertical();
-    drawFinal(rendering::window_width, rendering::window_height);
+    drawFinal();
 
     // render fps, rounded to 2 decimal places
     std::ostringstream oss;
@@ -391,20 +436,24 @@ void resetViewTransform() {
                0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
 
   bgfx::setViewTransform(rendering::ui_view, nullptr, ortho);
-  bgfx::setViewRect(rendering::ui_view, 0, 0, rendering::window_width,
-                    rendering::window_height);
+  bgfx::setViewRect(rendering::ui_view, rendering::ui_offset_x,
+                    rendering::ui_offset_y, rendering::ui_view_width,
+                    rendering::ui_view_height);
   bgfx::setViewTransform(rendering::bga_view, nullptr, ortho);
-  bgfx::setViewRect(rendering::bga_view, 0, 0, rendering::window_width,
-                    rendering::window_height);
+  bgfx::setViewRect(rendering::bga_view, rendering::ui_offset_x,
+                    rendering::ui_offset_y, rendering::ui_view_width,
+                    rendering::ui_view_height);
   bgfx::setViewTransform(rendering::bga_layer_view, nullptr, ortho);
-  bgfx::setViewRect(rendering::bga_layer_view, 0, 0, rendering::window_width,
-                    rendering::window_height);
+  bgfx::setViewRect(rendering::bga_layer_view, rendering::ui_offset_x,
+                    rendering::ui_offset_y, rendering::ui_view_width,
+                    rendering::ui_view_height);
   bgfx::setViewTransform(rendering::clear_view, nullptr, ortho);
-  bgfx::setViewRect(rendering::clear_view, 0, 0, rendering::window_width,
-                    rendering::window_height);
+  bgfx::setViewRect(rendering::clear_view, 0, 0, rendering::render_width,
+                    rendering::render_height);
   bgfx::setViewTransform(rendering::final_view, nullptr, ortho);
-  bgfx::setViewRect(rendering::final_view, 0, 0, rendering::window_width,
-                    rendering::window_height);
+  bgfx::setViewRect(rendering::final_view, rendering::ui_offset_x,
+                    rendering::ui_offset_y, rendering::ui_view_width,
+                    rendering::ui_view_height);
   bgfx::setViewTransform(rendering::blur_view_h, nullptr, ortho);
   bgfx::setViewTransform(rendering::blur_view_v, nullptr, ortho);
 
@@ -417,7 +466,8 @@ void resetViewTransform() {
       .setPosition(eye)
       .setLookAt(at)
       .setAspectRatio(aspect)
-      .setViewRect(0, 0, rendering::window_width, rendering::window_height)
+      .setViewRect(rendering::ui_offset_x, rendering::ui_offset_y,
+                   rendering::ui_view_width, rendering::ui_view_height)
       .commit();
   if (rendering::main_camera != nullptr) {
     rendering::main_camera->render();
@@ -519,9 +569,11 @@ void blurVertical() {
   bgfx::submit(rendering::blur_view_v, s_ProgBlurV);
 }
 
-void drawFinal(uint16_t windowW, uint16_t windowH) {
+void drawFinal() {
   bgfx::setViewFrameBuffer(rendering::final_view, BGFX_INVALID_HANDLE);
-  bgfx::setViewRect(rendering::final_view, 0, 0, windowW, windowH);
+  bgfx::setViewRect(rendering::final_view, rendering::ui_offset_x,
+                    rendering::ui_offset_y, rendering::ui_view_width,
+                    rendering::ui_view_height);
   // float ortho[16];
   // bx::mtxOrtho(ortho, 0.0f, rendering::window_width,
   // rendering::window_height,

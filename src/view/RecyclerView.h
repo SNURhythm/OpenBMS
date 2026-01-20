@@ -235,15 +235,18 @@ private:
 
       int x, y;
       SDL_GetMouseState(&x, &y);
-      x = x * rendering::widthScale;
-      y = y * rendering::heightScale;
-      if (x < this->getX() || x > this->getX() + this->getWidth()) {
+      x = static_cast<int>(x * rendering::widthScale);
+      y = static_cast<int>(y * rendering::heightScale);
+      int uiX = 0;
+      int uiY = 0;
+      rendering::screenToUi(x, y, uiX, uiY);
+      if (uiX < this->getX() || uiX > this->getX() + this->getWidth()) {
         return true;
       }
-      if (y < this->getY() || y > this->getY() + this->getHeight()) {
+      if (uiY < this->getY() || uiY > this->getY() + this->getHeight()) {
         return true;
       }
-      int index = (y - this->getY() + scrollOffset) / itemHeight;
+      int index = (uiY - this->getY() + scrollOffset) / itemHeight;
       if (index >= 0 && index < items.size()) {
         if (selectedIndex != -1 && onUnselected) {
           onUnselected(items[selectedIndex], selectedIndex);
@@ -263,8 +266,9 @@ private:
       SDL_Log("Finger down: %f, %f", normX, normY);
       // Get the window size
       // Convert normalized coordinates to screen coordinates
-      float touchX = (normX * rendering::window_width);
-      float touchY = (normY * rendering::window_height);
+      float touchX = 0.0f;
+      float touchY = 0.0f;
+      rendering::normalizedToUi(normX, normY, touchX, touchY);
       SDL_Log("Finger down (scaled): %f, %f", touchX, touchY);
 
       if (touchX < this->getX() || touchX > this->getX() + this->getWidth()) {
@@ -288,8 +292,9 @@ private:
       float normY = event.tfinger.y;
 
       // Convert normalized coordinates to screen coordinates
-      int touchX = static_cast<int>(normX * rendering::window_width);
-      int touchY = static_cast<int>(normY * rendering::window_height);
+      float touchX = 0.0f;
+      float touchY = 0.0f;
+      rendering::normalizedToUi(normX, normY, touchX, touchY);
 
       if (touchX < this->getX() || touchX > this->getX() + this->getWidth()) {
         return true;
@@ -297,7 +302,7 @@ private:
       if (touchY < this->getY() || touchY > this->getY() + this->getHeight()) {
         return true;
       }
-      scrollOffset += (touchLastY - touchY);
+      scrollOffset += static_cast<int>(touchLastY - touchY);
       touchScrollInertia = 1.2f * (touchLastY - touchY);
       touchLastY = touchY;
       touchDragging = true;

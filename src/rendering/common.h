@@ -57,12 +57,56 @@ static bgfx::ViewId blur_view_v = 4;
 static bgfx::ViewId clear_view = 0;
 extern Camera *main_camera;
 extern Camera game_camera;
+constexpr int design_width = 1920;
+constexpr int design_height = 1080;
 extern int window_width;
 extern int window_height;
+extern int render_width;
+extern int render_height;
 extern float widthScale;
 extern float heightScale;
+extern float ui_scale;
+extern int ui_offset_x;
+extern int ui_offset_y;
+extern int ui_view_width;
+extern int ui_view_height;
 extern float near_clip;
 extern float far_clip;
+
+void updateUIScale(int renderW, int renderH);
+
+inline void screenToUi(float screenX, float screenY, float &outX, float &outY) {
+  outX = (screenX - static_cast<float>(ui_offset_x)) / ui_scale;
+  outY = (screenY - static_cast<float>(ui_offset_y)) / ui_scale;
+}
+
+inline void screenToUi(int screenX, int screenY, int &outX, int &outY) {
+  float fx = 0.0f;
+  float fy = 0.0f;
+  screenToUi(static_cast<float>(screenX), static_cast<float>(screenY), fx, fy);
+  outX = static_cast<int>(fx);
+  outY = static_cast<int>(fy);
+}
+
+inline void screenToUiNormalized(float screenX, float screenY, float &outX,
+                                 float &outY) {
+  float uiX = 0.0f;
+  float uiY = 0.0f;
+  screenToUi(screenX, screenY, uiX, uiY);
+  outX = uiX / static_cast<float>(window_width);
+  outY = uiY / static_cast<float>(window_height);
+}
+
+inline void normalizedToUi(float normX, float normY, float &outX, float &outY) {
+  screenToUi(normX * static_cast<float>(render_width),
+             normY * static_cast<float>(render_height), outX, outY);
+}
+
+inline void normalizedToUiNormalized(float normX, float normY, float &outX,
+                                     float &outY) {
+  screenToUiNormalized(normX * static_cast<float>(render_width),
+                       normY * static_cast<float>(render_height), outX, outY);
+}
 
 bgfx::TextureHandle sdlSurfaceToBgfxTexture(SDL_Surface *surface);
 

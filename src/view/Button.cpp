@@ -40,10 +40,13 @@ bool Button::handleEventsImpl(SDL_Event &event) {
   if (event.type == SDL_MOUSEBUTTONDOWN) {
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
-    mouseX = mouseX * rendering::widthScale;
-    mouseY = mouseY * rendering::heightScale;
-    if (mouseX >= getX() && mouseX <= getX() + getWidth() && mouseY >= getY() &&
-        mouseY <= getY() + getHeight()) {
+    mouseX = static_cast<int>(mouseX * rendering::widthScale);
+    mouseY = static_cast<int>(mouseY * rendering::heightScale);
+    int uiX = 0;
+    int uiY = 0;
+    rendering::screenToUi(mouseX, mouseY, uiX, uiY);
+    if (uiX >= getX() && uiX <= getX() + getWidth() && uiY >= getY() &&
+        uiY <= getY() + getHeight()) {
       if (onClickListener) {
         onClickListener();
       }
