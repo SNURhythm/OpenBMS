@@ -235,6 +235,8 @@ private:
 
       int x, y;
       SDL_GetMouseState(&x, &y);
+      x = x * rendering::widthScale;
+      y = y * rendering::heightScale;
       if (x < this->getX() || x > this->getX() + this->getWidth()) {
         return true;
       }
@@ -257,15 +259,13 @@ private:
       // Get the normalized touch coordinates
       float normX = event.tfinger.x;
       float normY = event.tfinger.y;
-
+      SDL_Log("Finger down: %f, %f", normX, normY);
+      SDL_Log("Finger down: %f, %f", normX, normY);
       // Get the window size
-      int windowWidth, windowHeight;
-      SDL_GetWindowSize(SDL_GetWindowFromID(event.tfinger.windowID),
-                        &windowWidth, &windowHeight);
-
       // Convert normalized coordinates to screen coordinates
-      float touchX = (normX * windowWidth);
-      float touchY = (normY * windowHeight);
+      float touchX = (normX * rendering::window_width);
+      float touchY = (normY * rendering::window_height);
+      SDL_Log("Finger down (scaled): %f, %f", touchX, touchY);
 
       if (touchX < this->getX() || touchX > this->getX() + this->getWidth()) {
         return true;
@@ -287,14 +287,9 @@ private:
       float normX = event.tfinger.x;
       float normY = event.tfinger.y;
 
-      // Get the window size
-      int windowWidth, windowHeight;
-      SDL_GetWindowSize(SDL_GetWindowFromID(event.tfinger.windowID),
-                        &windowWidth, &windowHeight);
-
       // Convert normalized coordinates to screen coordinates
-      int touchX = static_cast<int>(normX * windowWidth);
-      int touchY = static_cast<int>(normY * windowHeight);
+      int touchX = static_cast<int>(normX * rendering::window_width);
+      int touchY = static_cast<int>(normY * rendering::window_height);
 
       if (touchX < this->getX() || touchX > this->getX() + this->getWidth()) {
         return true;

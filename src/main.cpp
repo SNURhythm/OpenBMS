@@ -20,6 +20,7 @@
 #include "rendering/common.h"
 #include "context.h"
 #include "audio/AudioWrapper.h"
+#include "targets.h"
 #include "view/TextView.h"
 #ifdef _WIN32
 #include <windows.h>
@@ -93,6 +94,8 @@ static uint16_t s_SceneHeight = 0;
 // };
 int rendering::window_width = 800;
 int rendering::window_height = 600;
+float rendering::widthScale = 1.0f;
+float rendering::heightScale = 1.0f;
 Camera *rendering::main_camera = nullptr;
 Camera rendering::game_camera{rendering::main_view};
 int main(int argv, char **args) {
@@ -144,7 +147,9 @@ int main(int argv, char **args) {
   rendering::window_height = 720;
   SDL_Window *win = SDL_CreateWindow(
       "OpenBMS", 100, 100, rendering::window_width, rendering::window_height,
-      SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+      SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
+          (TARGET_PLATFORM == iOS ? SDL_WINDOW_METAL | SDL_WINDOW_ALLOW_HIGHDPI
+                                  : 0));
   // this is intended to get actual window size on mobile devices
   SDL_GetWindowSize(win, &rendering::window_width, &rendering::window_height);
   SDL_Log("Window size: %d x %d", rendering::window_width,
@@ -157,11 +162,21 @@ int main(int argv, char **args) {
   // this is intended; we don't need renderer for bgfx but SDL creates window
   // handler after renderer creation on iOS
 #if TARGET_OS_IPHONE
-  SDL_CreateRenderer(
-      win, -1,
-      SDL_RENDERER_ACCELERATED |
-          SDL_RENDERER_PRESENTVSYNC); // Intentionally discarding return value
+  auto renderer = SDL_CreateRenderer(
+      win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
+  int rw = 0, rh = 0;
+  SDL_GetRendererOutputSize(renderer, &rw, &rh);
+  if (rw != rendering::window_width) {
+    rendering::widthScale = (float)rw / (float)rendering::window_width;
+    rendering::heightScale = (float)rh / (float)rendering::window_height;
+    SDL_Log("Window size: %d x %d", rw, rh);
+    SDL_Log("Width scale: %f, Height scale: %f", rendering::widthScale,
+            rendering::heightScale);
+    SDL_RenderSetScale(renderer, rendering::widthScale, rendering::heightScale);
+    rendering::window_width = rw;
+    rendering::window_height = rh;
+  }
 #endif
 #if !BX_PLATFORM_EMSCRIPTEN
   SDL_SysWMinfo wmi;
@@ -179,13 +194,14 @@ int main(int argv, char **args) {
 #endif                 // !BX_PLATFORM_EMSCRIPTEN
 
   bgfx::PlatformData pd{};
-  setup_bgfx_platform_data(pd, wmi);
+  setup_bgfx_platform_data(pd, wmi, win);
 
   bgfx::Init bgfx_init;
   bgfx_init.type = bgfx::RendererType::Count; // auto choose renderer
   bgfx_init.resolution.width = rendering::window_width;
   bgfx_init.resolution.height = rendering::window_height;
-  bgfx_init.resolution.reset = BGFX_RESET_MSAA_X2 | (TARGET_PLATFORM == iOS ? BGFX_RESET_VSYNC : 0);
+  bgfx_init.resolution.reset =
+      BGFX_RESET_MSAA_X2 | (TARGET_PLATFORM == iOS ? BGFX_RESET_VSYNC : 0);
   bgfx_init.platformData = pd;
   bgfx::init(bgfx_init);
   // bgfx::setDebug(BGFX_DEBUG_TEXT);
@@ -206,7 +222,8 @@ void run() {
   ApplicationContext context;
   bgfx::setViewMode(rendering::ui_view, bgfx::ViewMode::Sequential);
   SceneManager sceneManager(context);
-  sceneManager.registerScene("MainMenu", std::make_unique<MainMenuScene>(context));
+  sceneManager.registerScene("MainMenu",
+                             std::make_unique<MainMenuScene>(context));
   sceneManager.changeScene("MainMenu");
 
   // SDL_RenderClear(ren);
@@ -283,12 +300,13 @@ void run() {
       // on window resize
       if (e.type == SDL_WINDOWEVENT &&
           e.window.event == SDL_WINDOWEVENT_RESIZED) {
-        rendering::window_width = e.window.data1;
-        rendering::window_height = e.window.data2;
+        rendering::window_width = e.window.data1 * rendering::widthScale;
+        rendering::window_height = e.window.data2 * rendering::heightScale;
 
         // set bgfx resolution
         bgfx::reset(rendering::window_width, rendering::window_height,
-                    BGFX_RESET_MSAA_X2 | (TARGET_PLATFORM == iOS ? BGFX_RESET_VSYNC : 0));
+                    BGFX_RESET_MSAA_X2 |
+                        (TARGET_PLATFORM == iOS ? BGFX_RESET_VSYNC : 0));
         SDL_Log("Window size: %d x %d", rendering::window_width,
                 rendering::window_height);
         destroyFrameBuffers();

@@ -105,14 +105,14 @@ bool TextInputBox::handleEventsImpl(SDL_Event &event) {
     // Update the composition text.
     composition = event.editExt.text;
     break;
-  case SDL_MOUSEBUTTONDOWN:
-
+  case SDL_MOUSEBUTTONDOWN: {
+    int x = event.button.x * rendering::widthScale;
+    int y = event.button.y * rendering::heightScale;
     // check if the mouse is inside the text box
-    if (event.button.button == SDL_BUTTON_LEFT && event.button.x >= getX() &&
-        event.button.x <= getX() + getWidth() && event.button.y >= getY() &&
-        event.button.y <= getY() + getHeight()) {
+    if (event.button.button == SDL_BUTTON_LEFT && x >= getX() &&
+        x <= getX() + getWidth() && y >= getY() && y <= getY() + getHeight()) {
 
-      cursorPos = posToCursor(event.button.x - getX(), event.button.y - getY());
+      cursorPos = posToCursor(x - getX(), y - getY());
       SDL_SetTextInputRect(&viewRect);
       onSelected();
       SDL_StartTextInput();
@@ -125,15 +125,19 @@ bool TextInputBox::handleEventsImpl(SDL_Event &event) {
     }
 
     break;
-  case SDL_MOUSEMOTION:
+  }
+  case SDL_MOUSEMOTION: {
     // change mouse pointer to I-beam
-    if (event.motion.x >= getX() && event.motion.x <= getX() + getWidth() &&
-        event.motion.y >= getY() && event.motion.y <= getY() + getHeight()) {
+    int x = event.motion.x * rendering::widthScale;
+    int y = event.motion.y * rendering::heightScale;
+    if (x >= getX() && x <= getX() + getWidth() && y >= getY() &&
+        y <= getY() + getHeight()) {
       SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM));
     } else {
       SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
     }
     break;
+  }
   }
   if (shouldUpdate) {
     std::string composited = editingText;
