@@ -20,6 +20,7 @@
 #include "rendering/common.h"
 #include "rendering/PostProcessPipeline.h"
 #include "rendering/BlurPass.h"
+#include "rendering/UniformCache.h"
 #include "context.h"
 #include "audio/AudioWrapper.h"
 #include "targets.h"
@@ -62,7 +63,6 @@ bgfx::VertexLayout rendering::PosTexCoord0Vertex::ms_decl;
 static SDL_Renderer *s_renderer = nullptr;
 static rendering::PostProcessPipeline s_postProcess;
 static rendering::BlurPass *s_blurPass = nullptr;
-
 
 // static rendering::PosColorVertex cubeVertices[] = {
 //     {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
@@ -216,6 +216,8 @@ int main(int argv, char **args) {
   // bgfx::setPlatformData(pd);
 
   run();
+  rendering::ShaderManager::getInstance().release();
+  rendering::UniformCache::getInstance().destroyAll();
   bgfx::shutdown();
 
   if (s_renderer != nullptr) {

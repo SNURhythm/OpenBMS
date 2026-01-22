@@ -5,6 +5,7 @@
 #include "../game/GameState.h"
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
+#include "../rendering/UniformCache.h"
 #include "bgfx/bgfx.h"
 #include <stb_image.h>
 #ifdef _WIN32
@@ -14,11 +15,11 @@
 #endif
 Jukebox::Jukebox(Stopwatch *stopwatch)
     : audio(stopwatch), stopwatch(stopwatch) {
-  s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+  s_texColor =
+      rendering::UniformCache::getInstance().getSampler("s_texColor");
 }
 
 Jukebox::~Jukebox() {
-  bgfx::destroy(s_texColor);
   isPlaying = false;
   if (playThread.joinable())
     playThread.join();

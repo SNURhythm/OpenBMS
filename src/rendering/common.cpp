@@ -4,10 +4,10 @@
 
 #include "common.h"
 #include "ShaderManager.h"
+#include "UniformCache.h"
 namespace rendering {
 float near_clip = 0.1f;
 float far_clip = 100.0f;
-static bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
 void createRect(bgfx::TransientVertexBuffer &tvb,
                 bgfx::TransientIndexBuffer &tib, int x, int y, int width,
                 int height, uint32_t color) {
@@ -56,9 +56,8 @@ void renderTextureRegion(bgfx::TextureHandle texture, bgfx::ViewId viewId,
   if (!bgfx::isValid(texture)) {
     return;
   }
-  if (!bgfx::isValid(s_texColor)) {
-    s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-  }
+  auto s_texColor =
+      rendering::UniformCache::getInstance().getSampler("s_texColor");
   if (width <= 0.0f || height <= 0.0f) {
     return;
   }

@@ -83,12 +83,12 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
       loadCroppedTexture(spriteLoader3, 0, 0, width, height, "scratch");
   scratchLongHeadTexture =
       loadCroppedTexture(spriteLoader3, 0, 80, 128, 40, "scratch long head");
-  scratchLongBodyTextureOff = loadCroppedTexture(
-      spriteLoader3, 0, 120, 128, 12, "scratch long body off");
-  scratchLongBodyTextureOn = loadCroppedTexture(
-      spriteLoader3, 0, 132, 128, 24, "scratch long body on");
-  scratchLongTailTexture = loadCroppedTexture(spriteLoader3, 0, 40, 128, 40,
-                                              "scratch long tail");
+  scratchLongBodyTextureOff = loadCroppedTexture(spriteLoader3, 0, 120, 128, 12,
+                                                 "scratch long body off");
+  scratchLongBodyTextureOn = loadCroppedTexture(spriteLoader3, 0, 132, 128, 24,
+                                                "scratch long body on");
+  scratchLongTailTexture =
+      loadCroppedTexture(spriteLoader3, 0, 40, 128, 40, "scratch long tail");
   judgeText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   judgeText->setPosition(rendering::window_width / 2,
                          rendering::window_height / 2);
@@ -112,9 +112,9 @@ bgfx::TextureHandle BMSRenderer::loadCroppedTexture(SpriteLoader &loader, int x,
                              " texture");
   }
   int channels = loader.getChannels();
-  auto handle = bgfx::createTexture2D(
-      width, height, false, 1, bgfx::TextureFormat::RGBA8, 0,
-      bgfx::copy(data, width * height * channels));
+  auto handle =
+      bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
+                            0, bgfx::copy(data, width * height * channels));
   SDL_free(data);
   return handle;
 }

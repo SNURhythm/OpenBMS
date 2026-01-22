@@ -44,8 +44,9 @@ public:
   void reset();
 };
 class BMSRenderer {
-private:
+public:
   ~BMSRenderer();
+private:
   TextView *judgeText = nullptr;
   TextView *scoreText = nullptr;
   std::map<int, LaneState> laneStates;

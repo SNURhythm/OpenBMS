@@ -22,6 +22,15 @@ VideoPlayer::~VideoPlayer() {
   bgfx::destroy(s_texY);
   bgfx::destroy(s_texU);
   bgfx::destroy(s_texV);
+  if (bgfx::isValid(videoTextureY)) {
+    bgfx::destroy(videoTextureY);
+  }
+  if (bgfx::isValid(videoTextureU)) {
+    bgfx::destroy(videoTextureU);
+  }
+  if (bgfx::isValid(videoTextureV)) {
+    bgfx::destroy(videoTextureV);
+  }
   unloadVideo();
   if (videoFrameDataY != nullptr) {
     free(videoFrameDataY);
