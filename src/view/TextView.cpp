@@ -4,6 +4,7 @@
 #include <cstring>
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
+#include "../rendering/UniformCache.h"
 #include "bgfx/defines.h"
 #include "bx/math.h"
 
@@ -17,13 +18,11 @@ TextView::TextView(const std::string &fontPath, int fontSize)
   }
   color = {255, 255, 255, 255}; // Default color: white
   rect = {0, 0, 0, 0};
-  s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+  s_texColor =
+      rendering::UniformCache::getInstance().getSampler("s_texColor");
 }
 
 TextView::~TextView() {
-  if (bgfx::isValid(s_texColor)) {
-    bgfx::destroy(s_texColor);
-  }
   if (bgfx::isValid(texture)) {
     bgfx::destroy(texture);
   }

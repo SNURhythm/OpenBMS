@@ -1,1 +1,1 @@
-target_sources(main PRIVATE common.cpp Color.cpp Camera.cpp)
+target_sources(main PRIVATE common.cpp Color.cpp Camera.cpp BlurPass.cpp PostProcessPipeline.cpp RenderPlan.cpp UniformCache.cpp)

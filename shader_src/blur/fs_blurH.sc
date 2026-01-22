@@ -4,6 +4,7 @@ $input v_texcoord0
 
 SAMPLER2D(s_texColor, 0);
 uniform vec4 u_texelSize; // x=1/width, y=1/height
+uniform vec4 u_blurScale; // x=scale factor
 
 void main()
 {
@@ -23,7 +24,9 @@ void main()
 
     for (int i = 0; i < 9; i++)
     {
-        float4 sampleColor = bgfxTexture2D(s_texColor, uv + float2(offsets[i]*u_texelSize.x, 0.0));
+        float4 sampleColor = bgfxTexture2D(
+            s_texColor,
+            uv + float2(offsets[i] * u_texelSize.x * u_blurScale.x, 0.0));
         c += sampleColor.rgb * weights[i];
     }
     gl_FragColor = vec4(c, 1.0);
