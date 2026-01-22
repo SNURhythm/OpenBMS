@@ -458,6 +458,7 @@ private:
     // Temporary container for newly visible items
     std::deque<std::pair<View *, T>> newVisibleItems;
     idxToView.clear();
+    LayoutBatchScope layoutBatch;
     // Iterate over the range of visible items
     for (int i = startIndex; i <= endIndex; ++i) {
       T item = items[i];
@@ -485,9 +486,9 @@ private:
       }
       // update the position of the view
 
-      view->setPositionNoLayout(
-          this->getX(), this->getY() + (i * itemHeight) - scrollOffset,
-          YGPositionType::YGPositionTypeAbsolute);
+      view->setPositionNoLayout(this->getX(),
+                                this->getY() + (i * itemHeight) - scrollOffset,
+                                YGPositionType::YGPositionTypeAbsolute);
       view->setSize(this->getWidth(), itemHeight);
 
       newVisibleItems.push_back(std::make_pair(view, item));
