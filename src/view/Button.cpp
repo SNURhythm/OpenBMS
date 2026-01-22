@@ -5,11 +5,7 @@
 #include "Button.h"
 
 void Button::renderImpl(RenderContext &context) {
-  context.scissor.x = getX();
-  context.scissor.y = getY();
-  context.scissor.width = getWidth();
-  context.scissor.height = getHeight();
-
+  ScissorScope scissor(context, getX(), getY(), getWidth(), getHeight());
   if (contentView) {
     contentView->render(context);
   }
@@ -34,7 +30,9 @@ void Button::onLayout() {
 
 bool Button::handleEventsImpl(SDL_Event &event) {
   if (contentView) {
-    contentView->handleEvents(event);
+    if (!contentView->handleEvents(event)) {
+      return false;
+    }
   }
   // handle click event
   if (event.type == SDL_MOUSEBUTTONDOWN) {

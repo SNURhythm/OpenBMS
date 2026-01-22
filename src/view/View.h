@@ -3,6 +3,9 @@
 #include <SDL2/SDL.h>
 #include <yoga/Yoga.h>
 #include <vector>
+#include <algorithm>
+#include <cstdint>
+#include <unordered_set>
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
 #include "../rendering/Color.h"
@@ -29,9 +32,49 @@ struct Scissor {
 };
 struct RenderContext {
   Scissor scissor = {0, 0, -1, -1};
+  std::vector<Scissor> scissorStack;
+
+  inline void pushScissor(int x, int y, int width, int height) {
+    scissorStack.push_back(scissor);
+    if (scissor.width < 0 || scissor.height < 0) {
+      scissor = {x, y, width, height};
+      return;
+    }
+    int left = std::max(scissor.x, x);
+    int top = std::max(scissor.y, y);
+    int right = std::min(scissor.x + scissor.width, x + width);
+    int bottom = std::min(scissor.y + scissor.height, y + height);
+    scissor = {left, top, std::max(0, right - left), std::max(0, bottom - top)};
+  }
+
+  inline void popScissor() {
+    if (scissorStack.empty()) {
+      return;
+    }
+    scissor = scissorStack.back();
+    scissorStack.pop_back();
+  }
 };
+
+struct ScissorScope {
+  explicit ScissorScope(RenderContext &context, int x, int y, int width,
+                        int height)
+      : context(context) {
+    context.pushScissor(x, y, width, height);
+  }
+  ~ScissorScope() { context.popScissor(); }
+
+private:
+  RenderContext &context;
+};
+
 class View {
 public:
+  struct LayoutBatchScope {
+    LayoutBatchScope() { View::beginLayoutBatch(); }
+    ~LayoutBatchScope() { View::endLayoutBatch(); }
+  };
+
   inline View(int x, int y, int width, int height) : isVisible(true) {
     dbgColor = {static_cast<uint8_t>(rand() % 256),
                 static_cast<uint8_t>(rand() % 256),
@@ -64,6 +107,7 @@ public:
   void render(RenderContext &context) {
     if (!isVisible)
       return;
+    sortChildrenIfNeeded();
 #if DEBUG
     if (drawBoundingBox) {
       float x = getX();
@@ -110,18 +154,23 @@ public:
           rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE));
     }
 #endif
+    renderImpl(context);
     for (auto view : children) {
       view->render(context);
     }
-    renderImpl(context);
   }
-  void handleEvents(SDL_Event &event) {
-    if (!isVisible)
-      return;
-    handleEventsImpl(event);
-    for (auto view : children) {
-      view->handleEvents(event);
+  bool handleEvents(SDL_Event &event) {
+    if (!isVisible) {
+      return true;
     }
+    sortChildrenIfNeeded();
+    // Let top-most children handle first.
+    for (auto it = children.rbegin(); it != children.rend(); ++it) {
+      if (!(*it)->handleEvents(event)) {
+        return false;
+      }
+    }
+    return handleEventsImpl(event);
   }
 
   virtual inline void onLayout() {};
@@ -144,6 +193,13 @@ public:
 
   inline void setVisible(bool visible) { isVisible = visible; }
   [[nodiscard]] inline bool getVisible() const { return isVisible; }
+  inline void setZIndex(int zIndex) {
+    this->zIndex = zIndex;
+    if (parent != nullptr) {
+      parent->markChildrenOrderDirty();
+    }
+  }
+  [[nodiscard]] inline int getZIndex() const { return zIndex; }
   inline void setPosition(
       int newX, int newY,
       YGPositionType positionType = YGPositionType::YGPositionTypeRelative) {
@@ -152,6 +208,27 @@ public:
     YGNodeStyleSetPosition(node, YGEdgeTop, newY);
 
     applyYogaLayout();
+    onMove(newX, newY);
+  }
+  // Use for absolute-positioned views to avoid full layout recalculation.
+  inline void setPositionNoLayout(
+      int newX, int newY,
+      YGPositionType positionType = YGPositionType::YGPositionTypeAbsolute) {
+    YGNodeStyleSetPositionType(node, positionType);
+    YGNodeStyleSetPosition(node, YGEdgeLeft, newX);
+    YGNodeStyleSetPosition(node, YGEdgeTop, newY);
+    const int oldAbsX = absoluteX;
+    const int oldAbsY = absoluteY;
+    if (parent != nullptr) {
+      absoluteX = parent->absoluteX + newX;
+      absoluteY = parent->absoluteY + newY;
+    } else {
+      absoluteX = newX;
+      absoluteY = newY;
+    }
+    const int dx = absoluteX - oldAbsX;
+    const int dy = absoluteY - oldAbsY;
+    updateChildrenAbsolute(dx, dy);
     onMove(newX, newY);
   }
   [[nodiscard]] inline int getX() const { return absoluteX; }
@@ -190,6 +267,16 @@ public:
 
   bool drawBoundingBox = false;
   void applyYogaLayout();
+  static void beginLayoutBatch() { ++layoutBatchDepth; }
+  static void endLayoutBatch() {
+    if (layoutBatchDepth == 0) {
+      return;
+    }
+    --layoutBatchDepth;
+    if (layoutBatchDepth == 0) {
+      flushLayoutBatches();
+    }
+  }
 
 protected:
   virtual void renderImpl(RenderContext &context) {};
@@ -200,11 +287,59 @@ protected:
   virtual void onMove(int newX, int newY) {}
 
 private:
+  void markLayoutDirty() {
+    View *root = this;
+    while (root->parent != nullptr) {
+      root = root->parent;
+    }
+    dirtyRoots.insert(root);
+  }
+  static void flushLayoutBatches() {
+    for (auto *root : dirtyRoots) {
+      root->applyYogaLayoutImmediate();
+    }
+    SDL_Log("flushLayoutBatches: %d", dirtyRoots.size());
+    dirtyRoots.clear();
+  }
+  void applyYogaLayoutImmediate();
+
+  void updateChildrenAbsolute(int dx, int dy) {
+    if (dx == 0 && dy == 0) {
+      return;
+    }
+    for (auto *child : children) {
+      child->absoluteX += dx;
+      child->absoluteY += dy;
+      child->updateChildrenAbsolute(dx, dy);
+    }
+  }
+  void markChildrenOrderDirty() { childrenOrderDirty = true; }
+  void sortChildrenIfNeeded() {
+    if (!childrenOrderDirty) {
+      return;
+    }
+    std::sort(children.begin(), children.end(),
+              [](const View *a, const View *b) {
+                if (a->zIndex != b->zIndex) {
+                  return a->zIndex < b->zIndex;
+                }
+                return a->insertionOrder < b->insertionOrder;
+              });
+    childrenOrderDirty = false;
+  }
+
   Color dbgColor;
   int absoluteX;
   int absoluteY;
   bool isVisible; // Visibility of the view
   YGNodeRef node;
+  View *parent = nullptr;
 
   std::vector<View *> children;
+  bool childrenOrderDirty = false;
+  int zIndex = 0;
+  uint64_t insertionOrder = 0;
+  inline static uint64_t nextInsertionOrder = 1;
+  inline static int layoutBatchDepth = 0;
+  inline static std::unordered_set<View *> dirtyRoots;
 };

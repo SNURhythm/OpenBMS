@@ -2,6 +2,7 @@
 class Camera;
 #include <SDL2/SDL.h>
 #include <bgfx/bgfx.h>
+#include "RenderPlan.h"
 #include <string>
 #include <algorithm>
 #define SHADER_SIMPLE "vs_simple.bin", "fs_simple.bin"
@@ -56,14 +57,6 @@ struct PosTexVertex {
 
   static bgfx::VertexLayout ms_decl;
 };
-static bgfx::ViewId final_view = 5;
-static bgfx::ViewId ui_view = 254;
-static bgfx::ViewId bga_view = 1;
-static bgfx::ViewId bga_layer_view = 2;
-static bgfx::ViewId main_view = 128;
-static bgfx::ViewId blur_view_h = 3;
-static bgfx::ViewId blur_view_v = 4;
-static bgfx::ViewId clear_view = 0;
 extern Camera *main_camera;
 extern Camera game_camera;
 constexpr int design_width = 1920;
@@ -167,6 +160,13 @@ bgfx::TextureHandle sdlSurfaceToBgfxTexture(SDL_Surface *surface);
 void createRect(bgfx::TransientVertexBuffer &tvb,
                 bgfx::TransientIndexBuffer &tib, int x, int y, int width,
                 int height, uint32_t color);
+
+void renderTextureRegion(bgfx::TextureHandle texture, bgfx::ViewId viewId,
+                         float x, float y, float width, float height);
+void renderTextureRegionScissor(bgfx::TextureHandle texture,
+                                bgfx::ViewId viewId, int x, int y, int width,
+                                int height);
+void renderFullscreenTexture(bgfx::TextureHandle texture, bgfx::ViewId viewId);
 
 static PosTexCoord0Vertex s_quadVertices[] = {
     {-1.0f, 1.0f, 0.0f, 0.0f, 0.0f},

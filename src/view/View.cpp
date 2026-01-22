@@ -92,12 +92,23 @@ View *View::setDirection(YGDirection direction) {
 
 View *View::addView(View *view) {
   YGNodeInsertChild(node, view->getNode(), YGNodeGetChildCount(node));
+  view->parent = this;
+  view->insertionOrder = nextInsertionOrder++;
   children.push_back(view);
+  childrenOrderDirty = true;
   applyYogaLayout();
   return this;
 }
 
 void View::applyYogaLayout() {
+  if (layoutBatchDepth > 0) {
+    markLayoutDirty();
+    return;
+  }
+  applyYogaLayoutImmediate();
+}
+
+void View::applyYogaLayoutImmediate() {
   auto prevWidth = YGNodeLayoutGetWidth(node);
   auto prevHeight = YGNodeLayoutGetHeight(node);
   // Only calculate layout from root node

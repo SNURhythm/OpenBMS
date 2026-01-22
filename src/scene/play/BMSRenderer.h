@@ -17,6 +17,7 @@
 #include <bx/math.h>
 
 #include <list>
+class SpriteLoader;
 struct LaneState {
   long long lastStateTime = -1;
   bool isPressed = false;
@@ -43,8 +44,10 @@ public:
   void reset();
 };
 class BMSRenderer {
-private:
+public:
   ~BMSRenderer();
+
+private:
   TextView *judgeText = nullptr;
   TextView *scoreText = nullptr;
   std::map<int, LaneState> laneStates;
@@ -74,6 +77,9 @@ private:
                     bms_parser::LongNote *const &head);
   void drawNormalNote(RenderContext &context, float y,
                       bms_parser::Note *const &note);
+  bgfx::TextureHandle loadCroppedTexture(SpriteLoader &loader, int x, int y,
+                                         int width, int height,
+                                         const char *label);
   bool isLeftScratch(int lane);
   bool isRightScratch(int lane);
   bool isScratch(int lane);

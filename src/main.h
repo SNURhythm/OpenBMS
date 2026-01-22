@@ -1,10 +1,8 @@
 #pragma once
 #include "context.h"
+#include <cstdint>
 int main(int argv, char **args);
 void run();
-void resetViewTransform();
-void createFrameBuffers(uint16_t windowW, uint16_t windowH);
-void destroyFrameBuffers();
-void blurHorizontal();
-void blurVertical();
-void drawFinal();
+void resetViewTransform(uint16_t bgaWidth, uint16_t bgaHeight,
+                        bgfx::ViewId blurViewH, bgfx::ViewId blurViewV,
+                        bgfx::ViewId finalView);
