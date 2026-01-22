@@ -63,15 +63,6 @@ static SDL_Renderer *s_renderer = nullptr;
 static rendering::PostProcessPipeline s_postProcess;
 static rendering::BlurPass *s_blurPass = nullptr;
 
-static void updateViewOrder(const rendering::BlurPass &blurPass) {
-  const bgfx::ViewId order[] = {
-      rendering::clear_view, rendering::bga_view,  rendering::bga_layer_view,
-      blurPass.blurViewH(),  blurPass.blurViewV(), blurPass.finalView(),
-      rendering::main_view,  rendering::ui_view,
-  };
-  bgfx::setViewOrder(0, static_cast<uint16_t>(sizeof(order) / sizeof(order[0])),
-                     order);
-}
 
 // static rendering::PosColorVertex cubeVertices[] = {
 //     {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
@@ -291,7 +282,8 @@ void run() {
   resetViewTransform(s_blurPass->sceneWidth(), s_blurPass->sceneHeight(),
                      s_blurPass->blurViewH(), s_blurPass->blurViewV(),
                      s_blurPass->finalView());
-  updateViewOrder(*s_blurPass);
+  rendering::applyViewOrder(s_blurPass->blurViewH(), s_blurPass->blurViewV(),
+                            s_blurPass->finalView());
 
   TextView fpsText("assets/fonts/notosanscjkjp.ttf", 24);
   while (!context.quitFlag) {
@@ -341,7 +333,9 @@ void run() {
         resetViewTransform(s_blurPass->sceneWidth(), s_blurPass->sceneHeight(),
                            s_blurPass->blurViewH(), s_blurPass->blurViewV(),
                            s_blurPass->finalView());
-        updateViewOrder(*s_blurPass);
+        rendering::applyViewOrder(s_blurPass->blurViewH(),
+                                  s_blurPass->blurViewV(),
+                                  s_blurPass->finalView());
       }
     }
     sceneManager.update(deltaTime);
@@ -359,7 +353,6 @@ void run() {
     bgfx::touch(s_blurPass->finalView());
     bgfx::touch(s_blurPass->blurViewH());
     bgfx::touch(s_blurPass->blurViewV());
-    bgfx::submit(rendering::clear_view, program);
 
     sceneManager.render();
     s_postProcess.apply();

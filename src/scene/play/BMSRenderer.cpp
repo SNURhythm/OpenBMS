@@ -13,6 +13,7 @@
 
 #include <assert.h>
 #include <sstream>
+#include <string>
 BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
     : latePoorTiming(latePoorTiming), chart(chart) {
   for (auto lane : chart->Meta.GetTotalLaneIndices()) {
@@ -38,13 +39,6 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
   // }
   int width = 128;
   int height = 40;
-  auto data = spriteLoader.crop(0, 0, width, height);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
-
-  int channels = spriteLoader.getChannels();
   keyLaneCount = chart->Meta.GetKeyLaneCount();
   noteRenderWidth = 1.0f * 8.0f / chart->Meta.GetTotalLaneCount();
   noteImageHeight = height;
@@ -58,144 +52,43 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
                             static_cast<float>(width) * noteRenderWidth;
   longBodyRenderHeightOn = static_cast<float>(onImageHeight) /
                            static_cast<float>(width) * noteRenderWidth;
-  noteTexture =
-      bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
-                            0, bgfx::copy(data, width * height * channels));
-  SDL_free(data);
-  data = spriteLoader.crop(0, 80, 128, 40);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
+  noteTexture = loadCroppedTexture(spriteLoader, 0, 0, width, height, "note");
   longHeadTexture =
-      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 40 * channels));
-  SDL_free(data);
-  data = spriteLoader.crop(0, 120, 128, 12);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
+      loadCroppedTexture(spriteLoader, 0, 80, 128, 40, "long head");
   longBodyTextureOff =
-      bgfx::createTexture2D(128, 12, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 12 * channels));
-  SDL_free(data);
-  data = spriteLoader.crop(0, 132, 128, 24);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
+      loadCroppedTexture(spriteLoader, 0, 120, 128, 12, "long body off");
   longBodyTextureOn =
-      bgfx::createTexture2D(128, 24, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 24 * channels));
-  SDL_free(data);
-  data = spriteLoader.crop(0, 40, 128, 40);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
+      loadCroppedTexture(spriteLoader, 0, 132, 128, 24, "long body on");
   longTailTexture =
-      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 40 * channels));
-  SDL_free(data);
+      loadCroppedTexture(spriteLoader, 0, 40, 128, 40, "long tail");
 
   SpriteLoader spriteLoader2(PATH("assets/img/simple_blue.png"));
   if (!spriteLoader2.load()) {
     throw std::runtime_error("Failed to load simple_blue.png");
   }
-  channels = spriteLoader2.getChannels();
-  data = spriteLoader2.crop(0, 0, width, height);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
-  noteTexture2 =
-      bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
-                            0, bgfx::copy(data, width * height * channels));
-  SDL_free(data);
-  data = spriteLoader2.crop(0, 80, 128, 40);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
+  noteTexture2 = loadCroppedTexture(spriteLoader2, 0, 0, width, height, "note");
   longHeadTexture2 =
-      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 40 * channels));
-  SDL_free(data);
-  data = spriteLoader2.crop(0, 120, 128, 12);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
+      loadCroppedTexture(spriteLoader2, 0, 80, 128, 40, "long head");
   longBodyTextureOff2 =
-      bgfx::createTexture2D(128, 12, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 12 * channels));
-  SDL_free(data);
-  data = spriteLoader2.crop(0, 132, 128, 24);
+      loadCroppedTexture(spriteLoader2, 0, 120, 128, 12, "long body off");
   longBodyTextureOn2 =
-      bgfx::createTexture2D(128, 24, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 24 * channels));
-  SDL_free(data);
-  data = spriteLoader2.crop(0, 40, 128, 40);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
+      loadCroppedTexture(spriteLoader2, 0, 132, 128, 24, "long body on");
   longTailTexture2 =
-      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 40 * channels));
-  SDL_free(data);
+      loadCroppedTexture(spriteLoader2, 0, 40, 128, 40, "long tail");
   SpriteLoader spriteLoader3(PATH("assets/img/orange.png"));
   if (!spriteLoader3.load()) {
     throw std::runtime_error("Failed to load orange.png");
   }
-  channels = spriteLoader3.getChannels();
-  data = spriteLoader3.crop(0, 0, width, height);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
-
   scratchTexture =
-      bgfx::createTexture2D(width, height, false, 1, bgfx::TextureFormat::RGBA8,
-                            0, bgfx::copy(data, width * height * channels));
-  SDL_free(data);
-  data = spriteLoader3.crop(0, 80, 128, 40);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
+      loadCroppedTexture(spriteLoader3, 0, 0, width, height, "scratch");
   scratchLongHeadTexture =
-      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 40 * channels));
-  SDL_free(data);
-  data = spriteLoader3.crop(0, 120, 128, 12);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
-  scratchLongBodyTextureOff =
-      bgfx::createTexture2D(128, 12, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 12 * channels));
-  SDL_free(data);
-  data = spriteLoader3.crop(0, 132, 128, 24);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
-  scratchLongBodyTextureOn =
-      bgfx::createTexture2D(128, 24, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 24 * channels));
-  SDL_free(data);
-  data = spriteLoader3.crop(0, 40, 128, 40);
-  if (!data) {
-    SDL_Log("Failed to load note texture");
-    throw std::runtime_error("Failed to load note texture");
-  }
-  scratchLongTailTexture =
-      bgfx::createTexture2D(128, 40, false, 1, bgfx::TextureFormat::RGBA8, 0,
-                            bgfx::copy(data, 128 * 40 * channels));
-  SDL_free(data);
+      loadCroppedTexture(spriteLoader3, 0, 80, 128, 40, "scratch long head");
+  scratchLongBodyTextureOff = loadCroppedTexture(
+      spriteLoader3, 0, 120, 128, 12, "scratch long body off");
+  scratchLongBodyTextureOn = loadCroppedTexture(
+      spriteLoader3, 0, 132, 128, 24, "scratch long body on");
+  scratchLongTailTexture = loadCroppedTexture(spriteLoader3, 0, 40, 128, 40,
+                                              "scratch long tail");
   judgeText = new TextView("assets/fonts/notosanscjkjp.ttf", 32);
   judgeText->setPosition(rendering::window_width / 2,
                          rendering::window_height / 2);
@@ -206,6 +99,24 @@ BMSRenderer::BMSRenderer(bms_parser::Chart *chart, long long latePoorTiming)
 
   // Calculate the lane plane screen top intersection
   upperBound = calculateLanePlaneScreenTopIntersection();
+}
+
+bgfx::TextureHandle BMSRenderer::loadCroppedTexture(SpriteLoader &loader, int x,
+                                                    int y, int width,
+                                                    int height,
+                                                    const char *label) {
+  auto data = loader.crop(x, y, width, height);
+  if (!data) {
+    SDL_Log("Failed to load %s texture", label);
+    throw std::runtime_error(std::string("Failed to load ") + label +
+                             " texture");
+  }
+  int channels = loader.getChannels();
+  auto handle = bgfx::createTexture2D(
+      width, height, false, 1, bgfx::TextureFormat::RGBA8, 0,
+      bgfx::copy(data, width * height * channels));
+  SDL_free(data);
+  return handle;
 }
 void BMSRenderer::drawJudgement(RenderContext context) const {
   if (state.latestJudgeResult.judgement == None) {
