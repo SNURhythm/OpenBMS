@@ -4,6 +4,7 @@
 #include <yoga/Yoga.h>
 #include <vector>
 #include <algorithm>
+#include <cstdint>
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
 #include "../rendering/Color.h"
@@ -53,6 +54,18 @@ struct RenderContext {
     scissorStack.pop_back();
   }
 };
+
+struct ScissorScope {
+  explicit ScissorScope(RenderContext &context, int x, int y, int width,
+                        int height)
+      : context(context) {
+    context.pushScissor(x, y, width, height);
+  }
+  ~ScissorScope() { context.popScissor(); }
+
+private:
+  RenderContext &context;
+};
 class View {
 public:
   inline View(int x, int y, int width, int height) : isVisible(true) {
@@ -87,6 +100,7 @@ public:
   void render(RenderContext &context) {
     if (!isVisible)
       return;
+    sortChildrenIfNeeded();
 #if DEBUG
     if (drawBoundingBox) {
       float x = getX();
@@ -142,6 +156,7 @@ public:
     if (!isVisible) {
       return true;
     }
+    sortChildrenIfNeeded();
     // Let top-most children handle first.
     for (auto it = children.rbegin(); it != children.rend(); ++it) {
       if (!(*it)->handleEvents(event)) {
@@ -171,6 +186,13 @@ public:
 
   inline void setVisible(bool visible) { isVisible = visible; }
   [[nodiscard]] inline bool getVisible() const { return isVisible; }
+  inline void setZIndex(int zIndex) {
+    this->zIndex = zIndex;
+    if (parent != nullptr) {
+      parent->markChildrenOrderDirty();
+    }
+  }
+  [[nodiscard]] inline int getZIndex() const { return zIndex; }
   inline void setPosition(
       int newX, int newY,
       YGPositionType positionType = YGPositionType::YGPositionTypeRelative) {
@@ -227,11 +249,31 @@ protected:
   virtual void onMove(int newX, int newY) {}
 
 private:
+  void markChildrenOrderDirty() { childrenOrderDirty = true; }
+  void sortChildrenIfNeeded() {
+    if (!childrenOrderDirty) {
+      return;
+    }
+    std::sort(children.begin(), children.end(),
+              [](const View *a, const View *b) {
+                if (a->zIndex != b->zIndex) {
+                  return a->zIndex < b->zIndex;
+                }
+                return a->insertionOrder < b->insertionOrder;
+              });
+    childrenOrderDirty = false;
+  }
+
   Color dbgColor;
   int absoluteX;
   int absoluteY;
   bool isVisible; // Visibility of the view
   YGNodeRef node;
+  View *parent = nullptr;
 
   std::vector<View *> children;
+  bool childrenOrderDirty = false;
+  int zIndex = 0;
+  uint64_t insertionOrder = 0;
+  inline static uint64_t nextInsertionOrder = 1;
 };
