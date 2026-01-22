@@ -161,6 +161,8 @@ void GamePlayScene::cleanupScene() {
   inputHandler->stopListen();
   delete inputHandler;
   inputHandler = nullptr;
+  delete renderer;
+  renderer = nullptr;
   SDL_Log("Cleaned up GamePlayScene");
 }
 bms_parser::Note *GamePlayScene::pressLane(int lane, double inputDelay) {

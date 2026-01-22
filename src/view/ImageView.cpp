@@ -5,6 +5,7 @@
 #include "ImageView.h"
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
+#include "../rendering/UniformCache.h"
 #include <bgfx/bgfx.h>
 #ifdef _WIN32
 #define STBI_WINDOWS_UTF8
@@ -15,12 +16,12 @@
 std::map<std::string, ImageView::ImageCache> ImageView::imageCache = {};
 ImageView::ImageView(int x, int y, int width, int height, const path_t &path)
     : View(x, y, width, height) {
-  s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+  s_texColor =
+      rendering::UniformCache::getInstance().getSampler("s_texColor");
   loadTexture(path);
 }
 ImageView::~ImageView() {
   freeTexture();
-  bgfx::destroy(s_texColor);
 }
 bool ImageView::loadTexture(const path_t &path) {
 
@@ -122,7 +123,8 @@ void ImageView::renderImpl(RenderContext &context) {
 }
 ImageView::ImageView(int x, int y, int width, int height)
     : View(x, y, width, height) {
-  s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+  s_texColor =
+      rendering::UniformCache::getInstance().getSampler("s_texColor");
 }
 void ImageView::dropCache(const path_t &path) {
   std::string utf8Path = path_t_to_utf8(path);

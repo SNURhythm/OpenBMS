@@ -1,6 +1,7 @@
 #include "BlurPass.h"
 
 #include "ShaderManager.h"
+#include "UniformCache.h"
 #include "common.h"
 
 namespace rendering {
@@ -20,10 +21,8 @@ void BlurPass::init(uint16_t windowW, uint16_t windowH) {
   prog_rect_ = ShaderManager::getInstance().getProgram("blur/vs_blur.bin",
                                                        "fs_rect_tint.bin");
 
-  if (!bgfx::isValid(u_tex_color_)) {
-    u_tex_color_ =
-        bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-  }
+  u_tex_color_ =
+      rendering::UniformCache::getInstance().getSampler("s_texColor");
   if (!bgfx::isValid(u_texel_size_)) {
     u_texel_size_ = bgfx::createUniform("u_texelSize", bgfx::UniformType::Vec4);
   }
@@ -66,8 +65,6 @@ void BlurPass::execute() {
 void BlurPass::shutdown() {
   destroyFrameBuffers();
 
-  if (bgfx::isValid(u_tex_color_))
-    bgfx::destroy(u_tex_color_);
   if (bgfx::isValid(u_texel_size_))
     bgfx::destroy(u_texel_size_);
   if (bgfx::isValid(u_tint_color_))
