@@ -203,6 +203,27 @@ public:
     applyYogaLayout();
     onMove(newX, newY);
   }
+  // Use for absolute-positioned views to avoid full layout recalculation.
+  inline void setPositionNoLayout(
+      int newX, int newY,
+      YGPositionType positionType = YGPositionType::YGPositionTypeAbsolute) {
+    YGNodeStyleSetPositionType(node, positionType);
+    YGNodeStyleSetPosition(node, YGEdgeLeft, newX);
+    YGNodeStyleSetPosition(node, YGEdgeTop, newY);
+    const int oldAbsX = absoluteX;
+    const int oldAbsY = absoluteY;
+    if (parent != nullptr) {
+      absoluteX = parent->absoluteX + newX;
+      absoluteY = parent->absoluteY + newY;
+    } else {
+      absoluteX = newX;
+      absoluteY = newY;
+    }
+    const int dx = absoluteX - oldAbsX;
+    const int dy = absoluteY - oldAbsY;
+    updateChildrenAbsolute(dx, dy);
+    onMove(newX, newY);
+  }
   [[nodiscard]] inline int getX() const { return absoluteX; }
   [[nodiscard]] inline int getY() const { return absoluteY; }
   [[nodiscard]] inline int getWidth() const {
@@ -249,6 +270,16 @@ protected:
   virtual void onMove(int newX, int newY) {}
 
 private:
+  void updateChildrenAbsolute(int dx, int dy) {
+    if (dx == 0 && dy == 0) {
+      return;
+    }
+    for (auto *child : children) {
+      child->absoluteX += dx;
+      child->absoluteY += dy;
+      child->updateChildrenAbsolute(dx, dy);
+    }
+  }
   void markChildrenOrderDirty() { childrenOrderDirty = true; }
   void sortChildrenIfNeeded() {
     if (!childrenOrderDirty) {
