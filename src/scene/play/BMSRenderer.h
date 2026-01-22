@@ -46,6 +46,7 @@ public:
 class BMSRenderer {
 public:
   ~BMSRenderer();
+
 private:
   TextView *judgeText = nullptr;
   TextView *scoreText = nullptr;

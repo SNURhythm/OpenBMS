@@ -16,13 +16,10 @@
 std::map<std::string, ImageView::ImageCache> ImageView::imageCache = {};
 ImageView::ImageView(int x, int y, int width, int height, const path_t &path)
     : View(x, y, width, height) {
-  s_texColor =
-      rendering::UniformCache::getInstance().getSampler("s_texColor");
+  s_texColor = rendering::UniformCache::getInstance().getSampler("s_texColor");
   loadTexture(path);
 }
-ImageView::~ImageView() {
-  freeTexture();
-}
+ImageView::~ImageView() { freeTexture(); }
 bool ImageView::loadTexture(const path_t &path) {
 
   freeTexture();
@@ -123,8 +120,7 @@ void ImageView::renderImpl(RenderContext &context) {
 }
 ImageView::ImageView(int x, int y, int width, int height)
     : View(x, y, width, height) {
-  s_texColor =
-      rendering::UniformCache::getInstance().getSampler("s_texColor");
+  s_texColor = rendering::UniformCache::getInstance().getSampler("s_texColor");
 }
 void ImageView::dropCache(const path_t &path) {
   std::string utf8Path = path_t_to_utf8(path);

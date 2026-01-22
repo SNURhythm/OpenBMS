@@ -15,8 +15,7 @@
 #endif
 Jukebox::Jukebox(Stopwatch *stopwatch)
     : audio(stopwatch), stopwatch(stopwatch) {
-  s_texColor =
-      rendering::UniformCache::getInstance().getSampler("s_texColor");
+  s_texColor = rendering::UniformCache::getInstance().getSampler("s_texColor");
 }
 
 Jukebox::~Jukebox() {
