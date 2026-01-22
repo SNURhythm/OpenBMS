@@ -18,7 +18,9 @@ public:
   virtual void init() = 0; // Initialize the scene
   virtual EventHandleResult handleEvents(SDL_Event &event) {
     for (auto view : views) {
-      view->handleEvents(event);
+      if (!view->handleEvents(event)) {
+        return {};
+      }
     }
     return {};
   }

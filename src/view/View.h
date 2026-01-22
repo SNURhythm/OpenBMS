@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <yoga/Yoga.h>
 #include <vector>
+#include <algorithm>
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
 #include "../rendering/Color.h"
@@ -29,6 +30,28 @@ struct Scissor {
 };
 struct RenderContext {
   Scissor scissor = {0, 0, -1, -1};
+  std::vector<Scissor> scissorStack;
+
+  inline void pushScissor(int x, int y, int width, int height) {
+    scissorStack.push_back(scissor);
+    if (scissor.width < 0 || scissor.height < 0) {
+      scissor = {x, y, width, height};
+      return;
+    }
+    int left = std::max(scissor.x, x);
+    int top = std::max(scissor.y, y);
+    int right = std::min(scissor.x + scissor.width, x + width);
+    int bottom = std::min(scissor.y + scissor.height, y + height);
+    scissor = {left, top, std::max(0, right - left), std::max(0, bottom - top)};
+  }
+
+  inline void popScissor() {
+    if (scissorStack.empty()) {
+      return;
+    }
+    scissor = scissorStack.back();
+    scissorStack.pop_back();
+  }
 };
 class View {
 public:
@@ -110,18 +133,22 @@ public:
           rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE));
     }
 #endif
+    renderImpl(context);
     for (auto view : children) {
       view->render(context);
     }
-    renderImpl(context);
   }
-  void handleEvents(SDL_Event &event) {
-    if (!isVisible)
-      return;
-    handleEventsImpl(event);
-    for (auto view : children) {
-      view->handleEvents(event);
+  bool handleEvents(SDL_Event &event) {
+    if (!isVisible) {
+      return true;
     }
+    // Let top-most children handle first.
+    for (auto it = children.rbegin(); it != children.rend(); ++it) {
+      if (!(*it)->handleEvents(event)) {
+        return false;
+      }
+    }
+    return handleEventsImpl(event);
   }
 
   virtual inline void onLayout() {};
