@@ -6,28 +6,29 @@
 namespace rendering {
 BlurPass::BlurPass(uint16_t downsampleFactor, float tintAlpha)
     : downsample_(downsampleFactor > 0 ? downsampleFactor : 1),
-      tint_alpha_(tintAlpha) {}
+      tint_alpha_(tintAlpha), blur_view_h_(rendering::blur_view_h),
+      blur_view_v_(rendering::blur_view_v), final_view_(rendering::final_view) {
+}
 
 void BlurPass::init(uint16_t windowW, uint16_t windowH) {
   window_width_ = windowW;
   window_height_ = windowH;
-  prog_blur_h_ = ShaderManager::getInstance().getProgram(
-      "blur/vs_blur.bin", "blur/fs_blurH.bin");
-  prog_blur_v_ = ShaderManager::getInstance().getProgram(
-      "blur/vs_blur.bin", "blur/fs_blurV.bin");
+  prog_blur_h_ = ShaderManager::getInstance().getProgram("blur/vs_blur.bin",
+                                                         "blur/fs_blurH.bin");
+  prog_blur_v_ = ShaderManager::getInstance().getProgram("blur/vs_blur.bin",
+                                                         "blur/fs_blurV.bin");
   prog_rect_ = ShaderManager::getInstance().getProgram("blur/vs_blur.bin",
                                                        "fs_rect_tint.bin");
 
   if (!bgfx::isValid(u_tex_color_)) {
-    u_tex_color_ = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+    u_tex_color_ =
+        bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
   }
   if (!bgfx::isValid(u_texel_size_)) {
-    u_texel_size_ =
-        bgfx::createUniform("u_texelSize", bgfx::UniformType::Vec4);
+    u_texel_size_ = bgfx::createUniform("u_texelSize", bgfx::UniformType::Vec4);
   }
   if (!bgfx::isValid(u_tint_color_)) {
-    u_tint_color_ =
-        bgfx::createUniform("u_tintColor", bgfx::UniformType::Vec4);
+    u_tint_color_ = bgfx::createUniform("u_tintColor", bgfx::UniformType::Vec4);
   }
 
   resize(windowW, windowH);
@@ -54,7 +55,9 @@ void BlurPass::execute() {
     return;
   blurHorizontal();
   blurVertical();
-  drawFinal();
+  if (composite_enabled_) {
+    drawFinal();
+  }
 }
 
 void BlurPass::shutdown() {
@@ -72,6 +75,26 @@ void BlurPass::shutdown() {
   u_tint_color_ = BGFX_INVALID_HANDLE;
 
   initialized_ = false;
+}
+
+void BlurPass::setInputViews(const std::vector<bgfx::ViewId> &views) {
+  input_views_ = views;
+  if (!bgfx::isValid(fb_scene_))
+    return;
+  for (const auto view : input_views_) {
+    bgfx::setViewFrameBuffer(view, fb_scene_);
+  }
+}
+
+void BlurPass::setViewIds(bgfx::ViewId blurH, bgfx::ViewId blurV,
+                          bgfx::ViewId finalView) {
+  blur_view_h_ = blurH;
+  blur_view_v_ = blurV;
+  final_view_ = finalView;
+}
+
+void BlurPass::setCompositeEnabled(bool enabled) {
+  composite_enabled_ = enabled;
 }
 
 void BlurPass::setDownsample(uint16_t downsampleFactor) {
@@ -97,11 +120,12 @@ void BlurPass::createFrameBuffers() {
                             bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_RT);
   fb_blur_b_ = bgfx::createFrameBuffer(1, &tex_blur_b_, true);
 
-  bgfx::setViewFrameBuffer(rendering::bga_view, fb_scene_);
-  bgfx::setViewFrameBuffer(rendering::bga_layer_view, fb_scene_);
+  for (const auto view : input_views_) {
+    bgfx::setViewFrameBuffer(view, fb_scene_);
+  }
 
-  bgfx::setViewRect(rendering::blur_view_h, 0, 0, scene_width_, scene_height_);
-  bgfx::setViewRect(rendering::blur_view_v, 0, 0, scene_width_, scene_height_);
+  bgfx::setViewRect(blur_view_h_, 0, 0, scene_width_, scene_height_);
+  bgfx::setViewRect(blur_view_v_, 0, 0, scene_width_, scene_height_);
 }
 
 void BlurPass::destroyFrameBuffers() {
@@ -128,8 +152,8 @@ void BlurPass::destroyFrameBuffers() {
 }
 
 void BlurPass::blurHorizontal() {
-  bgfx::setViewFrameBuffer(rendering::blur_view_h, fb_blur_a_);
-  bgfx::setViewRect(rendering::blur_view_h, 0, 0, scene_width_, scene_height_);
+  bgfx::setViewFrameBuffer(blur_view_h_, fb_blur_a_);
+  bgfx::setViewRect(blur_view_h_, 0, 0, scene_width_, scene_height_);
 
   bgfx::setTexture(0, u_tex_color_, tex_scene_color_);
   rendering::screenSpaceQuad();
@@ -142,12 +166,12 @@ void BlurPass::blurHorizontal() {
   bgfx::setUniform(u_texel_size_, texelSize);
 
   bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
-  bgfx::submit(rendering::blur_view_h, prog_blur_h_);
+  bgfx::submit(blur_view_h_, prog_blur_h_);
 }
 
 void BlurPass::blurVertical() {
-  bgfx::setViewFrameBuffer(rendering::blur_view_v, fb_blur_b_);
-  bgfx::setViewRect(rendering::blur_view_v, 0, 0, scene_width_, scene_height_);
+  bgfx::setViewFrameBuffer(blur_view_v_, fb_blur_b_);
+  bgfx::setViewRect(blur_view_v_, 0, 0, scene_width_, scene_height_);
 
   bgfx::setTexture(0, u_tex_color_, tex_blur_a_);
   rendering::screenSpaceQuad();
@@ -160,20 +184,19 @@ void BlurPass::blurVertical() {
   bgfx::setUniform(u_texel_size_, texelSize);
 
   bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
-  bgfx::submit(rendering::blur_view_v, prog_blur_v_);
+  bgfx::submit(blur_view_v_, prog_blur_v_);
 }
 
 void BlurPass::drawFinal() {
-  bgfx::setViewFrameBuffer(rendering::final_view, BGFX_INVALID_HANDLE);
-  bgfx::setViewRect(rendering::final_view, rendering::ui_offset_x,
-                    rendering::ui_offset_y, rendering::ui_view_width,
-                    rendering::ui_view_height);
+  bgfx::setViewFrameBuffer(final_view_, BGFX_INVALID_HANDLE);
+  bgfx::setViewRect(final_view_, rendering::ui_offset_x, rendering::ui_offset_y,
+                    rendering::ui_view_width, rendering::ui_view_height);
 
   bgfx::setTexture(0, u_tex_color_, tex_blur_b_);
   float tintColor[4] = {1.0f, 1.0f, 1.0f, tint_alpha_};
   bgfx::setUniform(u_tint_color_, tintColor);
   bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
   rendering::screenSpaceQuad();
-  bgfx::submit(rendering::final_view, prog_rect_);
+  bgfx::submit(final_view_, prog_rect_);
 }
 } // namespace rendering

@@ -63,6 +63,16 @@ static SDL_Renderer *s_renderer = nullptr;
 static rendering::PostProcessPipeline s_postProcess;
 static rendering::BlurPass *s_blurPass = nullptr;
 
+static void updateViewOrder(const rendering::BlurPass &blurPass) {
+  const bgfx::ViewId order[] = {
+      rendering::clear_view, rendering::bga_view,  rendering::bga_layer_view,
+      blurPass.blurViewH(),  blurPass.blurViewV(), blurPass.finalView(),
+      rendering::main_view,  rendering::ui_view,
+  };
+  bgfx::setViewOrder(0, static_cast<uint16_t>(sizeof(order) / sizeof(order[0])),
+                     order);
+}
+
 // static rendering::PosColorVertex cubeVertices[] = {
 //     {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
 //     {-1.0f, -1.0f, 1.0f, 0xff00ff00},  {1.0f, -1.0f, 1.0f, 0xff00ffff},
@@ -249,6 +259,9 @@ void run() {
   rendering::PosTexCoord0Vertex::init();
   s_postProcess.init(rendering::render_width, rendering::render_height);
   s_blurPass = s_postProcess.addBlurPass();
+  s_blurPass->setInputViews({rendering::bga_view, rendering::bga_layer_view});
+  s_blurPass->setCompositeEnabled(false);
+  // Example: s_blurPass->setCompositeEnabled(true);
 
   // We will use this to reference where we're drawing
   // This is set once to determine the clear color to use on starting a new
@@ -261,12 +274,12 @@ void run() {
 
   bgfx::setViewClear(rendering::main_view, BGFX_CLEAR_DEPTH, 0x00000000, 1.0f,
                      0);
-  bgfx::setViewClear(rendering::blur_view_h, BGFX_CLEAR_COLOR, 0x00000000, 1.0f,
-                     0);
-  bgfx::setViewClear(rendering::blur_view_v, BGFX_CLEAR_COLOR, 0x00000000, 1.0f,
-                     0);
-  bgfx::setViewClear(rendering::final_view, BGFX_CLEAR_COLOR, 0x00000000, 1.0f,
-                     0);
+  bgfx::setViewClear(s_blurPass->blurViewH(), BGFX_CLEAR_COLOR, 0x00000000,
+                     1.0f, 0);
+  bgfx::setViewClear(s_blurPass->blurViewV(), BGFX_CLEAR_COLOR, 0x00000000,
+                     1.0f, 0);
+  bgfx::setViewClear(s_blurPass->finalView(), BGFX_CLEAR_COLOR, 0x00000000,
+                     1.0f, 0);
 
   // This is set to determine the size of the drawable surface
   bgfx::setViewRect(rendering::ui_view, rendering::ui_offset_x,
@@ -274,7 +287,10 @@ void run() {
                     rendering::ui_view_height);
   auto program =
       rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
-  resetViewTransform(s_blurPass->sceneWidth(), s_blurPass->sceneHeight());
+  resetViewTransform(s_blurPass->sceneWidth(), s_blurPass->sceneHeight(),
+                     s_blurPass->blurViewH(), s_blurPass->blurViewV(),
+                     s_blurPass->finalView());
+  updateViewOrder(*s_blurPass);
 
   TextView fpsText("assets/fonts/notosanscjkjp.ttf", 24);
   while (!context.quitFlag) {
@@ -321,7 +337,10 @@ void run() {
         SDL_Log("Drawable size: %d x %d", rendering::render_width,
                 rendering::render_height);
         s_postProcess.resize(rendering::render_width, rendering::render_height);
-        resetViewTransform(s_blurPass->sceneWidth(), s_blurPass->sceneHeight());
+        resetViewTransform(s_blurPass->sceneWidth(), s_blurPass->sceneHeight(),
+                           s_blurPass->blurViewH(), s_blurPass->blurViewV(),
+                           s_blurPass->finalView());
+        updateViewOrder(*s_blurPass);
       }
     }
     sceneManager.update(deltaTime);
@@ -336,13 +355,22 @@ void run() {
     bgfx::touch(rendering::ui_view);
     bgfx::touch(rendering::bga_view);
     bgfx::touch(rendering::bga_layer_view);
-    bgfx::touch(rendering::final_view);
-    bgfx::touch(rendering::blur_view_h);
-    bgfx::touch(rendering::blur_view_v);
+    bgfx::touch(s_blurPass->finalView());
+    bgfx::touch(s_blurPass->blurViewH());
+    bgfx::touch(s_blurPass->blurViewV());
     bgfx::submit(rendering::clear_view, program);
 
     sceneManager.render();
     s_postProcess.apply();
+    const float blurWidth = rendering::window_width * 0.1f;
+    const float blurHeight = rendering::window_height * 0.1f;
+    const float blurX = (rendering::window_width - blurWidth) * 0.5f;
+    const float blurY = (rendering::window_height - blurHeight) * 0.5f;
+    rendering::renderFullscreenTexture(s_blurPass->sceneTexture(),
+                                       s_blurPass->finalView());
+    rendering::renderTextureRegion(s_blurPass->outputTexture(),
+                                   s_blurPass->finalView(), blurX, blurY,
+                                   blurWidth, blurHeight);
 
     // render fps, rounded to 2 decimal places
     std::ostringstream oss;
@@ -394,7 +422,9 @@ void run() {
   // bgfx::destroy(ibh);
 }
 
-void resetViewTransform(uint16_t bgaWidth, uint16_t bgaHeight) {
+void resetViewTransform(uint16_t bgaWidth, uint16_t bgaHeight,
+                        bgfx::ViewId blurViewH, bgfx::ViewId blurViewV,
+                        bgfx::ViewId finalView) {
   float ortho[16];
   bx::mtxOrtho(ortho, 0.0f, rendering::window_width, rendering::window_height,
                0.0f, 0.0f, 100.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
@@ -410,12 +440,11 @@ void resetViewTransform(uint16_t bgaWidth, uint16_t bgaHeight) {
   bgfx::setViewTransform(rendering::clear_view, nullptr, ortho);
   bgfx::setViewRect(rendering::clear_view, 0, 0, rendering::render_width,
                     rendering::render_height);
-  bgfx::setViewTransform(rendering::final_view, nullptr, ortho);
-  bgfx::setViewRect(rendering::final_view, rendering::ui_offset_x,
-                    rendering::ui_offset_y, rendering::ui_view_width,
-                    rendering::ui_view_height);
-  bgfx::setViewTransform(rendering::blur_view_h, nullptr, ortho);
-  bgfx::setViewTransform(rendering::blur_view_v, nullptr, ortho);
+  bgfx::setViewTransform(finalView, nullptr, ortho);
+  bgfx::setViewRect(finalView, rendering::ui_offset_x, rendering::ui_offset_y,
+                    rendering::ui_view_width, rendering::ui_view_height);
+  bgfx::setViewTransform(blurViewH, nullptr, ortho);
+  bgfx::setViewTransform(blurViewV, nullptr, ortho);
 
   bx::Vec3 at = {4.0f, 2.0f, 0.0f};
   bx::Vec3 eye = {4.0f, 1.5f, -2.1f};
@@ -433,4 +462,3 @@ void resetViewTransform(uint16_t bgaWidth, uint16_t bgaHeight) {
     rendering::main_camera->render();
   }
 }
-

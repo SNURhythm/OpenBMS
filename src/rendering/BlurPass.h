@@ -2,6 +2,7 @@
 
 #include <bgfx/bgfx.h>
 #include <cstdint>
+#include <vector>
 
 #include "PostProcessPipeline.h"
 
@@ -14,11 +15,20 @@ public:
   void execute() override;
   void shutdown() override;
 
+  void setInputViews(const std::vector<bgfx::ViewId> &views);
+  void setViewIds(bgfx::ViewId blurH, bgfx::ViewId blurV,
+                  bgfx::ViewId finalView);
+  void setCompositeEnabled(bool enabled);
   void setDownsample(uint16_t downsampleFactor);
   void setTintAlpha(float alpha);
 
   uint16_t sceneWidth() const { return scene_width_; }
   uint16_t sceneHeight() const { return scene_height_; }
+  bgfx::ViewId blurViewH() const { return blur_view_h_; }
+  bgfx::ViewId blurViewV() const { return blur_view_v_; }
+  bgfx::ViewId finalView() const { return final_view_; }
+  bgfx::TextureHandle sceneTexture() const { return tex_scene_color_; }
+  bgfx::TextureHandle outputTexture() const { return tex_blur_b_; }
 
 private:
   void createFrameBuffers();
@@ -34,6 +44,11 @@ private:
   uint16_t scene_width_ = 1;
   uint16_t scene_height_ = 1;
   bool initialized_ = false;
+  std::vector<bgfx::ViewId> input_views_{};
+  bgfx::ViewId blur_view_h_ = 0;
+  bgfx::ViewId blur_view_v_ = 0;
+  bgfx::ViewId final_view_ = 0;
+  bool composite_enabled_ = true;
 
   bgfx::ProgramHandle prog_blur_h_ = BGFX_INVALID_HANDLE;
   bgfx::ProgramHandle prog_blur_v_ = BGFX_INVALID_HANDLE;
