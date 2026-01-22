@@ -14,8 +14,26 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <unordered_set>
 
 template <typename T> class RecyclerView : public View {
+private:
+  inline void destroyAllViews() {
+    std::unordered_set<View *> unique;
+    for (auto &entry : viewEntries) {
+      unique.insert(entry.first);
+    }
+    for (auto *view : recycledViewEntries) {
+      unique.insert(view);
+    }
+    for (auto *view : unique) {
+      delete view;
+    }
+    viewEntries.clear();
+    recycledViewEntries.clear();
+    idxToView.clear();
+  }
+
 private:
   void renderImpl(RenderContext &context) override {
     if (!touchDragging && touchDragged) {
@@ -36,17 +54,14 @@ private:
     }
     // clip the rendering area
 
-    auto scissors = context.scissor;
-    context.scissor = {this->getX(), this->getY(), this->getWidth(),
-                       this->getHeight()};
+    context.pushScissor(this->getX(), this->getY(), this->getWidth(),
+                        this->getHeight());
     for (auto entry : viewEntries) {
 
       entry.first->render(context);
     }
-    context.scissor = scissors;
-    // flush rendering
-    bgfx::setScissor();
     if (items.size() * itemHeight < this->getHeight()) {
+      context.popScissor();
       return;
     }
     rendering::PosColorVertex vertices[] = {
@@ -116,6 +131,7 @@ private:
     rendering::setScissorUI(context.scissor.x, context.scissor.y,
                             context.scissor.width, context.scissor.height);
     bgfx::submit(rendering::ui_view, program);
+    context.popScissor();
 
     // int itemsSize = std::max(6, static_cast<int>(items.size())) * itemHeight;
     // int thumbHeight = this->getHeight() * this->getHeight() / itemsSize;
@@ -343,14 +359,7 @@ public:
   inline RecyclerView(std::function<bool(const T &, const T &)> itemComparator)
       : scrollOffset(0), itemHeight(100), topMargin(1), bottomMargin(1),
         itemComparator(itemComparator), View() {}
-  inline ~RecyclerView() {
-    for (auto entry : viewEntries) {
-      recycleView(entry.first);
-    }
-    for (auto view : recycledViewEntries) {
-      delete view;
-    }
-  }
+  inline ~RecyclerView() { destroyAllViews(); }
 
   // scroll offset in pixels
   float scrollOffset;
