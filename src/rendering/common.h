@@ -170,6 +170,8 @@ void createRect(bgfx::TransientVertexBuffer &tvb,
 
 void renderTextureRegion(bgfx::TextureHandle texture, bgfx::ViewId viewId,
                          float x, float y, float width, float height);
+void renderTextureRegionScissor(bgfx::TextureHandle texture, bgfx::ViewId viewId,
+                                int x, int y, int width, int height);
 void renderFullscreenTexture(bgfx::TextureHandle texture, bgfx::ViewId viewId);
 
 static PosTexCoord0Vertex s_quadVertices[] = {

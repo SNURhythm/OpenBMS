@@ -20,6 +20,7 @@ public:
                   bgfx::ViewId finalView);
   void setCompositeEnabled(bool enabled);
   void setDownsample(uint16_t downsampleFactor);
+  void setBlurStrength(float strength);
   void setTintAlpha(float alpha);
 
   uint16_t sceneWidth() const { return scene_width_; }
@@ -39,6 +40,7 @@ private:
 
   uint16_t downsample_ = 2;
   float tint_alpha_ = 0.6f;
+  float blur_strength_ = 1.0f;
   uint16_t window_width_ = 1;
   uint16_t window_height_ = 1;
   uint16_t scene_width_ = 1;
@@ -57,6 +59,7 @@ private:
   bgfx::UniformHandle u_tex_color_ = BGFX_INVALID_HANDLE;
   bgfx::UniformHandle u_texel_size_ = BGFX_INVALID_HANDLE;
   bgfx::UniformHandle u_tint_color_ = BGFX_INVALID_HANDLE;
+  bgfx::UniformHandle u_blur_scale_ = BGFX_INVALID_HANDLE;
 
   bgfx::TextureHandle tex_scene_color_ = BGFX_INVALID_HANDLE;
   bgfx::FrameBufferHandle fb_scene_ = BGFX_INVALID_HANDLE;
