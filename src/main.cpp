@@ -18,7 +18,8 @@
 #include <bgfx/platform.h>
 #include <bx/platform.h>
 #include "rendering/common.h"
-#include "rendering/BlurPipeline.h"
+#include "rendering/PostProcessPipeline.h"
+#include "rendering/BlurPass.h"
 #include "context.h"
 #include "audio/AudioWrapper.h"
 #include "targets.h"
@@ -59,7 +60,8 @@ bgfx::VertexLayout rendering::PosTexVertex::ms_decl;
 bgfx::VertexLayout rendering::PosTexCoord0Vertex::ms_decl;
 
 static SDL_Renderer *s_renderer = nullptr;
-static rendering::BlurPipeline s_blurPipeline;
+static rendering::PostProcessPipeline s_postProcess;
+static rendering::BlurPass *s_blurPass = nullptr;
 
 // static rendering::PosColorVertex cubeVertices[] = {
 //     {-1.0f, 1.0f, 1.0f, 0xff000000},   {1.0f, 1.0f, 1.0f, 0xff0000ff},
@@ -245,7 +247,8 @@ void run() {
   rendering::PosColorVertex::init();
   rendering::PosTexVertex::init();
   rendering::PosTexCoord0Vertex::init();
-  s_blurPipeline.init(rendering::render_width, rendering::render_height);
+  s_postProcess.init(rendering::render_width, rendering::render_height);
+  s_blurPass = s_postProcess.addBlurPass();
 
   // We will use this to reference where we're drawing
   // This is set once to determine the clear color to use on starting a new
@@ -271,8 +274,7 @@ void run() {
                     rendering::ui_view_height);
   auto program =
       rendering::ShaderManager::getInstance().getProgram(SHADER_SIMPLE);
-  resetViewTransform(s_blurPipeline.sceneWidth(),
-                     s_blurPipeline.sceneHeight());
+  resetViewTransform(s_blurPass->sceneWidth(), s_blurPass->sceneHeight());
 
   TextView fpsText("assets/fonts/notosanscjkjp.ttf", 24);
   while (!context.quitFlag) {
@@ -318,9 +320,8 @@ void run() {
                         (TARGET_PLATFORM == iOS ? BGFX_RESET_VSYNC : 0));
         SDL_Log("Drawable size: %d x %d", rendering::render_width,
                 rendering::render_height);
-        s_blurPipeline.resize(rendering::render_width, rendering::render_height);
-        resetViewTransform(s_blurPipeline.sceneWidth(),
-                           s_blurPipeline.sceneHeight());
+        s_postProcess.resize(rendering::render_width, rendering::render_height);
+        resetViewTransform(s_blurPass->sceneWidth(), s_blurPass->sceneHeight());
       }
     }
     sceneManager.update(deltaTime);
@@ -341,7 +342,7 @@ void run() {
     bgfx::submit(rendering::clear_view, program);
 
     sceneManager.render();
-    s_blurPipeline.apply();
+    s_postProcess.apply();
 
     // render fps, rounded to 2 decimal places
     std::ostringstream oss;
@@ -388,7 +389,7 @@ void run() {
     //
   }
   sceneManager.cleanup();
-  s_blurPipeline.shutdown();
+  s_postProcess.shutdown();
   // bgfx::destroy(vbh);
   // bgfx::destroy(ibh);
 }
