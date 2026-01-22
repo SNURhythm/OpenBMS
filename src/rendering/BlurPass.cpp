@@ -1,12 +1,16 @@
-#include "BlurPipeline.h"
+#include "BlurPass.h"
 
 #include "ShaderManager.h"
 #include "common.h"
 
 namespace rendering {
-void BlurPipeline::init(uint16_t windowW, uint16_t windowH,
-                        uint16_t downsampleFactor) {
-  downsample_ = downsampleFactor > 0 ? downsampleFactor : 1;
+BlurPass::BlurPass(uint16_t downsampleFactor, float tintAlpha)
+    : downsample_(downsampleFactor > 0 ? downsampleFactor : 1),
+      tint_alpha_(tintAlpha) {}
+
+void BlurPass::init(uint16_t windowW, uint16_t windowH) {
+  window_width_ = windowW;
+  window_height_ = windowH;
   prog_blur_h_ = ShaderManager::getInstance().getProgram(
       "blur/vs_blur.bin", "blur/fs_blurH.bin");
   prog_blur_v_ = ShaderManager::getInstance().getProgram(
@@ -30,7 +34,9 @@ void BlurPipeline::init(uint16_t windowW, uint16_t windowH,
   initialized_ = true;
 }
 
-void BlurPipeline::resize(uint16_t windowW, uint16_t windowH) {
+void BlurPass::resize(uint16_t windowW, uint16_t windowH) {
+  window_width_ = windowW;
+  window_height_ = windowH;
   destroyFrameBuffers();
 
   scene_width_ = windowW / downsample_;
@@ -43,7 +49,15 @@ void BlurPipeline::resize(uint16_t windowW, uint16_t windowH) {
   createFrameBuffers();
 }
 
-void BlurPipeline::shutdown() {
+void BlurPass::execute() {
+  if (!initialized_)
+    return;
+  blurHorizontal();
+  blurVertical();
+  drawFinal();
+}
+
+void BlurPass::shutdown() {
   destroyFrameBuffers();
 
   if (bgfx::isValid(u_tex_color_))
@@ -60,15 +74,14 @@ void BlurPipeline::shutdown() {
   initialized_ = false;
 }
 
-void BlurPipeline::apply() {
-  if (!initialized_)
-    return;
-  blurHorizontal();
-  blurVertical();
-  drawFinal();
+void BlurPass::setDownsample(uint16_t downsampleFactor) {
+  downsample_ = downsampleFactor > 0 ? downsampleFactor : 1;
+  resize(window_width_, window_height_);
 }
 
-void BlurPipeline::createFrameBuffers() {
+void BlurPass::setTintAlpha(float alpha) { tint_alpha_ = alpha; }
+
+void BlurPass::createFrameBuffers() {
   tex_scene_color_ =
       bgfx::createTexture2D(scene_width_, scene_height_, false, 1,
                             bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_RT);
@@ -91,7 +104,7 @@ void BlurPipeline::createFrameBuffers() {
   bgfx::setViewRect(rendering::blur_view_v, 0, 0, scene_width_, scene_height_);
 }
 
-void BlurPipeline::destroyFrameBuffers() {
+void BlurPass::destroyFrameBuffers() {
   if (bgfx::isValid(fb_scene_))
     bgfx::destroy(fb_scene_);
   if (bgfx::isValid(fb_blur_a_))
@@ -114,7 +127,7 @@ void BlurPipeline::destroyFrameBuffers() {
   tex_blur_b_ = BGFX_INVALID_HANDLE;
 }
 
-void BlurPipeline::blurHorizontal() {
+void BlurPass::blurHorizontal() {
   bgfx::setViewFrameBuffer(rendering::blur_view_h, fb_blur_a_);
   bgfx::setViewRect(rendering::blur_view_h, 0, 0, scene_width_, scene_height_);
 
@@ -132,7 +145,7 @@ void BlurPipeline::blurHorizontal() {
   bgfx::submit(rendering::blur_view_h, prog_blur_h_);
 }
 
-void BlurPipeline::blurVertical() {
+void BlurPass::blurVertical() {
   bgfx::setViewFrameBuffer(rendering::blur_view_v, fb_blur_b_);
   bgfx::setViewRect(rendering::blur_view_v, 0, 0, scene_width_, scene_height_);
 
@@ -150,14 +163,14 @@ void BlurPipeline::blurVertical() {
   bgfx::submit(rendering::blur_view_v, prog_blur_v_);
 }
 
-void BlurPipeline::drawFinal() {
+void BlurPass::drawFinal() {
   bgfx::setViewFrameBuffer(rendering::final_view, BGFX_INVALID_HANDLE);
   bgfx::setViewRect(rendering::final_view, rendering::ui_offset_x,
                     rendering::ui_offset_y, rendering::ui_view_width,
                     rendering::ui_view_height);
 
   bgfx::setTexture(0, u_tex_color_, tex_blur_b_);
-  float tintColor[4] = {1.0f, 1.0f, 1.0f, 0.60f};
+  float tintColor[4] = {1.0f, 1.0f, 1.0f, tint_alpha_};
   bgfx::setUniform(u_tint_color_, tintColor);
   bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
   rendering::screenSpaceQuad();
