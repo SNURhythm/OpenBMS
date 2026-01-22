@@ -5,11 +5,10 @@
 #include "Button.h"
 
 void Button::renderImpl(RenderContext &context) {
-  context.pushScissor(getX(), getY(), getWidth(), getHeight());
+  ScissorScope scissor(context, getX(), getY(), getWidth(), getHeight());
   if (contentView) {
     contentView->render(context);
   }
-  context.popScissor();
 }
 
 void Button::setOnClickListener(std::function<void()> listener) {

@@ -54,14 +54,13 @@ private:
     }
     // clip the rendering area
 
-    context.pushScissor(this->getX(), this->getY(), this->getWidth(),
-                        this->getHeight());
+    ScissorScope scissor(context, this->getX(), this->getY(), this->getWidth(),
+                         this->getHeight());
     for (auto entry : viewEntries) {
 
       entry.first->render(context);
     }
     if (items.size() * itemHeight < this->getHeight()) {
-      context.popScissor();
       return;
     }
     rendering::PosColorVertex vertices[] = {
@@ -131,7 +130,6 @@ private:
     rendering::setScissorUI(context.scissor.x, context.scissor.y,
                             context.scissor.width, context.scissor.height);
     bgfx::submit(rendering::ui_view, program);
-    context.popScissor();
 
     // int itemsSize = std::max(6, static_cast<int>(items.size())) * itemHeight;
     // int thumbHeight = this->getHeight() * this->getHeight() / itemsSize;

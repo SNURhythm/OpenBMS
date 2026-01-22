@@ -92,7 +92,10 @@ View *View::setDirection(YGDirection direction) {
 
 View *View::addView(View *view) {
   YGNodeInsertChild(node, view->getNode(), YGNodeGetChildCount(node));
+  view->parent = this;
+  view->insertionOrder = nextInsertionOrder++;
   children.push_back(view);
+  childrenOrderDirty = true;
   applyYogaLayout();
   return this;
 }
