@@ -163,6 +163,8 @@ void GamePlayScene::cleanupScene() {
   inputHandler = nullptr;
   delete renderer;
   renderer = nullptr;
+  delete laneStateText;
+  laneStateText = nullptr;
   SDL_Log("Cleaned up GamePlayScene");
 }
 bms_parser::Note *GamePlayScene::pressLane(int lane, double inputDelay) {
