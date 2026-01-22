@@ -485,9 +485,9 @@ private:
       }
       // update the position of the view
 
-      view->setPosition(this->getX(),
-                        this->getY() + (i * itemHeight) - scrollOffset,
-                        YGPositionType::YGPositionTypeAbsolute);
+      view->setPositionNoLayout(
+          this->getX(), this->getY() + (i * itemHeight) - scrollOffset,
+          YGPositionType::YGPositionTypeAbsolute);
       view->setSize(this->getWidth(), itemHeight);
 
       newVisibleItems.push_back(std::make_pair(view, item));
