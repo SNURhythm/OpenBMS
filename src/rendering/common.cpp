@@ -98,4 +98,14 @@ void renderTextureRegion(bgfx::TextureHandle texture, bgfx::ViewId viewId,
   bgfx::submit(viewId, rendering::ShaderManager::getInstance().getProgram(
                            SHADER_TEXT));
 }
+
+void renderTextureRegionScissor(bgfx::TextureHandle texture, bgfx::ViewId viewId,
+                                int x, int y, int width, int height) {
+  if (width <= 0 || height <= 0) {
+    return;
+  }
+  rendering::setScissorUI(x, y, width, height);
+  renderFullscreenTexture(texture, viewId);
+  bgfx::setScissor();
+}
 } // namespace rendering

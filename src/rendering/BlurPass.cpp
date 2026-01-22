@@ -30,6 +30,9 @@ void BlurPass::init(uint16_t windowW, uint16_t windowH) {
   if (!bgfx::isValid(u_tint_color_)) {
     u_tint_color_ = bgfx::createUniform("u_tintColor", bgfx::UniformType::Vec4);
   }
+  if (!bgfx::isValid(u_blur_scale_)) {
+    u_blur_scale_ = bgfx::createUniform("u_blurScale", bgfx::UniformType::Vec4);
+  }
 
   resize(windowW, windowH);
   initialized_ = true;
@@ -69,10 +72,13 @@ void BlurPass::shutdown() {
     bgfx::destroy(u_texel_size_);
   if (bgfx::isValid(u_tint_color_))
     bgfx::destroy(u_tint_color_);
+  if (bgfx::isValid(u_blur_scale_))
+    bgfx::destroy(u_blur_scale_);
 
   u_tex_color_ = BGFX_INVALID_HANDLE;
   u_texel_size_ = BGFX_INVALID_HANDLE;
   u_tint_color_ = BGFX_INVALID_HANDLE;
+  u_blur_scale_ = BGFX_INVALID_HANDLE;
 
   initialized_ = false;
 }
@@ -100,6 +106,13 @@ void BlurPass::setCompositeEnabled(bool enabled) {
 void BlurPass::setDownsample(uint16_t downsampleFactor) {
   downsample_ = downsampleFactor > 0 ? downsampleFactor : 1;
   resize(window_width_, window_height_);
+}
+
+void BlurPass::setBlurStrength(float strength) {
+  blur_strength_ = strength;
+  if (blur_strength_ < 0.0f) {
+    blur_strength_ = 0.0f;
+  }
 }
 
 void BlurPass::setTintAlpha(float alpha) { tint_alpha_ = alpha; }
@@ -164,6 +177,8 @@ void BlurPass::blurHorizontal() {
   texelSize[2] = 0.0f;
   texelSize[3] = 0.0f;
   bgfx::setUniform(u_texel_size_, texelSize);
+  float blurScale[4] = {blur_strength_, 0.0f, 0.0f, 0.0f};
+  bgfx::setUniform(u_blur_scale_, blurScale);
 
   bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
   bgfx::submit(blur_view_h_, prog_blur_h_);
@@ -182,6 +197,8 @@ void BlurPass::blurVertical() {
   texelSize[2] = 0.0f;
   texelSize[3] = 0.0f;
   bgfx::setUniform(u_texel_size_, texelSize);
+  float blurScale[4] = {blur_strength_, 0.0f, 0.0f, 0.0f};
+  bgfx::setUniform(u_blur_scale_, blurScale);
 
   bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A);
   bgfx::submit(blur_view_v_, prog_blur_v_);

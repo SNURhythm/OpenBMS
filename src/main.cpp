@@ -261,6 +261,7 @@ void run() {
   s_blurPass = s_postProcess.addBlurPass();
   s_blurPass->setInputViews({rendering::bga_view, rendering::bga_layer_view});
   s_blurPass->setCompositeEnabled(false);
+  s_blurPass->setBlurStrength(2.0f);
   // Example: s_blurPass->setCompositeEnabled(true);
 
   // We will use this to reference where we're drawing
@@ -366,11 +367,8 @@ void run() {
     const float blurHeight = rendering::window_height * 0.1f;
     const float blurX = (rendering::window_width - blurWidth) * 0.5f;
     const float blurY = (rendering::window_height - blurHeight) * 0.5f;
-    rendering::renderFullscreenTexture(s_blurPass->sceneTexture(),
+    rendering::renderFullscreenTexture(s_blurPass->outputTexture(),
                                        s_blurPass->finalView());
-    rendering::renderTextureRegion(s_blurPass->outputTexture(),
-                                   s_blurPass->finalView(), blurX, blurY,
-                                   blurWidth, blurHeight);
 
     // render fps, rounded to 2 decimal places
     std::ostringstream oss;
