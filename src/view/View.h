@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstdint>
+#include <unordered_set>
 #include "../rendering/common.h"
 #include "../rendering/ShaderManager.h"
 #include "../rendering/Color.h"
@@ -66,8 +67,14 @@ struct ScissorScope {
 private:
   RenderContext &context;
 };
+
 class View {
 public:
+  struct LayoutBatchScope {
+    LayoutBatchScope() { View::beginLayoutBatch(); }
+    ~LayoutBatchScope() { View::endLayoutBatch(); }
+  };
+
   inline View(int x, int y, int width, int height) : isVisible(true) {
     dbgColor = {static_cast<uint8_t>(rand() % 256),
                 static_cast<uint8_t>(rand() % 256),
@@ -260,6 +267,16 @@ public:
 
   bool drawBoundingBox = false;
   void applyYogaLayout();
+  static void beginLayoutBatch() { ++layoutBatchDepth; }
+  static void endLayoutBatch() {
+    if (layoutBatchDepth == 0) {
+      return;
+    }
+    --layoutBatchDepth;
+    if (layoutBatchDepth == 0) {
+      flushLayoutBatches();
+    }
+  }
 
 protected:
   virtual void renderImpl(RenderContext &context) {};
@@ -270,6 +287,22 @@ protected:
   virtual void onMove(int newX, int newY) {}
 
 private:
+  void markLayoutDirty() {
+    View *root = this;
+    while (root->parent != nullptr) {
+      root = root->parent;
+    }
+    dirtyRoots.insert(root);
+  }
+  static void flushLayoutBatches() {
+    for (auto *root : dirtyRoots) {
+      root->applyYogaLayoutImmediate();
+    }
+    SDL_Log("flushLayoutBatches: %d", dirtyRoots.size());
+    dirtyRoots.clear();
+  }
+  void applyYogaLayoutImmediate();
+
   void updateChildrenAbsolute(int dx, int dy) {
     if (dx == 0 && dy == 0) {
       return;
@@ -307,4 +340,6 @@ private:
   int zIndex = 0;
   uint64_t insertionOrder = 0;
   inline static uint64_t nextInsertionOrder = 1;
+  inline static int layoutBatchDepth = 0;
+  inline static std::unordered_set<View *> dirtyRoots;
 };

@@ -101,6 +101,14 @@ View *View::addView(View *view) {
 }
 
 void View::applyYogaLayout() {
+  if (layoutBatchDepth > 0) {
+    markLayoutDirty();
+    return;
+  }
+  applyYogaLayoutImmediate();
+}
+
+void View::applyYogaLayoutImmediate() {
   auto prevWidth = YGNodeLayoutGetWidth(node);
   auto prevHeight = YGNodeLayoutGetHeight(node);
   // Only calculate layout from root node
