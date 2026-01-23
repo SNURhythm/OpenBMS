@@ -4,7 +4,11 @@
 
 OpenBMS is a crossplatform BMS player which depends on open source libraries only
 
-## Setup for macOS/iOS
+## Download
+You can download OpenBMS from [Releases](https://github.com/SNURhythm/OpenBMS/releases/latest)
+
+## Development
+### Setup for macOS/iOS
 
 ```bash
 git clone https://github.com/SNURhythm/OpenBMS.git
@@ -14,7 +18,7 @@ git submodule update --init --recursive
 ./scripts/macos_init.sh
 ```
 
-## Setup for Windows
+### Setup for Windows
 ```bash
 git clone https://github.com/SNURhythm/OpenBMS.git
 cd OpenBMS
@@ -22,7 +26,7 @@ git submodule update --init --recursive
 ./scripts/windows_init.sh
 ```
 
-## Current Progress 
+### Current Progress 
 - [x] Implement basic chart select screen 
 - [x] Implement audio output
 - [x] Implement BGA playback
