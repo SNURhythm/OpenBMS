@@ -63,14 +63,35 @@ jobs:
                   echo "bundle_path=$APP_BUNDLE" >> $GITHUB_OUTPUT
                   echo "Found app bundle at: $APP_BUNDLE"
 
+            - name: Zip app bundle
+              id: zip-bundle
+              run: |
+                  APP_BUNDLE="${{ steps.find-bundle.outputs.bundle_path }}"
+                  BUNDLE_DIR=$(dirname "$APP_BUNDLE")
+                  BUNDLE_NAME=$(basename "$APP_BUNDLE")
+                  ZIP_PATH="${BUNDLE_DIR}/${BUNDLE_NAME}.zip"
+
+                  cd "$BUNDLE_DIR"
+                  zip -r "${BUNDLE_NAME}.zip" "${BUNDLE_NAME}"
+
+                  echo "zip_path=$ZIP_PATH" >> $GITHUB_OUTPUT
+                  echo "Created zip at: $ZIP_PATH"
+                  ls -lh "$ZIP_PATH"
+
             - name: Upload app bundle artifact
               uses: actions/upload-artifact@v4
               with:
                   name: OpenBMS-macOS
-                  path: ${{ steps.find-bundle.outputs.bundle_path }}
+                  path: ${{ steps.zip-bundle.outputs.zip_path }}
                   retention-days: 30
 
             - name: Get app bundle size
               run: |
-                  du -sh ${{ steps.find-bundle.outputs.bundle_path }}
-                  find ${{ steps.find-bundle.outputs.bundle_path }} -type f -exec ls -lh {} \; | awk '{sum+=$5} END {print "Total files:", NR, "Total size:", sum}'
+                  APP_BUNDLE="${{ steps.find-bundle.outputs.bundle_path }}"
+                  ZIP_PATH="${{ steps.zip-bundle.outputs.zip_path }}"
+                  echo "App bundle size:"
+                  du -sh "$APP_BUNDLE"
+                  echo "Zipped size:"
+                  ls -lh "$ZIP_PATH"
+                  echo "Total files in bundle:"
+                  find "$APP_BUNDLE" -type f | wc -l
