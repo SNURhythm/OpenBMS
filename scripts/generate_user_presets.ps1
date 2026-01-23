@@ -45,9 +45,12 @@ if (-not (Test-Path $TemplateFile)) {
     exit 1
 }
 
+# Escape backslashes for JSON (Windows paths need \\ in JSON)
+$VcpkgPathEscaped = $VcpkgPath.Replace('\', '\\')
+
 # Read template and replace placeholder
 $Content = Get-Content $TemplateFile -Raw
-$Content = $Content -replace '\$\{VCPKG_ROOT\}', $VcpkgPath
+$Content = $Content -replace '\$\{VCPKG_ROOT\}', $VcpkgPathEscaped
 
 # Write output file
 $Content | Set-Content $OutputFile -NoNewline

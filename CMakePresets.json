@@ -20,7 +20,7 @@
             },
             "condition": {
                 "type": "equals",
-                "lhs": "${vendor.os}",
+                "lhs": "${hostSystemName}",
                 "rhs": "Windows"
             }
         },
@@ -35,7 +35,12 @@
         {
             "name": "debug-windows",
             "inherits": "default-windows",
-            "binaryDir": "${sourceDir}/cmake-build-debug"
+            "binaryDir": "${sourceDir}/cmake-build-debug",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
         },
         {
             "name": "release",
@@ -48,7 +53,12 @@
         {
             "name": "release-windows",
             "inherits": "default-windows",
-            "binaryDir": "${sourceDir}/cmake-build-release"
+            "binaryDir": "${sourceDir}/cmake-build-release",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
         }
     ]
 }
