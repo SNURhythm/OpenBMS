@@ -32,11 +32,10 @@ jobs:
                     git clone https://github.com/Microsoft/vcpkg.git $HOME/vcpkg
                     $HOME/vcpkg/bootstrap-vcpkg.sh
                   fi
+                  cd $HOME/vcpkg
+                  git pull
+                  cd ..
                   echo "VCPKG_ROOT=$HOME/vcpkg" >> $GITHUB_ENV
-
-            - name: Install dependencies
-              run: |
-                  brew install ninja sndfile
 
             - name: Generate user presets
               run: |
