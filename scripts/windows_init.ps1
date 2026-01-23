@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RootDir = Split-Path -Parent $ScriptDir
-$Preset = "user-$BuildType"
+$Preset = "user-$BuildType-windows"
 $BuildDir = Join-Path $RootDir "cmake-build-$BuildType"
 
 # Check if preset exists. If not, run generate_user_presets.ps1
