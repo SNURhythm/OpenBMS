@@ -55,6 +55,14 @@
 #endif
 #include <sol/sol.hpp>
 #include "rendering/Camera.h"
+#include <filesystem>
+#include <vector>
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+#ifdef __linux__
+#include <unistd.h>
+#endif
 
 bgfx::VertexLayout rendering::PosColorVertex::ms_decl;
 bgfx::VertexLayout rendering::PosTexVertex::ms_decl;
@@ -102,6 +110,87 @@ void rendering::updateUIScale(int renderW, int renderH) {
   ui_offset_y = 0;
 }
 int main(int argv, char **args) {
+  // Set working directory to executable's directory
+  std::filesystem::path exePath;
+#ifdef _WIN32
+  char exePathBuf[MAX_PATH];
+  DWORD len = GetModuleFileNameA(nullptr, exePathBuf, MAX_PATH);
+  if (len > 0 && len < MAX_PATH) {
+    exePath = std::filesystem::path(exePathBuf);
+  } else {
+    // Fallback to args[0] if GetModuleFileName fails
+    if (argv > 0 && args[0] != nullptr) {
+      exePath = std::filesystem::path(args[0]);
+      if (!exePath.is_absolute()) {
+        exePath = std::filesystem::absolute(exePath);
+      }
+    }
+  }
+#elif TARGET_OS_IPHONE
+  // iOS: executable is in the app bundle, use bundle path
+  // For iOS, we typically want the Documents directory, not the executable path
+  // So we'll skip changing directory on iOS
+  exePath = std::filesystem::current_path();
+#elif TARGET_OS_OSX
+  // macOS: use _NSGetExecutablePath
+  uint32_t size = 0;
+  _NSGetExecutablePath(nullptr, &size);
+  std::vector<char> exePathBuf(size);
+  if (_NSGetExecutablePath(exePathBuf.data(), &size) == 0) {
+    exePath = std::filesystem::path(exePathBuf.data());
+  } else {
+    // Fallback to args[0]
+    if (argv > 0 && args[0] != nullptr) {
+      char resolved[PATH_MAX];
+      if (realpath(args[0], resolved) != nullptr) {
+        exePath = std::filesystem::path(resolved);
+      } else {
+        exePath = std::filesystem::path(args[0]);
+        if (!exePath.is_absolute()) {
+          exePath = std::filesystem::absolute(exePath);
+        }
+      }
+    }
+  }
+#elif __linux__
+  // Linux: use /proc/self/exe
+  char exePathBuf[PATH_MAX];
+  ssize_t len = readlink("/proc/self/exe", exePathBuf, PATH_MAX - 1);
+  if (len != -1) {
+    exePathBuf[len] = '\0';
+    exePath = std::filesystem::path(exePathBuf);
+  } else {
+    // Fallback to args[0]
+    if (argv > 0 && args[0] != nullptr) {
+      char resolved[PATH_MAX];
+      if (realpath(args[0], resolved) != nullptr) {
+        exePath = std::filesystem::path(resolved);
+      } else {
+        exePath = std::filesystem::path(args[0]);
+        if (!exePath.is_absolute()) {
+          exePath = std::filesystem::absolute(exePath);
+        }
+      }
+    }
+  }
+#else
+  // Fallback: use args[0]
+  if (argv > 0 && args[0] != nullptr) {
+    exePath = std::filesystem::path(args[0]);
+    if (!exePath.is_absolute()) {
+      exePath = std::filesystem::absolute(exePath);
+    }
+  }
+#endif
+
+  if (!exePath.empty()) {
+    std::filesystem::path exeDir = exePath.parent_path();
+    if (!exeDir.empty() && std::filesystem::exists(exeDir)) {
+      std::filesystem::current_path(exeDir);
+      SDL_Log("Changed working directory to: %s", exeDir.string().c_str());
+    }
+  }
+
 #ifdef _WIN32
   // search dll in ./lib
   SetDllDirectoryA("lib");
