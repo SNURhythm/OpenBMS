@@ -130,7 +130,6 @@ int main(int argv, char **args) {
   // iOS: executable is in the app bundle, use bundle path
   // For iOS, we typically want the Documents directory, not the executable path
   // So we'll skip changing directory on iOS
-  exePath = std::filesystem::current_path();
 #elif TARGET_OS_OSX
   // macOS: use _NSGetExecutablePath
   uint32_t size = 0;
@@ -171,14 +170,6 @@ int main(int argv, char **args) {
           exePath = std::filesystem::absolute(exePath);
         }
       }
-    }
-  }
-#else
-  // Fallback: use args[0]
-  if (argv > 0 && args[0] != nullptr) {
-    exePath = std::filesystem::path(args[0]);
-    if (!exePath.is_absolute()) {
-      exePath = std::filesystem::absolute(exePath);
     }
   }
 #endif
