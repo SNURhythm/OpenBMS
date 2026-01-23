@@ -67,6 +67,8 @@ jobs:
               id: zip-bundle
               run: |
                   APP_BUNDLE="${{ steps.find-bundle.outputs.bundle_path }}"
+                  # Make paths absolute so they remain valid after `cd`
+                  APP_BUNDLE="$(cd "$(dirname "$APP_BUNDLE")" && pwd)/$(basename "$APP_BUNDLE")"
                   BUNDLE_DIR=$(dirname "$APP_BUNDLE")
                   BUNDLE_NAME=$(basename "$APP_BUNDLE")
                   ZIP_PATH="${BUNDLE_DIR}/${BUNDLE_NAME}.zip"
