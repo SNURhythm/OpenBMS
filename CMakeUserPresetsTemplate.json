@@ -1,0 +1,21 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "user-debug",
+            "inherits": "debug",
+            "binaryDir": "${sourceDir}/cmake-build-debug",
+            "environment": {
+                "VCPKG_ROOT": "${VCPKG_ROOT}"
+            }
+        },
+        {
+            "name": "user-release",
+            "inherits": "release",
+            "binaryDir": "${sourceDir}/cmake-build-release",
+            "environment": {
+                "VCPKG_ROOT": "${VCPKG_ROOT}"
+            }
+        }
+    ]
+}
