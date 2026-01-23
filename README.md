@@ -1,5 +1,6 @@
 # OpenBMS [WIP]
 ![Build Status](https://github.com/SNURhythm/OpenBMS/actions/workflows/ios-testflight.yml/badge.svg)
+![Build Status](https://github.com/SNURhythm/OpenBMS/actions/workflows/macos-build.yml/badge.svg)
 
 OpenBMS is a crossplatform BMS player which depends on open source libraries only
 
