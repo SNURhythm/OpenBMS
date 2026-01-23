@@ -35,7 +35,7 @@
         {
             "name": "debug-windows",
             "inherits": "default-windows",
-            "binaryDir": "${sourceDir}/cmake-build-debug",
+            "binaryDir": "${sourceDir}/cmake-build-debug-visual-studio",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -53,7 +53,7 @@
         {
             "name": "release-windows",
             "inherits": "default-windows",
-            "binaryDir": "${sourceDir}/cmake-build-release",
+            "binaryDir": "${sourceDir}/cmake-build-release-visual-studio",
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
