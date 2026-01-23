@@ -28,6 +28,20 @@ jobs:
         with:
           cmakeVersion: "3.27.7"
 
+      - name: Install ccache
+        run: |
+          if ! command -v ccache &> /dev/null; then
+            echo "Installing ccache..."
+            brew install ccache
+          else
+            echo "ccache is already installed"
+          fi
+          # Configure ccache to strictly use a persistent directory
+          echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+          # Establish the directory immediately
+          mkdir -p $HOME/.ccache
+          echo "ccache configured at $HOME/.ccache"
+
       - name: Install vcpkg
         run: |
           if [ ! -d "$HOME/vcpkg" ]; then
@@ -45,10 +59,12 @@ jobs:
           VCPKG_ROOT="$HOME/vcpkg" ./scripts/generate_user_presets.sh
 
       - name: Configure CMake
-        run: |
-          ./scripts/macos_init.sh release ON
         env:
           VCPKG_ROOT: ${{ env.VCPKG_ROOT }}
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+        run: |
+          ./scripts/macos_init.sh release ON
 
       - name: Build
         run: |
