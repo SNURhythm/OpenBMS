@@ -1,99 +1,110 @@
 name: Build macOS App Bundle
 
 on:
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-    build:
-        name: Build macOS App Bundle
-        runs-on: [self-hosted, macOS]
-        timeout-minutes: 60
+  build:
+    name: Build macOS App Bundle
+    runs-on: [self-hosted, macOS]
+    timeout-minutes: 60
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-              with:
-                  submodules: recursive
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-            - name: Set up cmake
-              uses: lukka/get-cmake@v3.27.7
-              with:
-                  cmakeVersion: "3.27.7"
+      - name: Set up cmake
+        uses: lukka/get-cmake@v3.27.7
+        with:
+          cmakeVersion: "3.27.7"
 
-            - name: Install vcpkg
-              run: |
-                  if [ ! -d "$HOME/vcpkg" ]; then
-                    git clone https://github.com/Microsoft/vcpkg.git $HOME/vcpkg
-                  fi
-                  cd $HOME/vcpkg
-                  git pull
-                  cd ..
-                  $HOME/vcpkg/bootstrap-vcpkg.sh
-                  echo "VCPKG_ROOT=$HOME/vcpkg" >> $GITHUB_ENV
+      - name: Install vcpkg
+        run: |
+          if [ ! -d "$HOME/vcpkg" ]; then
+            git clone https://github.com/Microsoft/vcpkg.git $HOME/vcpkg
+          fi
+          cd $HOME/vcpkg
+          git pull
+          cd ..
+          $HOME/vcpkg/bootstrap-vcpkg.sh
+          echo "VCPKG_ROOT=$HOME/vcpkg" >> $GITHUB_ENV
 
-            - name: Generate user presets
-              run: |
-                  chmod +x scripts/generate_user_presets.sh
-                  VCPKG_ROOT="$HOME/vcpkg" ./scripts/generate_user_presets.sh
+      - name: Generate user presets
+        run: |
+          chmod +x scripts/generate_user_presets.sh
+          VCPKG_ROOT="$HOME/vcpkg" ./scripts/generate_user_presets.sh
 
-            - name: Configure CMake
-              run: |
-                  ./scripts/macos_init.sh release ON
-              env:
-                  VCPKG_ROOT: ${{ env.VCPKG_ROOT }}
+      - name: Configure CMake
+        run: |
+          ./scripts/macos_init.sh release ON
+        env:
+          VCPKG_ROOT: ${{ env.VCPKG_ROOT }}
 
-            - name: Build
-              run: |
-                  cmake --build cmake-build-release-bundle --config Release -j$(sysctl -n hw.ncpu)
+      - name: Build
+        run: |
+          cmake --build cmake-build-release-bundle --config Release -j$(sysctl -n hw.ncpu)
 
-            - name: Find app bundle
-              id: find-bundle
-              run: |
-                  APP_BUNDLE=$(find cmake-build-release-bundle -name "OpenBMS.app" -type d | head -1)
-                  if [ -z "$APP_BUNDLE" ]; then
-                    echo "Error: OpenBMS.app not found"
-                    exit 1
-                  fi
-                  echo "bundle_path=$APP_BUNDLE" >> $GITHUB_OUTPUT
-                  echo "Found app bundle at: $APP_BUNDLE"
+      - name: Find app bundle
+        id: find-bundle
+        run: |
+          APP_BUNDLE=$(find cmake-build-release-bundle -name "OpenBMS.app" -type d | head -1)
+          if [ -z "$APP_BUNDLE" ]; then
+            echo "Error: OpenBMS.app not found"
+            exit 1
+          fi
+          echo "bundle_path=$APP_BUNDLE" >> $GITHUB_OUTPUT
+          echo "Found app bundle at: $APP_BUNDLE"
 
-            - name: Zip app bundle
-              id: zip-bundle
-              run: |
-                  APP_BUNDLE="${{ steps.find-bundle.outputs.bundle_path }}"
-                  # Make paths absolute so they remain valid after `cd`
-                  APP_BUNDLE="$(cd "$(dirname "$APP_BUNDLE")" && pwd)/$(basename "$APP_BUNDLE")"
-                  BUNDLE_DIR=$(dirname "$APP_BUNDLE")
-                  BUNDLE_NAME=$(basename "$APP_BUNDLE")
-                  ZIP_PATH="${BUNDLE_DIR}/${BUNDLE_NAME}.zip"
+      - name: Zip app bundle
+        id: zip-bundle
+        run: |
+          APP_BUNDLE="${{ steps.find-bundle.outputs.bundle_path }}"
+          # Make paths absolute so they remain valid after `cd`
+          APP_BUNDLE="$(cd "$(dirname "$APP_BUNDLE")" && pwd)/$(basename "$APP_BUNDLE")"
+          BUNDLE_DIR=$(dirname "$APP_BUNDLE")
+          BUNDLE_NAME=$(basename "$APP_BUNDLE")
+          ZIP_NAME="OpenBMS-macOS.zip"
+          ZIP_PATH="${BUNDLE_DIR}/${ZIP_NAME}"
 
-                  cd "$BUNDLE_DIR"
-                  zip -r "${BUNDLE_NAME}.zip" "${BUNDLE_NAME}"
+          cd "$BUNDLE_DIR"
+          zip -r "${ZIP_NAME}" "${BUNDLE_NAME}"
 
-                  echo "zip_path=$ZIP_PATH" >> $GITHUB_OUTPUT
-                  echo "Created zip at: $ZIP_PATH"
-                  ls -lh "$ZIP_PATH"
+          echo "zip_path=$ZIP_PATH" >> $GITHUB_OUTPUT
+          echo "Created zip at: $ZIP_PATH"
+          ls -lh "$ZIP_PATH"
 
-            - name: Upload app bundle artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: OpenBMS-macOS
-                  path: ${{ steps.zip-bundle.outputs.zip_path }}
-                  retention-days: 30
+      - name: Upload app bundle artifact
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenBMS-macOS
+          path: ${{ steps.zip-bundle.outputs.zip_path }}
+          retention-days: 30
 
-            - name: Get app bundle size
-              run: |
-                  APP_BUNDLE="${{ steps.find-bundle.outputs.bundle_path }}"
-                  ZIP_PATH="${{ steps.zip-bundle.outputs.zip_path }}"
-                  echo "App bundle size:"
-                  du -sh "$APP_BUNDLE"
-                  echo "Zipped size:"
-                  ls -lh "$ZIP_PATH"
-                  echo "Total files in bundle:"
-                  find "$APP_BUNDLE" -type f | wc -l
+      - name: Get app bundle size
+        run: |
+          APP_BUNDLE="${{ steps.find-bundle.outputs.bundle_path }}"
+          ZIP_PATH="${{ steps.zip-bundle.outputs.zip_path }}"
+          echo "App bundle size:"
+          du -sh "$APP_BUNDLE"
+          echo "Zipped size:"
+          ls -lh "$ZIP_PATH"
+          echo "Total files in bundle:"
+          find "$APP_BUNDLE" -type f | wc -l
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          files: ${{ steps.zip-bundle.outputs.zip_path }}
