@@ -25,6 +25,18 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Option to build macOS app bundle (default ON for macOS)
+if (APPLE AND NOT IOS)
+    option(BUILD_MACOS_BUNDLE "Build macOS app bundle" OFF)
+    if (BUILD_MACOS_BUNDLE)
+        message(STATUS "Building macOS app bundle: ON")
+    else()
+        message(STATUS "Building macOS app bundle: OFF (regular binary)")
+    endif()
+else()
+    option(BUILD_MACOS_BUNDLE "Build macOS app bundle" OFF)
+endif()
+
 
 # Include directories
 include_directories(include)
@@ -135,7 +147,18 @@ elseif (APPLE)
     find_library(LUAJIT_LIB luajit PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     find_library(FFMPEG_LIBS NAMES avcodec avfilter avformat avutil avdevice swresample swscale postproc vpx x264 x265 PATHS ${LIB_DIR}/darwin NO_DEFAULT_PATH)
     set(CMAKE_MACOSX_RPATH 1)
-    set(CMAKE_INSTALL_RPATH "@executable_path/lib")
+    if (NOT IOS)
+        if (BUILD_MACOS_BUNDLE)
+            # For macOS app bundle, use @executable_path/../Frameworks
+            set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
+        else()
+            # For regular binary, use @executable_path/lib
+            set(CMAKE_INSTALL_RPATH "@executable_path/lib")
+        endif()
+        set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    else()
+        set(CMAKE_INSTALL_RPATH "@executable_path/lib")
+    endif()
     file(GLOB DLLS ${LIB_DIR}/darwin/*.dylib)
     find_library(FOUNDATION Foundation)
     find_library(AUDIO_TOOLBOX AudioToolbox)
@@ -178,22 +201,55 @@ add_library(TinyFileDialogs STATIC ${SRC_DIR}/tinyfiledialogs.c)
 add_library(SQLite3 STATIC ${SRC_DIR}/sqlite3.c)
 
 # Main executable
-add_executable(main)
+if (APPLE AND NOT IOS AND BUILD_MACOS_BUNDLE)
+    # Create macOS app bundle
+    add_executable(main MACOSX_BUNDLE)
+    set_target_properties(main PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.snurhythm.openbms"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+        MACOSX_BUNDLE_BUNDLE_NAME "OpenBMS"
+        MACOSX_BUNDLE_COPYRIGHT "Copyright © SNURhythm"
+        OUTPUT_NAME "OpenBMS"
+    )
+else()
+    add_executable(main)
+endif()
 
 target_link_libraries(main PRIVATE ${MINGW32_LIB} ${SDL2MAIN_LIB} ${SDL2_LIB} ${SDL2_TFF_LIB} ${FFMPEG_LIBS} ${LUA_LIB} ${LUAJIT_LIB} TinyFileDialogs SQLite3 ${EXTRA_LIBS} bgfx yogacore)
 
 # Custom target for copying assets
-add_custom_command(
-        TARGET main POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
-)
+if (APPLE AND NOT IOS AND BUILD_MACOS_BUNDLE)
+    # For macOS bundle, copy assets to Resources directory
+    add_custom_command(
+            TARGET main POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_BUNDLE_DIR:main>/Contents/Resources
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets $<TARGET_BUNDLE_DIR:main>/Contents/Resources/assets
+    )
+else()
+    add_custom_command(
+            TARGET main POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets
+    )
+endif()
 
 # Copy *.dll / *.so / *.dylib files
 if (NOT "${DLLS}" STREQUAL "")
-    add_custom_command(
-            TARGET main PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-    )
+    if (APPLE AND NOT IOS AND BUILD_MACOS_BUNDLE)
+        # For macOS bundle, copy dylibs to Frameworks directory
+        add_custom_command(
+                TARGET main POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_BUNDLE_DIR:main>/Contents/Frameworks
+                COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} $<TARGET_BUNDLE_DIR:main>/Contents/Frameworks
+        )
+    else()
+        add_custom_command(
+                TARGET main PRE_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        )
+    endif()
 endif ()
 
 # print $<TARGET_RUNTIME_DLLS:main> to console
@@ -207,13 +263,38 @@ file(GLOB_RECURSE SHADER_FILES
 )
 
 # Add a custom target that depends on all shader files
-add_custom_target(copy_shaders ALL
-        DEPENDS ${SHADER_FILES}
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
-)
-
-# Make the main target depend on shader copying
-add_dependencies(main copy_shaders)
+if (APPLE AND NOT IOS AND BUILD_MACOS_BUNDLE)
+    # For macOS bundle, copy only metal shaders (exclude dx11 and spirv)
+    file(GLOB_RECURSE METAL_SHADER_FILES
+            "${CMAKE_SOURCE_DIR}/shaders/metal/*.*"
+    )
+    add_custom_command(
+            TARGET main POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_BUNDLE_DIR:main>/Contents/Resources/shaders
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders/metal $<TARGET_BUNDLE_DIR:main>/Contents/Resources/shaders/metal
+            DEPENDS ${METAL_SHADER_FILES}
+    )
+elseif (APPLE AND NOT IOS)
+    # For macOS regular binary, copy only metal shaders
+    file(GLOB_RECURSE METAL_SHADER_FILES
+            "${CMAKE_SOURCE_DIR}/shaders/metal/*.*"
+    )
+    add_custom_target(copy_shaders ALL
+            DEPENDS ${METAL_SHADER_FILES}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders/metal ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/metal
+    )
+    # Make the main target depend on shader copying
+    add_dependencies(main copy_shaders)
+else()
+    # For other platforms, copy all shaders
+    add_custom_target(copy_shaders ALL
+            DEPENDS ${SHADER_FILES}
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders
+    )
+    # Make the main target depend on shader copying
+    add_dependencies(main copy_shaders)
+endif()
 # Installation rules
 install(TARGETS main DESTINATION bin)
 install(DIRECTORY assets DESTINATION bin)
