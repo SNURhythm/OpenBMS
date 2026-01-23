@@ -21,7 +21,7 @@ jobs:
               with:
                   submodules: recursive
 
-            - name: Set up vcpkg
+            - name: Set up cmake
               uses: lukka/get-cmake@v3.27.7
               with:
                   cmakeVersion: "3.27.7"
@@ -30,11 +30,11 @@ jobs:
               run: |
                   if [ ! -d "$HOME/vcpkg" ]; then
                     git clone https://github.com/Microsoft/vcpkg.git $HOME/vcpkg
-                    $HOME/vcpkg/bootstrap-vcpkg.sh
                   fi
                   cd $HOME/vcpkg
                   git pull
                   cd ..
+                  $HOME/vcpkg/bootstrap-vcpkg.sh
                   echo "VCPKG_ROOT=$HOME/vcpkg" >> $GITHUB_ENV
 
             - name: Generate user presets
