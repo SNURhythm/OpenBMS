@@ -1,4 +1,5 @@
 assets/video/sample.mp4
+CMakeUserPresets.json
 .DS_Store
 /build*
 .metals/

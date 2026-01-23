@@ -1,6 +1,24 @@
 # OpenBMS [WIP]
-
+![Build Status](https://github.com/SNURhythm/OpenBMS/actions/workflows/ios-testflight.yml/badge.svg)
 OpenBMS is a crossplatform BMS player which depends on open source libraries only
+
+## Setup for macOS/iOS
+
+```bash
+git clone https://github.com/SNURhythm/OpenBMS.git
+cd OpenBMS
+git submodule update --init --recursive
+./scripts/init_bgfx_ios.sh # initialize bgfx xcodeproj for iOS
+./scripts/macos_init.sh
+```
+
+## Setup for Windows
+```bash
+git clone https://github.com/SNURhythm/OpenBMS.git
+cd OpenBMS
+git submodule update --init --recursive
+./scripts/windows_init.sh
+```
 
 ## Current Progress 
 - [x] Implement basic chart select screen 
