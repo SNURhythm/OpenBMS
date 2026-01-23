@@ -9,6 +9,22 @@
             }
         },
         {
+            "name": "default-windows",
+            "generator": "Visual Studio 17 2022",
+            "architecture": {
+                "value": "x64",
+                "strategy": "set"
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${vendor.os}",
+                "rhs": "Windows"
+            }
+        },
+        {
             "name": "debug",
             "inherits": "default",
             "binaryDir": "${sourceDir}/cmake-build-debug",
@@ -17,12 +33,22 @@
             }
         },
         {
+            "name": "debug-windows",
+            "inherits": "default-windows",
+            "binaryDir": "${sourceDir}/cmake-build-debug"
+        },
+        {
             "name": "release",
             "inherits": "default",
             "binaryDir": "${sourceDir}/cmake-build-release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
+        },
+        {
+            "name": "release-windows",
+            "inherits": "default-windows",
+            "binaryDir": "${sourceDir}/cmake-build-release"
         }
     ]
 }
