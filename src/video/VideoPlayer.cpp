@@ -344,19 +344,12 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
       bgfx::destroy(videoTextureU);
     if (bgfx::isValid(videoTextureV))
       bgfx::destroy(videoTextureV);
-    if (videoFrameDataY != nullptr) {
-      free(videoFrameDataY);
-      videoFrameDataY = nullptr;
-    }
-    if (videoFrameDataU != nullptr) {
-      free(videoFrameDataU);
-      videoFrameDataU = nullptr;
-    }
-    if (videoFrameDataV != nullptr) {
-      free(videoFrameDataV);
-      videoFrameDataV = nullptr;
-    }
-
+    if (videoFrameDataY)
+      av_freep(&videoFrameDataY);
+    if (videoFrameDataU)
+      av_freep(&videoFrameDataU);
+    if (videoFrameDataV)
+      av_freep(&videoFrameDataV);
     videoFrameWidth = width;
     videoFrameHeight = height;
 
@@ -375,16 +368,14 @@ void VideoPlayer::updateVideoTexture(unsigned int width, unsigned int height) {
 
     // Allocate memory for YUV data
 
-    videoFrameDataY =
-        new uint8_t[videoFrameWidth * videoFrameHeight]; // Y plane
+    videoFrameDataY = (uint8_t *)av_malloc(videoFrameWidth * videoFrameHeight);
     videoFrameDataU =
-        new uint8_t[videoFrameWidth * videoFrameHeight / 4]; // U plane
+        (uint8_t *)av_malloc((videoFrameWidth / 2) * (videoFrameHeight / 2));
     videoFrameDataV =
-        new uint8_t[videoFrameWidth * videoFrameHeight / 4]; // V plane
+        (uint8_t *)av_malloc((videoFrameWidth / 2) * (videoFrameHeight / 2));
 
-    // Check if memory allocation was successful
     if (!videoFrameDataY || !videoFrameDataU || !videoFrameDataV) {
-      SDL_Log("Failed to allocate memory for YUV data");
+      SDL_Log("Failed to allocate aligned memory for YUV data");
       return;
     }
   }
@@ -437,69 +428,70 @@ void VideoPlayer::seek(int64_t micro) {
 }
 
 void VideoPlayer::predecodeFrames() {
-
   while (predecodingActive) {
     {
       std::unique_lock<std::mutex> lock(bufferMutex);
-      freeSpace.wait(lock, [this] { return bufferSize < maxBufferSize; });
+      freeSpace.wait(lock, [this] {
+        return bufferSize < maxBufferSize || !predecodingActive;
+      });
     }
 
-    if (!predecodingActive) {
+    if (!predecodingActive)
       break;
-    }
+
     bool readFailed = false;
     {
       std::lock_guard<std::mutex> videoLock(videoMutex);
-      if (!formatContext || !codecContext || videoStreamIndex < 0) {
-        SDL_Log(
-            "VideoPlayer::predecodeFrames: formatContext or codecContext or "
-            "videoStreamIndex is null");
+      if (!formatContext || !codecContext)
         continue;
-      }
-      AVPacket *packet = av_packet_alloc();
-      int ret = av_read_frame(formatContext, packet);
-      if (ret >= 0) {
-        if (packet->stream_index == videoStreamIndex) {
-          avcodec_send_packet(codecContext, packet);
-          AVFrame *decodedFrame = av_frame_alloc();
-          if (avcodec_receive_frame(codecContext, decodedFrame) == 0) {
-            // Add frame to ring buffer
-            {
-              std::lock_guard<std::mutex> lock(bufferMutex);
-              frameBuffer[bufferTail] = decodedFrame;
-              bufferTail = (bufferTail + 1) % maxBufferSize;
-              ++bufferSize;
+
+      AVPacket *localPacket = av_packet_alloc();
+      if (av_read_frame(formatContext, localPacket) >= 0) {
+        if (localPacket->stream_index == videoStreamIndex) {
+
+          // Send packet to decoder
+          int send_ret = avcodec_send_packet(codecContext, localPacket);
+
+          if (send_ret >= 0) {
+            // FFmpeg 7.1 Fix: Drain all available frames from the decoder
+            while (true) {
+              AVFrame *decodedFrame = av_frame_alloc();
+              int receive_ret =
+                  avcodec_receive_frame(codecContext, decodedFrame);
+
+              if (receive_ret == 0) {
+                std::lock_guard<std::mutex> lock(bufferMutex);
+                frameBuffer[bufferTail] = decodedFrame;
+                bufferTail = (bufferTail + 1) % maxBufferSize;
+                ++bufferSize;
+
+                // If buffer is full, we must stop receiving for now
+                if (bufferSize >= maxBufferSize)
+                  break;
+              } else {
+                av_frame_free(&decodedFrame);
+                if (receive_ret == AVERROR(EAGAIN) ||
+                    receive_ret == AVERROR_EOF)
+                  break;
+                readFailed = true; // Actual error
+                break;
+              }
             }
-          } else {
-            SDL_Log("VideoPlayer::predecodeFrames failed to receive frame");
-            av_frame_free(&decodedFrame);
           }
         }
-
+        av_packet_unref(localPacket);
       } else {
-        isEOF = ret == AVERROR_EOF;
+        isEOF = true;
         readFailed = true;
       }
-      av_packet_unref(packet);
-      av_packet_free(&packet);
-    } // outside of videoLock
-    if (readFailed) {
-      // check eof
-      if (isEOF) {
-        SDL_Log("VideoPlayer::predecodeFrames reached end of file");
-        // wait until eof is reset
-        std::unique_lock<std::mutex> lock(eofMutex);
-        eofCV.wait(lock, [this] { return !isEOF || !predecodingActive; });
-      } else if (formatContext->pb->error != 0) {
-        char error[1024];
-        av_strerror(formatContext->pb->error, error, sizeof(error));
-        SDL_Log("VideoPlayer::predecodeFrames failed to read frame: %s", error);
-        // prevent busy loop
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      }
+      av_packet_free(&localPacket);
+    }
+
+    if (readFailed && isEOF) {
+      std::unique_lock<std::mutex> lock(eofMutex);
+      eofCV.wait(lock, [this] { return !isEOF || !predecodingActive; });
     }
   }
-  SDL_Log("VideoPlayer::predecodeFrames exited");
 }
 
 void VideoPlayer::stopPredecoding() {
