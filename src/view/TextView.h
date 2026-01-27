@@ -3,7 +3,7 @@
 #include "View.h"
 #include <bgfx/bgfx.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL_ttf.h>
 #include <string>
 
 class TextView : public View {

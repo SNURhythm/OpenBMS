@@ -2086,10 +2086,12 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../../include\"",
+					"\"$(SRCROOT)/../../../SDL_ttf\"",
 					"\"$(SRCROOT)/../../../SDL/include\"",
 					"\"$(SRCROOT)/../../../bgfx/bgfx/include\"",
 					"\"$(SRCROOT)/Pods/Headers/Public\"",
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
+					"\"$(SRCROOT)/include\"",
 				);
 				INFOPLIST_FILE = OpenBMS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenBMS;
@@ -2143,10 +2145,12 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../../../include\"",
+					"\"$(SRCROOT)/../../../SDL_ttf\"",
 					"\"$(SRCROOT)/../../../SDL/include\"",
 					"\"$(SRCROOT)/../../../bgfx/bgfx/include\"",
 					"\"$(SRCROOT)/Pods/Headers/Public\"",
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
+					"\"$(SRCROOT)/include\"",
 				);
 				INFOPLIST_FILE = OpenBMS/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenBMS;
