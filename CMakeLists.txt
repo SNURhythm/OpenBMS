@@ -33,6 +33,8 @@ endif()
 
 # Common Definitions
 add_definitions(-DBX_CONFIG_DEBUG=0 -DSOL_LUAJIT=1 -DNOMINMAX)
+set(BGFX_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(BGFX_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 # Include directories
 include_directories(include)
