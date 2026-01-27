@@ -32,18 +32,12 @@ VideoPlayer::~VideoPlayer() {
     bgfx::destroy(videoTextureV);
   }
   unloadVideo();
-  if (videoFrameDataY != nullptr) {
-    free(videoFrameDataY);
-    videoFrameDataY = nullptr;
-  }
-  if (videoFrameDataU != nullptr) {
-    free(videoFrameDataU);
-    videoFrameDataU = nullptr;
-  }
-  if (videoFrameDataV != nullptr) {
-    free(videoFrameDataV);
-    videoFrameDataV = nullptr;
-  }
+  if (videoFrameDataY)
+    av_freep(&videoFrameDataY);
+  if (videoFrameDataU)
+    av_freep(&videoFrameDataU);
+  if (videoFrameDataV)
+    av_freep(&videoFrameDataV);
 }
 
 void VideoPlayer::unloadVideo() {
