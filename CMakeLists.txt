@@ -133,11 +133,51 @@ else()
 
     # Lua / LuaJIT
     # LuaJIT (Project requires LuaJIT specifically, FindLua might pick Lua 5.4)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(LUAJIT REQUIRED luajit)
-    include_directories(${LUAJIT_INCLUDE_DIRS})
-    link_directories(${LUAJIT_LIBRARY_DIRS})
-    list(APPEND COMMON_LIBS ${LUAJIT_LIBRARIES})
+    if (WIN32)
+        # On Windows with vcpkg, LuaJIT is installed as lua51.lib (ABI version 5.1)
+        # vcpkg sets CMAKE_PREFIX_PATH, so we can use find_library
+        find_library(LUAJIT_LIB 
+            NAMES lua51
+            PATHS ${CMAKE_PREFIX_PATH}
+            PATH_SUFFIXES lib
+            NO_DEFAULT_PATH
+        )
+        # Fallback: try vcpkg_installed directory
+        if (NOT LUAJIT_LIB)
+            find_library(LUAJIT_LIB 
+                NAMES lua51
+                PATHS ${CMAKE_BINARY_DIR}/vcpkg_installed
+                PATH_SUFFIXES lib x64-windows/lib
+            )
+        endif()
+        find_path(LUAJIT_INCLUDE_DIR
+            NAMES luajit.h
+            PATHS ${CMAKE_PREFIX_PATH}
+            PATH_SUFFIXES include/luajit
+            NO_DEFAULT_PATH
+        )
+        if (NOT LUAJIT_INCLUDE_DIR)
+            find_path(LUAJIT_INCLUDE_DIR
+                NAMES luajit.h
+                PATHS ${CMAKE_BINARY_DIR}/vcpkg_installed
+                PATH_SUFFIXES include/luajit x64-windows/include/luajit
+            )
+        endif()
+        if (LUAJIT_LIB AND LUAJIT_INCLUDE_DIR)
+            include_directories(${LUAJIT_INCLUDE_DIR})
+            list(APPEND COMMON_LIBS ${LUAJIT_LIB})
+            message(STATUS "Found LuaJIT: ${LUAJIT_LIB}")
+        else()
+            message(FATAL_ERROR "LuaJIT not found. LUAJIT_LIB=${LUAJIT_LIB}, LUAJIT_INCLUDE_DIR=${LUAJIT_INCLUDE_DIR}")
+        endif()
+    else()
+        # On Unix-like systems, use pkg-config
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(LUAJIT REQUIRED luajit)
+        include_directories(${LUAJIT_INCLUDE_DIRS})
+        link_directories(${LUAJIT_LIBRARY_DIRS})
+        list(APPEND COMMON_LIBS ${LUAJIT_LIBRARIES})
+    endif()
 
     if (WIN32)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")

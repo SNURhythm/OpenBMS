@@ -20,7 +20,7 @@ if shaderc is None:
     # if shaderc doesn't exist, try to build with make shaderc
     if not os.path.exists(shaderc):
         os.chdir(bgfx_path)
-        subprocess.run(["make", "-j14", "shaderc"])
+        subprocess.run(["make", "-j14", "shaderc"], check=True)
         os.chdir(current_path)
     # normalize path
     shaderc = os.path.abspath(shaderc)
