@@ -689,7 +689,7 @@ if (VCPKG_TARGET_IS_IOS)
     set(OPTIONS "${OPTIONS} --extra-ldflags=-isysroot\"${vcpkg_osx_sysroot}\"")
 endif ()
 
-set(OPTIONS_DEBUG "--enable-optimizations --disable-debug --enable-stripping")
+set(OPTIONS_DEBUG "--enable-optimizations --enable-stripping")
 set(OPTIONS_RELEASE "--enable-optimizations --disable-debug --enable-stripping")
 
 set(OPTIONS "${OPTIONS} ${OPTIONS_CROSS}")

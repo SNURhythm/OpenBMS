@@ -7,26 +7,7 @@
         "libsndfile",
         "sdl2",
         "sdl2-ttf",
-        {
-            "name": "ffmpeg",
-            "default-features": false,
-            "features": [
-                "avcodec",
-                "avformat",
-                "swresample",
-                "swscale",
-                "avfilter",
-                "avdevice",
-                "mp3lame",
-                "x264",
-                "x265",
-                "vpx",
-                "opus",
-                "vorbis",
-                "bzip2",
-                "zlib"
-            ]
-        },
+        "ffmpeg",
         "lua",
         "luajit"
     ],
