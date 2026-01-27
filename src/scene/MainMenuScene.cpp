@@ -15,9 +15,7 @@
 #elif __APPLE__
 
 #include "TargetConditionals.h"
-#if TARGET_OS_IPHONE && TARGET_IPHONE_SIMULATOR
-// define something for simulator
-#elif TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
 #include "../iOSNatives.hpp"
 // define something for iphone
 #include <dirent.h>
@@ -65,7 +63,7 @@ void MainMenuScene::CheckEntries(const std::stop_token &stop_token,
 
   // open folder select if no entries
   if (entries.empty()) {
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_SIMULATOR
     auto path = Utils::GetDocumentsPath("BMS");
     std::filesystem::create_directories(path);
     entries.push_back(path);
@@ -521,7 +519,7 @@ void MainMenuScene::FindFilesUnix(
   }
 }
 
-#elif TARGET_OS_IOS
+#elif TARGET_OS_IOS || TARGET_OS_SIMULATOR
 void MainMenuScene::FindFilesIOS(
     const std::filesystem::path &path, std::vector<Diff> &diffs,
     const std::unordered_set<path_t> &oldFilesWs,
@@ -576,7 +574,7 @@ void MainMenuScene::FindNewBmsFiles(
 #elif TARGET_OS_OSX || TARGET_OS_LINUX
     FindFilesUnix(currentDir, diffs, oldFilesWs, directoriesToVisit,
                   stop_token);
-#elif TARGET_OS_IOS
+#elif TARGET_OS_IOS || TARGET_OS_SIMULATOR
     FindFilesIOS(currentDir, diffs, oldFilesWs, directoriesToVisit, stop_token);
 #endif
   }

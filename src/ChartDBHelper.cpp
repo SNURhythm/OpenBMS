@@ -521,7 +521,7 @@ bool ChartDBHelper::ClearEntries(sqlite3 *db) {
 void ChartDBHelper::ToRelativePath(
     [[maybe_unused]] std::filesystem::path &path) {
   // for iOS, remove Documents
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_SIMULATOR
   static std::filesystem::path Documents = Utils::GetDocumentsPath("BMS/");
   if (path.string().find(Documents.string()) != std::string::npos) {
     path = path.string().substr(Documents.string().length());
@@ -533,7 +533,7 @@ void ChartDBHelper::ToRelativePath(
 
 void ChartDBHelper::ToAbsolutePath(
     [[maybe_unused]] std::filesystem::path &path) {
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_SIMULATOR
   static std::filesystem::path Documents = Utils::GetDocumentsPath("BMS/");
   path = Documents / path;
 #endif
