@@ -4,7 +4,7 @@
 #include "TextView.h"
 #include <bgfx/bgfx.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL_ttf.h>
 #include <string>
 #include <functional>
 #include <vector>

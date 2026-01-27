@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include "targets.h"
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_SIMULATOR
 #include "iOSNatives.hpp"
 #include <CoreFoundation/CoreFoundation.h>
 #endif
@@ -39,7 +39,7 @@ std::string ws2s_utf8(const std::wstring &wstr) {
 
 std::filesystem::path
 Utils::GetDocumentsPath(const std::filesystem::path &SubPath) {
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_SIMULATOR
   return GetIOSDocumentsPath() / SubPath;
 #elif PLATFORM_ANDROID
   return GetAndroidExternalFilesDir() / SubPath;

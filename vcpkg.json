@@ -4,7 +4,31 @@
     "version": "0.0.1",
     "builtin-baseline": "75a2e14262fc23c1f03bac18e135c4866dd25b51",
     "dependencies": [
-        "libsndfile"
+        "libsndfile",
+        "sdl2",
+        "sdl2-ttf",
+        {
+            "name": "ffmpeg",
+            "default-features": false,
+            "features": [
+                "avcodec",
+                "avformat",
+                "swresample",
+                "swscale",
+                "avfilter",
+                "avdevice",
+                "mp3lame",
+                "x264",
+                "x265",
+                "vpx",
+                "opus",
+                "vorbis",
+                "bzip2",
+                "zlib"
+            ]
+        },
+        "lua",
+        "luajit"
     ],
     "overrides": [
         {

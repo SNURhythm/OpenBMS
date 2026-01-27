@@ -19,12 +19,7 @@
 // POSIX
 #endif
 
-enum TargetPlatform {
-  Windows,
-  MacOS,
-  Linux,
-  iOS
-};
+enum TargetPlatform { Windows, MacOS, Linux, iOS };
 
 #if TARGET_OS_OSX
 constexpr TargetPlatform TARGET_PLATFORM = MacOS;

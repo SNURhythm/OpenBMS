@@ -31,9 +31,7 @@
 #elif __APPLE__
 
 #include "TargetConditionals.h"
-#if TARGET_OS_IPHONE && TARGET_IPHONE_SIMULATOR
-// define something for simulator
-#elif TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
 #include "iOSNatives.hpp"
 // define something for iphone
 #include <dirent.h>
