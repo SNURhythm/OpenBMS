@@ -690,9 +690,66 @@
 		FAAD4CE37952A091955C8A78 /* Pods-OpenBMS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenBMS.debug.xcconfig"; path = "Target Support Files/Pods-OpenBMS/Pods-OpenBMS.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B76AAF692DA4A1C400E8327C /* Exceptions for "src" folder in "OpenBMS" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				audio/AudioWrapper.cpp,
+				audio/decoder.cpp,
+				audio/Jukebox.cpp,
+				bgfx_helper.cpp,
+				bms_parser.cpp,
+				ChartDBHelper.cpp,
+				game/GameObject.cpp,
+				game/GameState.cpp,
+				game/SpriteObject.cpp,
+				input/InputNormalizer.cpp,
+				input/RhythmInputHandler.cpp,
+				input/SDLInputSource.cpp,
+				input/SDLTouchInputSource.cpp,
+				iOSNatives.mm,
+				MacNatives.mm,
+				main.cpp,
+				math/Quaternion.cpp,
+				math/Vector3.cpp,
+				path.cpp,
+				rendering/BlurPass.cpp,
+				rendering/Camera.cpp,
+				rendering/Color.cpp,
+				rendering/common.cpp,
+				rendering/PostProcessPipeline.cpp,
+				rendering/RenderPlan.cpp,
+				rendering/UniformCache.cpp,
+				scene/MainMenuScene.cpp,
+				scene/play/BMSRenderer.cpp,
+				scene/play/GamePlayScene.cpp,
+				scene/play/Judge.cpp,
+				scene/SceneManager.cpp,
+				SDL_uikit_main.c,
+				sqlite3.c,
+				tinyfiledialogs.c,
+				Utils.cpp,
+				utils/SpriteLoader.cpp,
+				utils/Stopwatch.cpp,
+				video/transcode.c,
+				video/VideoPlayer.cpp,
+				view/Button.cpp,
+				view/ChartListItemView.cpp,
+				view/ImageView.cpp,
+				view/TextInputBox.cpp,
+				view/TextView.cpp,
+				view/View.cpp,
+			);
+			target = B70027002BF7A8D8000DB8EC /* OpenBMS */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B76AAF3F2DA4A1C400E8327C /* src */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B76AAF692DA4A1C400E8327C /* Exceptions for "src" folder in "OpenBMS" target */,
+			);
 			explicitFileTypes = {
 				audio/AudioWrapper.cpp = sourcecode.cpp.objcpp;
 			};
