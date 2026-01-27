@@ -4,7 +4,12 @@
     "version": "0.0.1",
     "builtin-baseline": "75a2e14262fc23c1f03bac18e135c4866dd25b51",
     "dependencies": [
-        "libsndfile"
+        "libsndfile",
+        "sdl2",
+        "sdl2-ttf",
+        "ffmpeg",
+        "lua",
+        "luajit"
     ],
     "overrides": [
         {
