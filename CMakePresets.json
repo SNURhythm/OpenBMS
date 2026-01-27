@@ -5,7 +5,8 @@
             "name": "default",
             "generator": "Ninja",
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays"
             }
         },
         {
@@ -16,7 +17,8 @@
                 "strategy": "set"
             },
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_OVERLAY_PORTS": "${sourceDir}/vcpkg-overlays"
             },
             "condition": {
                 "type": "equals",
