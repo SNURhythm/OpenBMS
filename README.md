@@ -14,7 +14,7 @@ You can download OpenBMS from [Releases](https://github.com/SNURhythm/OpenBMS/re
 git clone https://github.com/SNURhythm/OpenBMS.git
 cd OpenBMS
 git submodule update --init --recursive
-./scripts/init_bgfx_ios.sh # initialize bgfx xcodeproj for iOS
+./scripts/ios_init.sh # initialize bgfx xcodeproj & cocoapods for iOS
 ./scripts/macos_init.sh
 ```
 
