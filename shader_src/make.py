@@ -5,7 +5,26 @@ import subprocess
 import sys
 
 # get shaderc from env "SHADERC"
+root_path = f"{os.path.dirname(os.path.realpath(__file__))}/.."
+current_path = os.getcwd()
+bgfx_path = f"{root_path}/bgfx/bgfx"
+bgfx_build_path = f"{bgfx_path}/.build/"
 shaderc = os.getenv("SHADERC")
+if shaderc is None:
+    if sys.platform == "darwin":
+        shaderc = f"{bgfx_build_path}/osx-arm64/bin/shadercRelease"
+    elif sys.platform == "win32":
+        shaderc = f"{bgfx_build_path}/win64_mingw-gcc/bin/shadercRelease.exe"
+    else:
+        shaderc = f"{bgfx_build_path}/linux64_gcc/bin/shadercRelease"
+    # if shaderc doesn't exist, try to build with make shaderc
+    if not os.path.exists(shaderc):
+        os.chdir(bgfx_path)
+        subprocess.run(["make", "-j14", "shaderc"])
+        os.chdir(current_path)
+    # normalize path
+    shaderc = os.path.abspath(shaderc)
+    print(f"Using shaderc: {shaderc}")
 
 
 def should_recompile_shader(src, dst):
