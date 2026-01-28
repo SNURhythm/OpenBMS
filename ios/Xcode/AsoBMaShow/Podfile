@@ -1,5 +1,5 @@
 platform :ios, '13.4'
 
-target 'OpenBMS' do
+target 'AsoBMaShow' do
   pod 'Yoga', :git => 'https://github.com/facebook/yoga.git'
 end 

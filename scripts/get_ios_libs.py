@@ -1,7 +1,7 @@
 # 0. detect vcpkg path (priority: env var VCPKG_ROOT, then default location)
 # 1. install ffmpeg, libsndfile from vcpkg with both arm64-ios and arm64-ios-simulator triplets
 # 2. generate xcframeworks with xcodebuild -create-xcframework to merge iOS Device and iOS Simulator triplets
-# 3. copy them to ios/Xcode/OpenBMS/lib
+# 3. copy them to ios/Xcode/AsoBMaShow/lib
 
 import os
 import subprocess
@@ -45,12 +45,12 @@ def generate_xcframework(package_name, is_fat):
     subprocess.run(["xcodebuild", "-create-xcframework", *libs, "-output", f"{tmp_path}/{package_name}.xcframework"], check=True)
 
 
-# 3. copy them to ios/Xcode/OpenBMS/lib
+# 3. copy them to ios/Xcode/AsoBMaShow/lib
 def copy_xcframework(package_name):
-    subprocess.run(["cp", "-r", f"{tmp_path}/{package_name}.xcframework", f"{current_path}/ios/Xcode/OpenBMS/lib"], check=True)
+    subprocess.run(["cp", "-r", f"{tmp_path}/{package_name}.xcframework", f"{current_path}/ios/Xcode/AsoBMaShow/lib"], check=True)
 
 def copy_includes(package_name, is_dir=False):
-    subprocess.run(["cp", "-r" if is_dir else "-f", f"{vcpkg_root}/installed/arm64-ios/include/{package_name}", f"{current_path}/ios/Xcode/OpenBMS/include"], check=True)
+    subprocess.run(["cp", "-r" if is_dir else "-f", f"{vcpkg_root}/installed/arm64-ios/include/{package_name}", f"{current_path}/ios/Xcode/AsoBMaShow/include"], check=True)
 
 def merge_all_dependents(package_name):
     for triplet in triplets:

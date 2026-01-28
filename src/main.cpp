@@ -227,7 +227,7 @@ int main(int argv, char **args) {
   int windowCreateWidth = 1280;
   int windowCreateHeight = 720;
   SDL_Window *win = SDL_CreateWindow(
-      "OpenBMS", 100, 100, windowCreateWidth, windowCreateHeight,
+      "AsoBMaShow", 100, 100, windowCreateWidth, windowCreateHeight,
       SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE |
           (TARGET_PLATFORM == iOS ? SDL_WINDOW_METAL | SDL_WINDOW_ALLOW_HIGHDPI
                                   : 0));

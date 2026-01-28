@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/OpenBMS.iml" filepath="$PROJECT_DIR$/.idea/OpenBMS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/AsoBMaShow.iml" filepath="$PROJECT_DIR$/.idea/AsoBMaShow.iml" />
     </modules>
   </component>
 </project>

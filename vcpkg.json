@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-    "name": "openbms",
+    "name": "AsoBMaShow",
     "version": "0.0.1",
     "builtin-baseline": "75a2e14262fc23c1f03bac18e135c4866dd25b51",
     "dependencies": [

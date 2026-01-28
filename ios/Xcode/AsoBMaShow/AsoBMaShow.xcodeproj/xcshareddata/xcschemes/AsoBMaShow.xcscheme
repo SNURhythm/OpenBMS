@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B70027002BF7A8D8000DB8EC"
-               BuildableName = "OpenBMS.app"
-               BlueprintName = "OpenBMS"
-               ReferencedContainer = "container:OpenBMS.xcodeproj">
+               BuildableName = "AsoBMaShow.app"
+               BlueprintName = "AsoBMaShow"
+               ReferencedContainer = "container:AsoBMaShow.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,9 +44,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B70027002BF7A8D8000DB8EC"
-            BuildableName = "OpenBMS.app"
-            BlueprintName = "OpenBMS"
-            ReferencedContainer = "container:OpenBMS.xcodeproj">
+            BuildableName = "AsoBMaShow.app"
+            BlueprintName = "AsoBMaShow"
+            ReferencedContainer = "container:AsoBMaShow.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -61,9 +61,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B70027002BF7A8D8000DB8EC"
-            BuildableName = "OpenBMS.app"
-            BlueprintName = "OpenBMS"
-            ReferencedContainer = "container:OpenBMS.xcodeproj">
+            BuildableName = "AsoBMaShow.app"
+            BlueprintName = "AsoBMaShow"
+            ReferencedContainer = "container:AsoBMaShow.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

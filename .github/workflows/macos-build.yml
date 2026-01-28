@@ -73,9 +73,9 @@ jobs:
       - name: Find app bundle
         id: find-bundle
         run: |
-          APP_BUNDLE=$(find cmake-build-release-bundle -name "OpenBMS.app" -type d | head -1)
+          APP_BUNDLE=$(find cmake-build-release-bundle -name "AsoBMaShow.app" -type d | head -1)
           if [ -z "$APP_BUNDLE" ]; then
-            echo "Error: OpenBMS.app not found"
+            echo "Error: AsoBMaShow.app not found"
             exit 1
           fi
           echo "bundle_path=$APP_BUNDLE" >> $GITHUB_OUTPUT
@@ -89,7 +89,7 @@ jobs:
           APP_BUNDLE="$(cd "$(dirname "$APP_BUNDLE")" && pwd)/$(basename "$APP_BUNDLE")"
           BUNDLE_DIR=$(dirname "$APP_BUNDLE")
           BUNDLE_NAME=$(basename "$APP_BUNDLE")
-          ZIP_NAME="OpenBMS-macOS.zip"
+          ZIP_NAME="AsoBMaShow-macOS.zip"
           ZIP_PATH="${BUNDLE_DIR}/${ZIP_NAME}"
 
           cd "$BUNDLE_DIR"
@@ -103,7 +103,7 @@ jobs:
         if: "!startsWith(github.ref, 'refs/tags/')"
         uses: actions/upload-artifact@v4
         with:
-          name: OpenBMS-macOS
+          name: AsoBMaShow-macOS
           path: ${{ steps.zip-bundle.outputs.zip_path }}
           retention-days: 30
 

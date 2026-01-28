@@ -48,7 +48,7 @@
 		B7FFC2C32BF7D834000C838E /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0DE92BF7BCDA00945F27 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B7FFC39F2BFAAFA7000C838E /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B77B0E222BF7C48700945F27 /* CoreFoundation.framework */; };
 		B7FFC3A82BFAAFF3000C838E /* libbimg_encode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7FFC3192BFAAF67000C838E /* libbimg_encode.a */; };
-		E6E33EB08676F3525400255A /* libPods-OpenBMS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CD33E8E87F5C66C37827A03 /* libPods-OpenBMS.a */; };
+		E6E33EB08676F3525400255A /* libPods-AsoBMaShow.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CD33E8E87F5C66C37827A03 /* libPods-AsoBMaShow.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -602,9 +602,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		2CD33E8E87F5C66C37827A03 /* libPods-OpenBMS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-OpenBMS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		8BB58BF3E3216A181DA42E9C /* Pods-OpenBMS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenBMS.release.xcconfig"; path = "Target Support Files/Pods-OpenBMS/Pods-OpenBMS.release.xcconfig"; sourceTree = "<group>"; };
-		B70027012BF7A8D8000DB8EC /* OpenBMS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenBMS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2CD33E8E87F5C66C37827A03 /* libPods-AsoBMaShow.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AsoBMaShow.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8BB58BF3E3216A181DA42E9C /* Pods-AsoBMaShow.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AsoBMaShow.release.xcconfig"; path = "Target Support Files/Pods-AsoBMaShow/Pods-AsoBMaShow.release.xcconfig"; sourceTree = "<group>"; };
+		B70027012BF7A8D8000DB8EC /* AsoBMaShow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AsoBMaShow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B70027132BF7A8DA000DB8EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B70027162BF7A8DA000DB8EC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		B71B9EDB2BFDA3A200D789A5 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
@@ -687,11 +687,11 @@
 		B7FA8B0E2C7D06F200B7EAAF /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		B7FA8B122C7D098E00B7EAAF /* libvlcplugin.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvlcplugin.a; path = lib/libvlcplugin.a; sourceTree = "<group>"; };
 		B7FFC2CC2BFAAF66000C838E /* bgfx.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = bgfx.xcodeproj; path = ../../../bgfx/build/bgfx.xcodeproj; sourceTree = "<group>"; };
-		FAAD4CE37952A091955C8A78 /* Pods-OpenBMS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenBMS.debug.xcconfig"; path = "Target Support Files/Pods-OpenBMS/Pods-OpenBMS.debug.xcconfig"; sourceTree = "<group>"; };
+		FAAD4CE37952A091955C8A78 /* Pods-AsoBMaShow.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AsoBMaShow.debug.xcconfig"; path = "Target Support Files/Pods-AsoBMaShow/Pods-AsoBMaShow.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B76AAF692DA4A1C400E8327C /* Exceptions for "src" folder in "OpenBMS" target */ = {
+		B76AAF692DA4A1C400E8327C /* Exceptions for "src" folder in "AsoBMaShow" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				audio/AudioWrapper.cpp,
@@ -740,7 +740,7 @@
 				view/TextView.cpp,
 				view/View.cpp,
 			);
-			target = B70027002BF7A8D8000DB8EC /* OpenBMS */;
+			target = B70027002BF7A8D8000DB8EC /* AsoBMaShow */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -748,7 +748,7 @@
 		B76AAF3F2DA4A1C400E8327C /* src */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				B76AAF692DA4A1C400E8327C /* Exceptions for "src" folder in "OpenBMS" target */,
+				B76AAF692DA4A1C400E8327C /* Exceptions for "src" folder in "AsoBMaShow" target */,
 			);
 			explicitFileTypes = {
 				audio/AudioWrapper.cpp = sourcecode.cpp.objcpp;
@@ -799,7 +799,7 @@
 				B77B0E202BF7C46D00945F27 /* Foundation.framework in Frameworks */,
 				B77B0DFD2BF7BD3900945F27 /* SDL2.framework in Frameworks */,
 				B7EBA95E2F28D21300B6D064 /* libbimg.a in Frameworks */,
-				E6E33EB08676F3525400255A /* libPods-OpenBMS.a in Frameworks */,
+				E6E33EB08676F3525400255A /* libPods-AsoBMaShow.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -812,7 +812,7 @@
 				B7FFC2CC2BFAAF66000C838E /* bgfx.xcodeproj */,
 				B77B0DFF2BF7BD6000945F27 /* SDL_ttf.xcodeproj */,
 				B77B0DD82BF7BCDA00945F27 /* SDL.xcodeproj */,
-				B70027032BF7A8D8000DB8EC /* OpenBMS */,
+				B70027032BF7A8D8000DB8EC /* AsoBMaShow */,
 				B70027022BF7A8D8000DB8EC /* Products */,
 				B72522F62BF7AD7100C6C414 /* Frameworks */,
 				F54AEE91B69E2DD70E7020CA /* Pods */,
@@ -822,12 +822,12 @@
 		B70027022BF7A8D8000DB8EC /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B70027012BF7A8D8000DB8EC /* OpenBMS.app */,
+				B70027012BF7A8D8000DB8EC /* AsoBMaShow.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		B70027032BF7A8D8000DB8EC /* OpenBMS */ = {
+		B70027032BF7A8D8000DB8EC /* AsoBMaShow */ = {
 			isa = PBXGroup;
 			children = (
 				B7BAA5572DA3F857008F6FCD /* shaders */,
@@ -837,7 +837,7 @@
 				B70027132BF7A8DA000DB8EC /* Assets.xcassets */,
 				B70027152BF7A8DA000DB8EC /* LaunchScreen.storyboard */,
 			);
-			path = OpenBMS;
+			path = AsoBMaShow;
 			sourceTree = "<group>";
 		};
 		B72522F62BF7AD7100C6C414 /* Frameworks */ = {
@@ -917,7 +917,7 @@
 				B79B1BCB2BFAC19F00FAD60F /* Metal.framework */,
 				B77B0E222BF7C48700945F27 /* CoreFoundation.framework */,
 				B77B0E1E2BF7C46700945F27 /* Foundation.framework */,
-				2CD33E8E87F5C66C37827A03 /* libPods-OpenBMS.a */,
+				2CD33E8E87F5C66C37827A03 /* libPods-AsoBMaShow.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1022,8 +1022,8 @@
 		F54AEE91B69E2DD70E7020CA /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				FAAD4CE37952A091955C8A78 /* Pods-OpenBMS.debug.xcconfig */,
-				8BB58BF3E3216A181DA42E9C /* Pods-OpenBMS.release.xcconfig */,
+				FAAD4CE37952A091955C8A78 /* Pods-AsoBMaShow.debug.xcconfig */,
+				8BB58BF3E3216A181DA42E9C /* Pods-AsoBMaShow.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -1031,9 +1031,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		B70027002BF7A8D8000DB8EC /* OpenBMS */ = {
+		B70027002BF7A8D8000DB8EC /* AsoBMaShow */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B700271C2BF7A8DA000DB8EC /* Build configuration list for PBXNativeTarget "OpenBMS" */;
+			buildConfigurationList = B700271C2BF7A8DA000DB8EC /* Build configuration list for PBXNativeTarget "AsoBMaShow" */;
 			buildPhases = (
 				1A3EB0595D79BE96F6E16C91 /* [CP] Check Pods Manifest.lock */,
 				B70026FD2BF7A8D8000DB8EC /* Sources */,
@@ -1046,9 +1046,9 @@
 			);
 			dependencies = (
 			);
-			name = OpenBMS;
-			productName = OpenBMS;
-			productReference = B70027012BF7A8D8000DB8EC /* OpenBMS.app */;
+			name = AsoBMaShow;
+			productName = AsoBMaShow;
+			productReference = B70027012BF7A8D8000DB8EC /* AsoBMaShow.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1065,7 +1065,7 @@
 					};
 				};
 			};
-			buildConfigurationList = B70026FC2BF7A8D8000DB8EC /* Build configuration list for PBXProject "OpenBMS" */;
+			buildConfigurationList = B70026FC2BF7A8D8000DB8EC /* Build configuration list for PBXProject "AsoBMaShow" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -1092,7 +1092,7 @@
 			);
 			projectRoot = "";
 			targets = (
-				B70027002BF7A8D8000DB8EC /* OpenBMS */,
+				B70027002BF7A8D8000DB8EC /* AsoBMaShow */,
 			);
 		};
 /* End PBXProject section */
@@ -1713,7 +1713,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-OpenBMS-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-AsoBMaShow-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1881,7 +1881,7 @@
 		};
 		B700271D2BF7A8DA000DB8EC /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FAAD4CE37952A091955C8A78 /* Pods-OpenBMS.debug.xcconfig */;
+			baseConfigurationReference = FAAD4CE37952A091955C8A78 /* Pods-AsoBMaShow.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1907,8 +1907,8 @@
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
 					"\"$(SRCROOT)/include\"",
 				);
-				INFOPLIST_FILE = OpenBMS/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = OpenBMS;
+				INFOPLIST_FILE = AsoBMaShow/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AsoBMaShow;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music-games";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -1933,10 +1933,10 @@
 					"$(OTHER_CFLAGS)",
 					"-fexperimental-library",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.snurhythm.OpenBMS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.snurhythm.AsoBMaShow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.snurhythm.OpenBMS";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.snurhythm.AsoBMaShow";
 				SKIP_INSTALL = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1945,7 +1945,7 @@
 		};
 		B700271E2BF7A8DA000DB8EC /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8BB58BF3E3216A181DA42E9C /* Pods-OpenBMS.release.xcconfig */;
+			baseConfigurationReference = 8BB58BF3E3216A181DA42E9C /* Pods-AsoBMaShow.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1965,8 +1965,8 @@
 					"\"$(SRCROOT)/../../../bgfx/bx/include\"",
 					"\"$(SRCROOT)/include\"",
 				);
-				INFOPLIST_FILE = OpenBMS/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = OpenBMS;
+				INFOPLIST_FILE = AsoBMaShow/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AsoBMaShow;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music-games";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -1991,7 +1991,7 @@
 					"$(OTHER_CFLAGS)",
 					"-fexperimental-library",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.snurhythm.OpenBMS;
+				PRODUCT_BUNDLE_IDENTIFIER = com.snurhythm.AsoBMaShow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = NO;
@@ -2003,7 +2003,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		B70026FC2BF7A8D8000DB8EC /* Build configuration list for PBXProject "OpenBMS" */ = {
+		B70026FC2BF7A8D8000DB8EC /* Build configuration list for PBXProject "AsoBMaShow" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B700271A2BF7A8DA000DB8EC /* Debug */,
@@ -2012,7 +2012,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B700271C2BF7A8DA000DB8EC /* Build configuration list for PBXNativeTarget "OpenBMS" */ = {
+		B700271C2BF7A8DA000DB8EC /* Build configuration list for PBXNativeTarget "AsoBMaShow" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B700271D2BF7A8DA000DB8EC /* Debug */,

@@ -31,14 +31,14 @@ platform :ios do
     match(type: "appstore", git_basic_authorization: ENV["GIT_BASIC_AUTHORIZATION"], api_key: api_key)
     increment_build_number(
       build_number: latest_testflight_build_number + 1,
-      xcodeproj: "OpenBMS.xcodeproj"
+      xcodeproj: "AsoBMaShow.xcodeproj"
     )
     build_app(
-      scheme: "OpenBMS",
+      scheme: "AsoBMaShow",
       export_method: "app-store",
       export_options: {
         provisioningProfiles: {
-          "com.snurhythm.OpenBMS" => "match AppStore com.snurhythm.OpenBMS"
+          "com.SNURhythm.AsoBMaShow" => "match AppStore com.SNURhythm.AsoBMaShow"
         },
         signingStyle: "manual"
       },

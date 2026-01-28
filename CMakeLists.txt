@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 include(ExternalProject)
-project(OpenBMS VERSION 1.0 LANGUAGES C CXX)
+project(AsoBMaShow VERSION 1.0 LANGUAGES C CXX)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Set C++ standard
@@ -196,12 +196,12 @@ if (PLATFORM_MACOS AND BUILD_MACOS_BUNDLE)
     set_target_properties(main PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist
-        MACOSX_BUNDLE_GUI_IDENTIFIER "com.snurhythm.openbms"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.SNURhythm.AsoBMaShow"
         MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
-        MACOSX_BUNDLE_BUNDLE_NAME "OpenBMS"
+        MACOSX_BUNDLE_BUNDLE_NAME "AsoBMaShow"
         MACOSX_BUNDLE_COPYRIGHT "Copyright © SNURhythm"
-        OUTPUT_NAME "OpenBMS"
+        OUTPUT_NAME "AsoBMaShow"
     )
 else()
     add_executable(main)

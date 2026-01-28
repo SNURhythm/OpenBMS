@@ -3,13 +3,13 @@
 <plist version="1.0">
     <dict>
         <key>CFBundleExecutable</key>
-        <string>OpenBMS</string>
+        <string>AsoBMaShow</string>
         <key>CFBundleIdentifier</key>
-        <string>com.snurhythm.openbms</string>
+        <string>com.SNURhythm.AsoBMaShow</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleName</key>
-        <string>OpenBMS</string>
+        <string>AsoBMaShow</string>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleVersion</key>
@@ -17,7 +17,7 @@
         <key>CFBundleShortVersionString</key>
         <string>1.0</string>
         <key>CFBundleGetInfoString</key>
-        <string>OpenBMS 1.0</string>
+        <string>AsoBMaShow 1.0</string>
         <key>LSMinimumSystemVersion</key>
         <string>11.0</string>
         <key>NSHighResolutionCapable</key>
