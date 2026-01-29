@@ -15,6 +15,7 @@ struct SoundData {
   int channels;
   int originalSampleRate;
   bool playing;
+  bool isResampled;
   ma_resampler resampler;
   std::vector<short> resampledData;
   size_t resampledFrameCount;

@@ -134,7 +134,8 @@ public:
       : userData(userData), stream(nullptr), sampleRate(44100) {
     PaError err = Pa_Initialize();
     if (err != paNoError) {
-      SDL_Log("PortAudio error: %s", Pa_GetErrorText(err));
+      SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "[PortAudio] init error: %s",
+                   Pa_GetErrorText(err));
       throw std::runtime_error("Failed to initialize PortAudio");
     }
 
@@ -175,7 +176,8 @@ public:
                         paCallback, this);
 
     if (err != paNoError) {
-      SDL_Log("PortAudio OpenStream error: %s", Pa_GetErrorText(err));
+      SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "[PortAudio] OpenStream error: %s",
+                   Pa_GetErrorText(err));
       throw std::runtime_error("Failed to open audio stream");
     }
     SDL_Log("[PortAudio] Initialized with sample rate: %d", sampleRate);
@@ -237,9 +239,10 @@ AudioWrapper::AudioWrapper(Stopwatch *stopwatch) : stopwatch(stopwatch) {
     backend = std::make_unique<PortAudioBackend>(&userData);
     SDL_Log("Initialized PortAudio backend.");
   } catch (const std::exception &e) {
-    SDL_Log("Failed to initialize PortAudio backend: %s. Falling back to "
-            "Miniaudio.",
-            e.what());
+    SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
+                 "Failed to initialize PortAudio backend: %s. Falling back to "
+                 "Miniaudio.",
+                 e.what());
     backend = std::make_unique<MiniaudioBackend>(&userData);
   }
 #else
@@ -277,34 +280,49 @@ bool AudioWrapper::loadSound(const path_t &path,
   int targetSampleRate = backend ? backend->getSampleRate() : 44100;
   if (targetSampleRate == 0)
     targetSampleRate = 44100;
+  SDL_Log("Target sample rate: %d, File sample rate: %d", targetSampleRate,
+          sfInfo.samplerate);
 
-  // Initialize the resampler
-  ma_resampler_config resamplerConfig = ma_resampler_config_init(
-      ma_format_s16, sfInfo.channels, sfInfo.samplerate, targetSampleRate,
-      ma_resample_algorithm_linear);
-  if (ma_resampler_init(&resamplerConfig, nullptr, &soundData->resampler) !=
-      MA_SUCCESS) {
-    SDL_Log("Failed to initialize resampler.");
-    return false;
+  if (targetSampleRate == sfInfo.samplerate) {
+    // Optimization: Skip resampling
+    soundData->isResampled = false;
+    soundData->resampledData = std::move(pcmData);
+    soundData->resampledFrameCount =
+        soundData->resampledData.size() / soundData->channels;
+    SDL_Log("Loaded sound without resampling (Rate: %d)", targetSampleRate);
+  } else {
+    // Initialize the resampler
+    SDL_Log("Resampling audio data from %d Hz to %d Hz", sfInfo.samplerate,
+            targetSampleRate);
+    soundData->isResampled = true;
+    ma_resampler_config resamplerConfig = ma_resampler_config_init(
+        ma_format_s16, sfInfo.channels, sfInfo.samplerate, targetSampleRate,
+        ma_resample_algorithm_linear);
+    if (ma_resampler_init(&resamplerConfig, nullptr, &soundData->resampler) !=
+        MA_SUCCESS) {
+      SDL_Log("Failed to initialize resampler.");
+      return false;
+    }
+    if (isCancelled)
+      return false;
+
+    // Resample the audio data to target rate
+
+    ma_uint64 resampledFrameCount =
+        (ma_uint64)((double)pcmData.size() / sfInfo.channels *
+                    targetSampleRate / sfInfo.samplerate);
+    soundData->resampledData.resize(resampledFrameCount * sfInfo.channels);
+    ma_uint64 size = (ma_uint64)pcmData.size();
+    if (isCancelled)
+      return false;
+    ma_resampler_process_pcm_frames(&soundData->resampler, pcmData.data(),
+                                    &size, soundData->resampledData.data(),
+                                    &resampledFrameCount);
+    if (isCancelled)
+      return false;
+    soundData->resampledFrameCount = resampledFrameCount;
   }
-  if (isCancelled)
-    return false;
 
-  // Resample the audio data to 44100 Hz
-
-  ma_uint64 resampledFrameCount =
-      (ma_uint64)((double)pcmData.size() / sfInfo.channels * targetSampleRate /
-                  sfInfo.samplerate);
-  soundData->resampledData.resize(resampledFrameCount * sfInfo.channels);
-  ma_uint64 size = (ma_uint64)pcmData.size();
-  if (isCancelled)
-    return false;
-  ma_resampler_process_pcm_frames(&soundData->resampler, pcmData.data(), &size,
-                                  soundData->resampledData.data(),
-                                  &resampledFrameCount);
-  if (isCancelled)
-    return false;
-  soundData->resampledFrameCount = resampledFrameCount;
   {
     std::lock_guard<std::mutex> lock(soundDataListMutex);
     soundDataIndexMap[path] = soundDataList.size();
@@ -360,8 +378,11 @@ void AudioWrapper::unloadSound(const path_t &path) {
   std::lock_guard<std::mutex> lock(soundDataListMutex);
   if (soundDataIndexMap.find(path) != soundDataIndexMap.end()) {
     size_t index = soundDataIndexMap[path];
-    ma_resampler_uninit(&soundDataList[index]->resampler,
-                        nullptr); // Cleanup resampler
+    auto &soundData = soundDataList[index];
+    if (soundData->isResampled) {
+      ma_resampler_uninit(&soundData->resampler, nullptr); // Cleanup resampler
+    }
+
     soundDataList.erase(soundDataList.begin() + index);
     soundDataIndexMap.erase(path);
 
@@ -379,7 +400,10 @@ void AudioWrapper::unloadSounds() {
   {
     std::lock_guard<std::mutex> lock(soundDataListMutex);
     for (auto &soundData : soundDataList) {
-      ma_resampler_uninit(&soundData->resampler, nullptr); // Cleanup resampler
+      if (soundData->isResampled) {
+        ma_resampler_uninit(&soundData->resampler,
+                            nullptr); // Cleanup resampler
+      }
     }
     soundDataList.clear();
     soundDataIndexMap.clear();
