@@ -1,4 +1,5 @@
 #define MINIAUDIO_IMPLEMENTATION
+#include "../targets.h"
 #include "AudioWrapper.h"
 #include <stdexcept>
 #include <SDL2/SDL.h>
@@ -143,7 +144,7 @@ public:
     outputParameters.device = Pa_GetDefaultOutputDevice(); // Default
 
 // Try to find ASIO device on Windows
-#ifdef _WIN32
+#ifdef TARGET_OS_WINDOWS
     int numDevices = Pa_GetDeviceCount();
     for (int i = 0; i < numDevices; ++i) {
       const PaDeviceInfo *info = Pa_GetDeviceInfo(i);
@@ -233,7 +234,7 @@ AudioWrapper::AudioWrapper(Stopwatch *stopwatch) : stopwatch(stopwatch) {
   userData.soundDataList = &soundDataList;
   userData.stopwatch = stopwatch;
 
-#if TARGET_OS_OSX || _WIN32
+#if TARGET_OS_DESKTOP
   // Default to PortAudio on Desktop
   try {
     backend = std::make_unique<PortAudioBackend>(&userData);
