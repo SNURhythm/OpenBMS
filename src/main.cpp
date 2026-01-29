@@ -1,3 +1,4 @@
+#include "targets.h"
 #include "bgfx_helper.h"
 #include "rendering/ShaderManager.h"
 #include "./audio/decoder.h"
@@ -23,7 +24,6 @@
 #include "rendering/UniformCache.h"
 #include "context.h"
 #include "audio/AudioWrapper.h"
-#include "targets.h"
 #include "view/TextView.h"
 #ifdef _WIN32
 #include <windows.h>
