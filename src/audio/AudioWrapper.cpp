@@ -18,6 +18,69 @@ struct AudioWrapper::IAudioBackend {
   virtual int getSampleRate() const = 0;
 };
 
+// Biquad Implementation
+void Biquad::processStereo(float *buffer, size_t frameCount) {
+  for (size_t i = 0; i < frameCount; ++i) {
+    // Left Channel
+    float inL = buffer[i * 2];
+    float outL = inL * b0 + z1;
+    z1 = inL * b1 + z2 - a1 * outL;
+    z2 = inL * b2 - a2 * outL;
+    buffer[i * 2] = outL;
+
+    // Right Channel
+    float inR = buffer[i * 2 + 1];
+    float outR = inR * b0 + z1_r;
+    z1_r = inR * b1 + z2_r - a1 * outR;
+    z2_r = inR * b2 - a2 * outR;
+    buffer[i * 2 + 1] = outR;
+  }
+}
+
+void Biquad::setLowShelf(float fs, float f0, float gainDb, float Q) {
+  float A = std::pow(10.0f, gainDb / 40.0f);
+  float w0 = 2.0f * 3.14159265f * f0 / fs;
+  float alpha = std::sin(w0) / (2.0f * Q);
+  float cosw0 = std::cos(w0);
+
+  float b0_tmp =
+      A * ((A + 1.0f) - (A - 1.0f) * cosw0 + 2.0f * std::sqrt(A) * alpha);
+  float b1_tmp = 2.0f * A * ((A - 1.0f) - (A + 1.0f) * cosw0);
+  float b2_tmp =
+      A * ((A + 1.0f) - (A - 1.0f) * cosw0 - 2.0f * std::sqrt(A) * alpha);
+  float a0_tmp = (A + 1.0f) + (A - 1.0f) * cosw0 + 2.0f * std::sqrt(A) * alpha;
+  float a1_tmp = -2.0f * ((A - 1.0f) + (A + 1.0f) * cosw0);
+  float a2_tmp = (A + 1.0f) + (A - 1.0f) * cosw0 - 2.0f * std::sqrt(A) * alpha;
+
+  b0 = b0_tmp / a0_tmp;
+  b1 = b1_tmp / a0_tmp;
+  b2 = b2_tmp / a0_tmp;
+  a1 = a1_tmp / a0_tmp;
+  a2 = a2_tmp / a0_tmp;
+}
+
+void Biquad::setHighShelf(float fs, float f0, float gainDb, float Q) {
+  float A = std::pow(10.0f, gainDb / 40.0f);
+  float w0 = 2.0f * 3.14159265f * f0 / fs;
+  float alpha = std::sin(w0) / (2.0f * Q);
+  float cosw0 = std::cos(w0);
+
+  float b0_tmp =
+      A * ((A + 1.0f) + (A - 1.0f) * cosw0 + 2.0f * std::sqrt(A) * alpha);
+  float b1_tmp = -2.0f * A * ((A - 1.0f) + (A + 1.0f) * cosw0);
+  float b2_tmp =
+      A * ((A + 1.0f) + (A - 1.0f) * cosw0 - 2.0f * std::sqrt(A) * alpha);
+  float a0_tmp = (A + 1.0f) - (A - 1.0f) * cosw0 + 2.0f * std::sqrt(A) * alpha;
+  float a1_tmp = 2.0f * ((A - 1.0f) - (A + 1.0f) * cosw0);
+  float a2_tmp = (A + 1.0f) - (A - 1.0f) * cosw0 - 2.0f * std::sqrt(A) * alpha;
+
+  b0 = b0_tmp / a0_tmp;
+  b1 = b1_tmp / a0_tmp;
+  b2 = b2_tmp / a0_tmp;
+  a1 = a1_tmp / a0_tmp;
+  a2 = a2_tmp / a0_tmp;
+}
+
 namespace {
 // Mixing logic extracted to be backend-agnostic
 void mixAudio(void *pOutput, ma_uint32 frameCount, int outputChannels,
@@ -33,7 +96,16 @@ void mixAudio(void *pOutput, ma_uint32 frameCount, int outputChannels,
   if (soundDataList == nullptr || soundDataList->empty())
     return;
 
-  memset(pOutput, 0, frameCount * sizeof(ma_int16) * outputChannels);
+  // Resize mix buffer if necessary
+  size_t requiredSamples = frameCount * outputChannels;
+  if (userData->mixBuffer->size() < requiredSamples) {
+    userData->mixBuffer->resize(requiredSamples);
+  }
+
+  // Clear mix buffer
+  std::fill(userData->mixBuffer->begin(),
+            userData->mixBuffer->begin() + requiredSamples, 0.0f);
+  float *mixBuffer = userData->mixBuffer->data();
 
   float gain = 0.9f;
 
@@ -48,25 +120,20 @@ void mixAudio(void *pOutput, ma_uint32 frameCount, int outputChannels,
       framesToRead = framesAvailable;
     }
 
+    const short *src = soundData->resampledData.data();
+    size_t currentFrame = soundData->currentFrame;
+    int channels = soundData->channels;
+
     for (ma_uint32 frame = 0; frame < framesToRead; ++frame) {
-      for (int channel = 0; channel < soundData->channels; ++channel) {
+      for (int channel = 0; channel < channels; ++channel) {
+        // Map input channel to output channel (simple modulo)
         int outputChannel = channel % outputChannels;
-        ma_int32 sample =
-            ((ma_int16 *)pOutput)[frame * outputChannels + outputChannel] +
-            static_cast<ma_int32>(
-                gain *
-                soundData->resampledData[(soundData->currentFrame + frame) *
-                                             soundData->channels +
-                                         channel]);
 
-        // Clamp
-        if (sample > 32767)
-          sample = 32767;
-        if (sample < -32768)
-          sample = -32768;
+        // Convert int16 to float (-1.0 to 1.0 range approx)
+        float sample =
+            src[(currentFrame + frame) * channels + channel] / 32768.0f;
 
-        ((ma_int16 *)pOutput)[frame * outputChannels + outputChannel] =
-            (ma_int16)sample;
+        mixBuffer[frame * outputChannels + outputChannel] += sample * gain;
       }
     }
 
@@ -74,6 +141,28 @@ void mixAudio(void *pOutput, ma_uint32 frameCount, int outputChannels,
     if (framesToRead < frameCount) {
       soundData->playing = false;
     }
+  }
+
+  // Apply Effects
+  if (userData->bassFilter) {
+    userData->bassFilter->processStereo(mixBuffer, frameCount);
+  }
+  if (userData->trebleFilter) {
+    userData->trebleFilter->processStereo(mixBuffer, frameCount);
+  }
+
+  // Convert back to int16
+  ma_int16 *outPtr = (ma_int16 *)pOutput;
+  for (size_t i = 0; i < requiredSamples; ++i) {
+    float sample = mixBuffer[i];
+
+    // Hard clip
+    if (sample > 1.0f)
+      sample = 1.0f;
+    if (sample < -1.0f)
+      sample = -1.0f;
+
+    outPtr[i] = (ma_int16)(sample * 32767.0f);
   }
 }
 } // namespace
@@ -234,6 +323,9 @@ AudioWrapper::AudioWrapper(Stopwatch *stopwatch) : stopwatch(stopwatch) {
   userData.mutex = &soundDataListMutex;
   userData.soundDataList = &soundDataList;
   userData.stopwatch = stopwatch;
+  userData.mixBuffer = &mixBuffer;
+  userData.bassFilter = &bassFilter;
+  userData.trebleFilter = &trebleFilter;
 
 #if TARGET_OS_DESKTOP
   // Default to PortAudio on Desktop
@@ -254,12 +346,19 @@ AudioWrapper::AudioWrapper(Stopwatch *stopwatch) : stopwatch(stopwatch) {
 #endif
 
   startDevice();
+
+  // setBassBoost(0.0f);
+  // setTrebleBoost(20.0f);
 }
 
 AudioWrapper::~AudioWrapper() {
   unloadSounds();
   // Backend destroyed via unique_ptr
 }
+
+int AudioWrapper::IAudioBackend::getSampleRate() const {
+  return 44100;
+} // Default if virtual fails
 
 bool AudioWrapper::loadSound(const path_t &path,
                              std::atomic<bool> &isCancelled) {
@@ -410,4 +509,29 @@ void AudioWrapper::unloadSounds() {
     soundDataList.clear();
     soundDataIndexMap.clear();
   }
+}
+
+void AudioWrapper::setBassBoost(float db) {
+  std::lock_guard<std::mutex> lock(soundDataListMutex); // Protect filter coeffs
+
+  // Get current sample rate from backend or default
+  int rate = backend ? backend->getSampleRate() : 44100;
+  if (rate == 0)
+    rate = 44100;
+
+  // Low Shelf at 100Hz
+  bassFilter.setLowShelf((float)rate, 100.0f, db);
+}
+
+void AudioWrapper::setTrebleBoost(float db) {
+  std::lock_guard<std::mutex> lock(soundDataListMutex); // Protect filter coeffs
+
+  // Get current sample rate
+  int rate = backend ? backend->getSampleRate() : 44100;
+  if (rate == 0)
+    rate = 44100;
+
+  // High Shelf at 3000Hz (or user preference 8-10kHz? 3kHz is mid-high, let's
+  // say 4kHz)
+  trebleFilter.setHighShelf((float)rate, 4000.0f, db);
 }
