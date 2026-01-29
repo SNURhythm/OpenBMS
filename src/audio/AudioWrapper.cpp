@@ -14,6 +14,7 @@ struct AudioWrapper::IAudioBackend {
   virtual void start() = 0;
   virtual void stop() = 0;
   virtual bool isStarted() const = 0;
+  virtual int getSampleRate() const = 0;
 };
 
 namespace {
@@ -84,7 +85,7 @@ public:
         ma_device_config_init(ma_device_type_playback);
     deviceConfig.playback.format = ma_format_s16;
     deviceConfig.playback.channels = 2;
-    deviceConfig.sampleRate = 44100;
+    deviceConfig.sampleRate = 0; // Use native sample rate
     deviceConfig.dataCallback = dataCallback;
     deviceConfig.pUserData = userData;
 
@@ -92,6 +93,7 @@ public:
       throw std::runtime_error(
           "Failed to initialize miniaudio playback device.");
     }
+    SDL_Log("[Miniaudio] Initialized with sample rate: %d", device.sampleRate);
   }
 
   ~MiniaudioBackend() override { ma_device_uninit(&device); }
@@ -112,6 +114,8 @@ public:
 
   bool isStarted() const override { return ma_device_is_started(&device); }
 
+  int getSampleRate() const override { return device.sampleRate; }
+
 private:
   ma_device device;
 
@@ -126,7 +130,8 @@ private:
 // PortAudio Backend Implementation
 class PortAudioBackend : public AudioWrapper::IAudioBackend {
 public:
-  PortAudioBackend(UserData *userData) : userData(userData), stream(nullptr) {
+  PortAudioBackend(UserData *userData)
+      : userData(userData), stream(nullptr), sampleRate(44100) {
     PaError err = Pa_Initialize();
     if (err != paNoError) {
       SDL_Log("PortAudio error: %s", Pa_GetErrorText(err));
@@ -154,18 +159,18 @@ public:
       throw std::runtime_error("No default output device.");
     }
 
-    SDL_Log("PortAudio: Using output device: %s",
-            Pa_GetDeviceInfo(outputParameters.device)->name);
+    const PaDeviceInfo *deviceInfo = Pa_GetDeviceInfo(outputParameters.device);
+    sampleRate = (int)deviceInfo->defaultSampleRate;
 
     outputParameters.channelCount = 2; // Stereo
     outputParameters.sampleFormat = paInt16;
-    outputParameters.suggestedLatency =
-        Pa_GetDeviceInfo(outputParameters.device)->defaultLowOutputLatency;
+    outputParameters.suggestedLatency = deviceInfo->defaultLowOutputLatency;
     outputParameters.hostApiSpecificStreamInfo = nullptr;
 
     err = Pa_OpenStream(&stream,
                         nullptr, // No input
-                        &outputParameters, 44100, paFramesPerBufferUnspecified,
+                        &outputParameters, (double)sampleRate,
+                        paFramesPerBufferUnspecified,
                         paClipOff, // We clamp manually
                         paCallback, this);
 
@@ -173,6 +178,7 @@ public:
       SDL_Log("PortAudio OpenStream error: %s", Pa_GetErrorText(err));
       throw std::runtime_error("Failed to open audio stream");
     }
+    SDL_Log("[PortAudio] Initialized with sample rate: %d", sampleRate);
   }
 
   ~PortAudioBackend() override {
@@ -200,9 +206,12 @@ public:
     return stream && !Pa_IsStreamStopped(stream);
   }
 
+  int getSampleRate() const override { return sampleRate; }
+
 private:
   UserData *userData;
   PaStream *stream;
+  int sampleRate;
 
   static int paCallback(const void *inputBuffer, void *outputBuffer,
                         unsigned long framesPerBuffer,
@@ -265,9 +274,13 @@ bool AudioWrapper::loadSound(const path_t &path,
   soundData->originalSampleRate = sfInfo.samplerate;
   soundData->playing = false;
 
+  int targetSampleRate = backend ? backend->getSampleRate() : 44100;
+  if (targetSampleRate == 0)
+    targetSampleRate = 44100;
+
   // Initialize the resampler
   ma_resampler_config resamplerConfig = ma_resampler_config_init(
-      ma_format_s16, sfInfo.channels, sfInfo.samplerate, 44100,
+      ma_format_s16, sfInfo.channels, sfInfo.samplerate, targetSampleRate,
       ma_resample_algorithm_linear);
   if (ma_resampler_init(&resamplerConfig, nullptr, &soundData->resampler) !=
       MA_SUCCESS) {
@@ -280,7 +293,7 @@ bool AudioWrapper::loadSound(const path_t &path,
   // Resample the audio data to 44100 Hz
 
   ma_uint64 resampledFrameCount =
-      (ma_uint64)((double)pcmData.size() / sfInfo.channels * 44100 /
+      (ma_uint64)((double)pcmData.size() / sfInfo.channels * targetSampleRate /
                   sfInfo.samplerate);
   soundData->resampledData.resize(resampledFrameCount * sfInfo.channels);
   ma_uint64 size = (ma_uint64)pcmData.size();
