@@ -7,7 +7,9 @@
 #include <sndfile.h>
 #include <stdio.h>
 #include <mutex>
+#if TARGET_OS_DESKTOP
 #include <portaudio.h>
+#endif
 
 // Define IAudioBackend interface here
 struct AudioWrapper::IAudioBackend {
@@ -218,6 +220,7 @@ private:
 };
 
 // PortAudio Backend Implementation
+#if TARGET_OS_DESKTOP
 class PortAudioBackend : public AudioWrapper::IAudioBackend {
 public:
   PortAudioBackend(UserData *userData)
@@ -316,6 +319,7 @@ private:
     return paContinue;
   }
 };
+#endif
 
 // AudioWrapper Implementation
 
