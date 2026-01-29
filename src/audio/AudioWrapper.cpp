@@ -128,76 +128,114 @@ float AllPassFilter::process(float input) {
   return output;
 }
 
-// --- SimpleReverb Implementation ---
+// --- PlateReverb Implementation ---
 
-void SimpleReverb::init(int sampleRate) {
-  // Schroeder reverb tuning (approximate for 44100, scaled for rate)
+void PlateReverb::init(int sampleRate) {
   float scale = (float)sampleRate / 44100.0f;
 
-  // Comb filters: "Series of delays" to simulate early reflections / modal
-  // density
-  combs[0].init((size_t)(1116 * scale));
-  combs[1].init((size_t)(1188 * scale));
-  combs[2].init((size_t)(1277 * scale));
-  combs[3].init((size_t)(1356 * scale));
+  // Input Diffusers (Decorrelators)
+  inputDiffuser[0].init((size_t)(142 * scale));
+  inputDiffuser[0].feedback = 0.75f;
+  inputDiffuser[1].init((size_t)(107 * scale));
+  inputDiffuser[1].feedback = 0.75f;
 
-  // All-pass filters: "Diffusers"
-  allpasses[0].init((size_t)(225 * scale));
-  allpasses[0].feedback = 0.5f;
-  allpasses[1].init((size_t)(556 * scale));
-  allpasses[1].feedback = 0.5f;
+  // Tank Diffusers (Decay Diffusers)
+  decayDiffuser[0].init((size_t)(379 * scale));
+  decayDiffuser[0].feedback = 0.625f;
+  decayDiffuser[1].init((size_t)(277 * scale));
+  decayDiffuser[1].feedback = 0.625f;
+
+  // Tank Delays (simulated via Comb with high feedback/damp control)
+  tankComb[0].init((size_t)(4453 * scale));
+  tankComb[0].feedback = 0.5f; // Initial feedback
+  tankComb[1].init((size_t)(3720 * scale));
+  tankComb[1].feedback = 0.5f;
+
+  tankAllPass[0].init((size_t)(1800 * scale));
+  tankAllPass[0].feedback = 0.5f;
+  tankAllPass[1].init((size_t)(2656 * scale));
+  tankAllPass[1].feedback = 0.5f;
 
   initialized = true;
+  decay = 0.5f;
 }
 
-void SimpleReverb::processStereo(float *buffer, size_t frameCount) {
+void PlateReverb::processStereo(float *buffer, size_t frameCount) {
   if (wet <= 0.001f || !initialized)
     return;
 
+  // Use CombFilters as pure delays for the tank (no internal feedback)
+  tankComb[0].feedback = 0.0f;
+  tankComb[1].feedback = 0.0f;
+
+  // Decay factor controls the cross-feedback gain directly
+  float loopDecay = decay;
+
   for (size_t i = 0; i < frameCount; ++i) {
-    // Mono-sum input for reverb engine (simplification)
     float in = (buffer[i * 2] + buffer[i * 2 + 1]) * 0.5f;
-    float out = 0.0f;
 
-    // Parallel Comb Filters
-    for (int k = 0; k < 4; ++k) {
-      out += combs[k].process(in);
-    }
+    // Input Diffusion Chain
+    float diff1 = inputDiffuser[0].process(in);
+    float diff2 = inputDiffuser[1].process(diff1);
 
-    // Series All-Pass Filters
-    for (int k = 0; k < 2; ++k) {
-      out = allpasses[k].process(out);
-    }
+    // Dattorro-style Tank Cross-Coupling
+    // We use the PREVIOUS output of the delay lines for cross-feedback.
+    // filterStore contains the last output sample from the delay.
+    float feedbackL = tankComb[1].filterStore * loopDecay;
+    float feedbackR = tankComb[0].filterStore * loopDecay;
 
-    // Mix Wet + Dry
-    // Note: 'out' is the wet signal. We add it to the original buffer.
-    // Usually wet signal magnitude can be large, so we scale it down a bit.
-    float wetSig = out * 0.015f * wet;
+    // Left Tank Path
+    float tankInL = diff2 + feedbackL;
+    float apL = decayDiffuser[0].process(tankInL); // Decorrelate
+    float delayL = tankComb[0].process(apL);       // Delay
+    float tankL =
+        tankAllPass[0].process(delayL); // More dispersion (output tap)
 
-    buffer[i * 2] += wetSig;
-    buffer[i * 2 + 1] += wetSig;
+    // Right Tank Path
+    float tankInR = diff2 + feedbackR;
+    float apR = decayDiffuser[1].process(tankInR);
+    float delayR = tankComb[1].process(apR);
+    float tankR = tankAllPass[1].process(delayR);
+
+    // Output Taps
+    float outL = tankL;
+    float outR = tankR;
+
+    float wetScale = wet * 0.6f;
+    buffer[i * 2] += outL * wetScale;
+    buffer[i * 2 + 1] += outR * wetScale;
   }
 }
 
-void SimpleReverb::setMix(float mix) { wet = mix; }
+void PlateReverb::setMix(float mix) { wet = mix; }
 
-// --- SimpleCompressor Implementation ---
+void PlateReverb::setDecay(float decayTime) {
+  decay = decayTime;
+  if (decay < 0.1f)
+    decay = 0.1f;
+  if (decay > 0.95f)
+    decay = 0.95f; // Prevent explosion
+}
 
-void SimpleCompressor::init(int rate) { sampleRate = rate; }
+// --- SoftKneeCompressor Implementation ---
 
-void SimpleCompressor::processStereo(float *buffer, size_t frameCount) {
+void SoftKneeCompressor::init(int rate) { sampleRate = rate; }
+
+void SoftKneeCompressor::processStereo(float *buffer, size_t frameCount) {
   if (!enabled)
     return;
 
   float alphaA = std::exp(-1.0f / (attack * sampleRate));
   float alphaR = std::exp(-1.0f / (release * sampleRate));
+  float kneeHalf = kneeWidthDb / 2.0f;
 
   for (size_t i = 0; i < frameCount; ++i) {
     float l = buffer[i * 2];
     float r = buffer[i * 2 + 1];
 
-    // Peak detection (max of L/R absolute)
-    float inputLevel = std::max(std::abs(l), std::abs(r));
+    // RMS Detection (Approximate)
+    float power = (l * l + r * r) * 0.5f;
+    float inputLevel = std::sqrt(power);
 
     // Envelope follower
     if (inputLevel > envelope) {
@@ -208,13 +246,22 @@ void SimpleCompressor::processStereo(float *buffer, size_t frameCount) {
 
     // Gain calculation
     float gain = 1.0f;
-    // Convert envelope to dB (avoid log(0))
     float envDb = (envelope > 1e-6f) ? 20.0f * std::log10(envelope) : -120.0f;
 
-    if (envDb > thresholdDb) {
-      // Amount to compress in dB
-      float reduceDb = (envDb - thresholdDb) * (1.0f - 1.0f / ratio);
-      gain = std::pow(10.0f, -reduceDb / 20.0f);
+    // Soft Knee Logic
+    float slope = 1.0f - (1.0f / ratio);
+    float over = envDb - thresholdDb;
+
+    if (over > kneeHalf) {
+      // Far above knee -> full compression
+      float gainReduction = over * slope;
+      gain = std::pow(10.0f, -gainReduction / 20.0f);
+    } else if (over > -kneeHalf) {
+      // In knee range -> interpolated compression
+      float x = (over + kneeHalf) / kneeWidthDb; // 0..1 in knee
+      float gainReduction =
+          (0.5f * slope * x * x * kneeWidthDb); // Quadratic interpolation
+      gain = std::pow(10.0f, -gainReduction / 20.0f);
     }
 
     // Apply gain
@@ -223,8 +270,8 @@ void SimpleCompressor::processStereo(float *buffer, size_t frameCount) {
   }
 }
 
-void SimpleCompressor::setParams(float threshold, float r, float att,
-                                 float rel) {
+void SoftKneeCompressor::setParams(float threshold, float r, float att,
+                                   float rel) {
   thresholdDb = threshold;
   ratio = r;
   attack = att;
@@ -510,12 +557,18 @@ AudioWrapper::AudioWrapper(Stopwatch *stopwatch) : stopwatch(stopwatch) {
 
   startDevice();
 
-  //
-  // setBassBoost(3.0f);   // Add warmth
-  // setTrebleBoost(3.0f); // Add clarity
+  // //
+  // setBassBoost(3.0f);   // Warmth
+  // setTrebleBoost(3.0f); // Clarity
 
-  // setReverbMix(0.5f);         // Moderate room ambience
-  // setCompressor(-6.0f, 2.0f); // Gentle mastering compression
+  // // Plate Reverb: Richer, denser tail
+  // reverb.setDecay(0.6f); // ~1.5s decay time
+  // setReverbMix(0.4f);    // Wets the mix without drowning transients
+
+  // // Soft Knee Compressor: Transparent glue
+  // // Threshold -8dB (RMS), Ratio 2.5:1, Attack 30ms (let transients pass),
+  // // Release 150ms
+  // compressor.setParams(-8.0f, 2.5f, 0.03f, 0.15f);
 }
 
 AudioWrapper::~AudioWrapper() {

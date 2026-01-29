@@ -43,23 +43,38 @@ struct AllPassFilter {
   float process(float input);
 };
 
-struct SimpleReverb {
-  CombFilter combs[4];
-  AllPassFilter allpasses[2];
-  float wet = 0.0f; // 0.0 to 1.0 volume of wet signal
+struct PlateReverb {
+  // Dattorro Plate Reverb constants
+  AllPassFilter inputDiffuser[2];
+  AllPassFilter decayDiffuser[2]; // In loop
+  // Delays for tank
+  // We need modulated delay lines for a true Dattorro, but for now we'll use
+  // fixed delays to avoid complexity of LFO implementation in this step.
+  // Enhanced structure: Pre-delay -> Input Diffusers -> Tank (Loops with
+  // AllPass + Delay + LowPass)
+
+  // Tank components
+  CombFilter
+      tankComb[2]; // Recycling simple combs as delays with feedback/damping
+  AllPassFilter tankAllPass[2];
+
+  float wet = 0.0f;
+  float decay = 0.5f; // Reverb time
   bool initialized = false;
 
   void init(int sampleRate);
   void processStereo(float *buffer, size_t frameCount);
-  void setMix(float mix); // 0.0 - 0.5 (subtle) to 1.0 (huge)
+  void setMix(float mix);
+  void setDecay(float decayTime);
 };
 
-struct SimpleCompressor {
+struct SoftKneeCompressor {
   float thresholdDb = 0.0f;
   float ratio = 1.0f;
   float attack = 0.01f;
   float release = 0.1f;
   float envelope = 0.0f;
+  float kneeWidthDb = 12.0f; // Soft knee width
   int sampleRate = 44100;
   bool enabled = false;
 
@@ -87,8 +102,8 @@ struct UserData {
   std::vector<float> *mixBuffer;
   Biquad *bassFilter;
   Biquad *trebleFilter;
-  SimpleReverb *reverb;
-  SimpleCompressor *compressor;
+  PlateReverb *reverb;
+  SoftKneeCompressor *compressor;
 };
 class AudioWrapper {
 public:
@@ -121,8 +136,8 @@ private:
   std::vector<float> mixBuffer;
   Biquad bassFilter;
   Biquad trebleFilter;
-  SimpleReverb reverb;
-  SimpleCompressor compressor;
+  PlateReverb reverb;
+  SoftKneeCompressor compressor;
   int currentSampleRate = 44100;
 
   UserData userData;
