@@ -181,6 +181,7 @@ public:
                    Pa_GetErrorText(err));
       throw std::runtime_error("Failed to open audio stream");
     }
+    SDL_Log("[PortAudio] Output device: %s", deviceInfo->name);
     SDL_Log("[PortAudio] Initialized with sample rate: %d", sampleRate);
   }
 
