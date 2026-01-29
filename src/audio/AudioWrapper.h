@@ -35,10 +35,14 @@ public:
   void startDevice();
   void stopSounds();
   void unloadSound(const path_t &path);
+
   void unloadSounds();
 
+  struct IAudioBackend; // Forward declaration
+
 private:
-  ma_device device;
+  std::unique_ptr<IAudioBackend> backend;
+
   std::vector<std::shared_ptr<SoundData>> soundDataList;
   std::map<path_t, size_t>
       soundDataIndexMap; // Map to store index of SoundData in soundDataList

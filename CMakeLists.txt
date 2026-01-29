@@ -32,7 +32,9 @@ if (PLATFORM_MACOS)
 endif()
 
 # Common Definitions
-add_definitions(-DBX_CONFIG_DEBUG=0 -DSOL_LUAJIT=1 -DNOMINMAX)
+add_definitions(-DSOL_LUAJIT=1 -DNOMINMAX)
+set(BX_CONFIG_DEBUG OFF CACHE BOOL "" FORCE)
+set(BGFX_CONFIG_DEBUG OFF CACHE BOOL "" FORCE)
 set(BGFX_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
 set(BGFX_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
@@ -121,6 +123,16 @@ else()
     find_package(FFMPEG REQUIRED)
     include_directories(${FFMPEG_INCLUDE_DIRS})
     list(APPEND COMMON_LIBS ${FFMPEG_LIBRARIES})
+
+    # PortAudio
+    find_package(PortAudio CONFIG REQUIRED)
+    if(TARGET PortAudio::PortAudio)
+        list(APPEND COMMON_LIBS PortAudio::PortAudio)
+    elseif(TARGET portaudio_static)
+        list(APPEND COMMON_LIBS portaudio_static)
+    elseif(TARGET portaudio)
+        list(APPEND COMMON_LIBS portaudio)
+    endif()
 
     # # Fontconfig & LibASS (Required by FFmpeg[all-gpl] static build)
     # find_package(PkgConfig REQUIRED)

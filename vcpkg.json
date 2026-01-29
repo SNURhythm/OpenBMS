@@ -9,7 +9,18 @@
         "sdl2-ttf",
         "ffmpeg",
         "lua",
-        "luajit"
+        "luajit",
+        {
+            "name": "portaudio",
+            "features": [
+                "asio"
+            ],
+            "platform": "windows"
+        },
+        {
+            "name": "portaudio",
+            "platform": "!windows"
+        }
     ],
     "overrides": [
         {
