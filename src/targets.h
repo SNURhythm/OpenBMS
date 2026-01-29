@@ -1,8 +1,6 @@
 #pragma once
 #ifdef _WIN32
 #include <windows.h>
-#define TARGET_OS_WINDOWS 1
-
 #elif __APPLE__
 
 #include "TargetConditionals.h"
