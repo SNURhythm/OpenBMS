@@ -287,12 +287,19 @@ void mixAudio(void *pOutput, ma_uint32 frameCount, int outputChannels,
     return;
 
   std::lock_guard<std::mutex> lock(*userData->mutex);
-  if (!userData->stopwatch->isRunning())
+  
+  if (!userData->stopwatch->isRunning()) {
+    // Fill with silence if paused
+    std::fill_n((ma_int16*)pOutput, frameCount * outputChannels, 0);
     return;
+  }
 
   auto *soundDataList = userData->soundDataList;
-  if (soundDataList == nullptr || soundDataList->empty())
+  if (soundDataList == nullptr || soundDataList->empty()) {
+    // Fill with silence if no sounds
+    std::fill_n((ma_int16*)pOutput, frameCount * outputChannels, 0);
     return;
+  }
 
   // Resize mix buffer if necessary
   size_t requiredSamples = frameCount * outputChannels;
