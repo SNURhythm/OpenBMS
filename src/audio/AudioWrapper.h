@@ -22,6 +22,52 @@ struct Biquad {
   void setHighShelf(float fs, float f0, float gainDb, float Q = 0.707f);
 };
 
+// Reverb Helper Structures
+struct CombFilter {
+  std::vector<float> buffer;
+  size_t index = 0;
+  float feedback = 0.8f;
+  float damp = 0.2f;
+  float filterStore = 0.0f;
+
+  void init(size_t size);
+  float process(float input);
+};
+
+struct AllPassFilter {
+  std::vector<float> buffer;
+  size_t index = 0;
+  float feedback = 0.5f;
+
+  void init(size_t size);
+  float process(float input);
+};
+
+struct SimpleReverb {
+  CombFilter combs[4];
+  AllPassFilter allpasses[2];
+  float wet = 0.0f; // 0.0 to 1.0 volume of wet signal
+  bool initialized = false;
+
+  void init(int sampleRate);
+  void processStereo(float *buffer, size_t frameCount);
+  void setMix(float mix); // 0.0 - 0.5 (subtle) to 1.0 (huge)
+};
+
+struct SimpleCompressor {
+  float thresholdDb = 0.0f;
+  float ratio = 1.0f;
+  float attack = 0.01f;
+  float release = 0.1f;
+  float envelope = 0.0f;
+  int sampleRate = 44100;
+  bool enabled = false;
+
+  void init(int rate);
+  void processStereo(float *buffer, size_t frameCount);
+  void setParams(float threshold, float ratio, float attack, float release);
+};
+
 // Custom data structure to hold PCM data and playback state
 struct SoundData {
 
@@ -41,6 +87,8 @@ struct UserData {
   std::vector<float> *mixBuffer;
   Biquad *bassFilter;
   Biquad *trebleFilter;
+  SimpleReverb *reverb;
+  SimpleCompressor *compressor;
 };
 class AudioWrapper {
 public:
@@ -56,6 +104,8 @@ public:
 
   void setBassBoost(float db);
   void setTrebleBoost(float db);
+  void setReverbMix(float mix);
+  void setCompressor(float threshold, float ratio);
 
   void unloadSounds();
 
@@ -71,6 +121,8 @@ private:
   std::vector<float> mixBuffer;
   Biquad bassFilter;
   Biquad trebleFilter;
+  SimpleReverb reverb;
+  SimpleCompressor compressor;
   int currentSampleRate = 44100;
 
   UserData userData;

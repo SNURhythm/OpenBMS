@@ -83,6 +83,155 @@ void Biquad::setHighShelf(float fs, float f0, float gainDb, float Q) {
   a2 = a2_tmp / a0_tmp;
 }
 
+// --- Reverb Helper Implementations ---
+
+void CombFilter::init(size_t size) {
+  buffer.resize(size, 0.0f);
+  index = 0;
+  filterStore = 0.0f;
+}
+
+float CombFilter::process(float input) {
+  if (buffer.empty())
+    return input;
+
+  float output = buffer[index];
+  filterStore = (output * (1.0f - damp)) + (filterStore * damp);
+
+  buffer[index] = input + (filterStore * feedback);
+
+  index++;
+  if (index >= buffer.size())
+    index = 0;
+
+  return output;
+}
+
+void AllPassFilter::init(size_t size) {
+  buffer.resize(size, 0.0f);
+  index = 0;
+}
+
+float AllPassFilter::process(float input) {
+  if (buffer.empty())
+    return input;
+
+  float bufOut = buffer[index];
+  float output = -input + bufOut;
+
+  buffer[index] = input + (bufOut * feedback);
+
+  index++;
+  if (index >= buffer.size())
+    index = 0;
+
+  return output;
+}
+
+// --- SimpleReverb Implementation ---
+
+void SimpleReverb::init(int sampleRate) {
+  // Schroeder reverb tuning (approximate for 44100, scaled for rate)
+  float scale = (float)sampleRate / 44100.0f;
+
+  // Comb filters: "Series of delays" to simulate early reflections / modal
+  // density
+  combs[0].init((size_t)(1116 * scale));
+  combs[1].init((size_t)(1188 * scale));
+  combs[2].init((size_t)(1277 * scale));
+  combs[3].init((size_t)(1356 * scale));
+
+  // All-pass filters: "Diffusers"
+  allpasses[0].init((size_t)(225 * scale));
+  allpasses[0].feedback = 0.5f;
+  allpasses[1].init((size_t)(556 * scale));
+  allpasses[1].feedback = 0.5f;
+
+  initialized = true;
+}
+
+void SimpleReverb::processStereo(float *buffer, size_t frameCount) {
+  if (wet <= 0.001f || !initialized)
+    return;
+
+  for (size_t i = 0; i < frameCount; ++i) {
+    // Mono-sum input for reverb engine (simplification)
+    float in = (buffer[i * 2] + buffer[i * 2 + 1]) * 0.5f;
+    float out = 0.0f;
+
+    // Parallel Comb Filters
+    for (int k = 0; k < 4; ++k) {
+      out += combs[k].process(in);
+    }
+
+    // Series All-Pass Filters
+    for (int k = 0; k < 2; ++k) {
+      out = allpasses[k].process(out);
+    }
+
+    // Mix Wet + Dry
+    // Note: 'out' is the wet signal. We add it to the original buffer.
+    // Usually wet signal magnitude can be large, so we scale it down a bit.
+    float wetSig = out * 0.015f * wet;
+
+    buffer[i * 2] += wetSig;
+    buffer[i * 2 + 1] += wetSig;
+  }
+}
+
+void SimpleReverb::setMix(float mix) { wet = mix; }
+
+// --- SimpleCompressor Implementation ---
+
+void SimpleCompressor::init(int rate) { sampleRate = rate; }
+
+void SimpleCompressor::processStereo(float *buffer, size_t frameCount) {
+  if (!enabled)
+    return;
+
+  float alphaA = std::exp(-1.0f / (attack * sampleRate));
+  float alphaR = std::exp(-1.0f / (release * sampleRate));
+
+  for (size_t i = 0; i < frameCount; ++i) {
+    float l = buffer[i * 2];
+    float r = buffer[i * 2 + 1];
+
+    // Peak detection (max of L/R absolute)
+    float inputLevel = std::max(std::abs(l), std::abs(r));
+
+    // Envelope follower
+    if (inputLevel > envelope) {
+      envelope = alphaA * envelope + (1.0f - alphaA) * inputLevel;
+    } else {
+      envelope = alphaR * envelope + (1.0f - alphaR) * inputLevel;
+    }
+
+    // Gain calculation
+    float gain = 1.0f;
+    // Convert envelope to dB (avoid log(0))
+    float envDb = (envelope > 1e-6f) ? 20.0f * std::log10(envelope) : -120.0f;
+
+    if (envDb > thresholdDb) {
+      // Amount to compress in dB
+      float reduceDb = (envDb - thresholdDb) * (1.0f - 1.0f / ratio);
+      gain = std::pow(10.0f, -reduceDb / 20.0f);
+    }
+
+    // Apply gain
+    buffer[i * 2] *= gain;
+    buffer[i * 2 + 1] *= gain;
+  }
+}
+
+void SimpleCompressor::setParams(float threshold, float r, float att,
+                                 float rel) {
+  thresholdDb = threshold;
+  ratio = r;
+  attack = att;
+  release = rel;
+  enabled = true;
+}
+
 namespace {
 // Mixing logic extracted to be backend-agnostic
 void mixAudio(void *pOutput, ma_uint32 frameCount, int outputChannels,
@@ -151,6 +300,14 @@ void mixAudio(void *pOutput, ma_uint32 frameCount, int outputChannels,
   }
   if (userData->trebleFilter) {
     userData->trebleFilter->processStereo(mixBuffer, frameCount);
+  }
+
+  if (userData->reverb && userData->reverb->initialized) {
+    userData->reverb->processStereo(mixBuffer, frameCount);
+  }
+
+  if (userData->compressor && userData->compressor->enabled) {
+    userData->compressor->processStereo(mixBuffer, frameCount);
   }
 
   // Convert back to int16
@@ -330,6 +487,8 @@ AudioWrapper::AudioWrapper(Stopwatch *stopwatch) : stopwatch(stopwatch) {
   userData.mixBuffer = &mixBuffer;
   userData.bassFilter = &bassFilter;
   userData.trebleFilter = &trebleFilter;
+  userData.reverb = &reverb;
+  userData.compressor = &compressor;
 
 #if TARGET_OS_DESKTOP
   // Default to PortAudio on Desktop
@@ -351,8 +510,12 @@ AudioWrapper::AudioWrapper(Stopwatch *stopwatch) : stopwatch(stopwatch) {
 
   startDevice();
 
-  // setBassBoost(0.0f);
-  // setTrebleBoost(20.0f);
+  //
+  // setBassBoost(3.0f);   // Add warmth
+  // setTrebleBoost(3.0f); // Add clarity
+
+  // setReverbMix(0.5f);         // Moderate room ambience
+  // setCompressor(-6.0f, 2.0f); // Gentle mastering compression
 }
 
 AudioWrapper::~AudioWrapper() {
@@ -538,4 +701,36 @@ void AudioWrapper::setTrebleBoost(float db) {
   // High Shelf at 3000Hz (or user preference 8-10kHz? 3kHz is mid-high, let's
   // say 4kHz)
   trebleFilter.setHighShelf((float)rate, 4000.0f, db);
+}
+
+void AudioWrapper::setReverbMix(float mix) {
+  std::lock_guard<std::mutex> lock(soundDataListMutex);
+
+  int rate = backend ? backend->getSampleRate() : 44100;
+  if (rate == 0)
+    rate = 44100;
+
+  if (!reverb.initialized) {
+    reverb.init(rate);
+  }
+  reverb.setMix(mix);
+}
+
+void AudioWrapper::setCompressor(float threshold, float ratio) {
+  std::lock_guard<std::mutex> lock(soundDataListMutex);
+
+  int rate = backend ? backend->getSampleRate() : 44100;
+  if (rate == 0)
+    rate = 44100;
+
+  if (!compressor.enabled && ratio > 1.0f) {
+    compressor.init(rate);
+  }
+
+  if (ratio <= 1.0f) {
+    compressor.enabled = false;
+  } else {
+    compressor.setParams(threshold, ratio, 0.01f,
+                         0.1f); // Default attack/release
+  }
 }
