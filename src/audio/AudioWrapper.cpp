@@ -233,7 +233,7 @@ AudioWrapper::AudioWrapper(Stopwatch *stopwatch) : stopwatch(stopwatch) {
   userData.soundDataList = &soundDataList;
   userData.stopwatch = stopwatch;
 
-#if TARGET_OS_OSX
+#if TARGET_OS_OSX || TARGET_OS_WINDOWS
   // Default to PortAudio on Desktop
   try {
     backend = std::make_unique<PortAudioBackend>(&userData);
