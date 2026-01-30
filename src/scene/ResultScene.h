@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include "play/RhythmState.h"
 #include "../bms_parser.hpp"
+#include "../skin/ISkin.h"
 
 class TextView;
 
@@ -21,4 +22,5 @@ private:
   RhythmState resultState;
   View *rootLayout = nullptr;
   View *graphPlaceHolder = nullptr;
+  ISkin* skin = nullptr;
 };

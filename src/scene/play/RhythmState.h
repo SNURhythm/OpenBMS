@@ -21,9 +21,9 @@ public:
     }
   }
 
-  int getScore() {
+  int getScore() const {
     // PGreat * 2 + Great
-    return judgeCount[PGreat] * 2 + judgeCount[Great];
+    return judgeCount.at(PGreat) * 2 + judgeCount.at(Great);
   }
 
   std::vector<float> gaugeHistory;

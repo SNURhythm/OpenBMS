@@ -266,6 +266,9 @@ public:
   View *addView(View *view);
   YGNodeRef getNode() const { return node; }
   std::vector<View *> &getChildren() { return children; }
+  void setName(const std::string& name) { this->name = name; }
+  const std::string& getName() const { return name; }
+  View* findViewByName(const std::string& name);
 
   bool drawBoundingBox = false;
   void applyYogaLayout();
@@ -344,4 +347,5 @@ private:
   inline static uint64_t nextInsertionOrder = 1;
   inline static int layoutBatchDepth = 0;
   inline static std::unordered_set<View *> dirtyRoots;
+  std::string name;
 };
