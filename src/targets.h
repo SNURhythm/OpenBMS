@@ -1,7 +1,7 @@
 #pragma once
 #ifdef _WIN32
 #include <windows.h>
-
+#define TARGET_OS_WINDOWS 1
 #elif __APPLE__
 
 #include "TargetConditionals.h"
@@ -18,6 +18,7 @@
 #elif __posix
 // POSIX
 #endif
+#define TARGET_OS_DESKTOP (TARGET_OS_OSX || TARGET_OS_WINDOWS)
 
 enum TargetPlatform { Windows, MacOS, Linux, iOS };
 
