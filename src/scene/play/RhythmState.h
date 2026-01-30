@@ -9,6 +9,7 @@ public:
   size_t passedTimelineCount = 0;
 
   int combo = 0;
+  int maxCombo = 0;
   int comboBreak = 0;
   JudgeResult latestJudgeResult = JudgeResult(None, 0);
   // judge count. default 0
@@ -24,6 +25,11 @@ public:
     // PGreat * 2 + Great
     return judgeCount[PGreat] * 2 + judgeCount[Great];
   }
+
+  std::vector<float> gaugeHistory;
+  float currentGauge = 100.0f;
+  int fastCount = 0;
+  int slowCount = 0;
 
   ~RhythmState() {}
 
